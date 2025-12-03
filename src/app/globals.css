@@ -1,0 +1,45 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Space+Grotesk:wght@400;500;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: #E1062C; /* Crimson Neon */
+  --background: #0E0E11; /* Carbon Black */
+  --uiBase: #1F1F26; /* Metal Gray */
+  --accent: #FF2F92; /* Plasma Pink */
+  --textWhite: #F5F7FA; /* Ice White */
+}
+
+body {
+  color: var(--textWhite);
+  background: var(--background);
+  font-family: 'Roboto', sans-serif;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Custom Scrollbar Styles */
+  .custom-scrollbar::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: var(--uiBase); /* Base color for the scrollbar track */
+    border-radius: 10px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--primary); /* Accent color for the scrollbar thumb */
+    border-radius: 10px;
+    border: 2px solid var(--uiBase); /* Border around the thumb */
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: var(--accent); /* Hover color for the scrollbar thumb */
+  }
+}

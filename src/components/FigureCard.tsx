@@ -1,0 +1,85 @@
+'use client'
+
+import Link from 'next/link'
+import { motion } from 'framer-motion'
+import { ChevronRight } from 'lucide-react'
+import { Figure, Brand, FigureImage, Line } from '@prisma/client'
+
+// Extending the Figure type to include relations
+type FigureWithRelations = Figure & {
+  brand: Brand
+  line?: Line // Line might not always be included in the HomePage queries
+  images: FigureImage[]
+}
+
+interface FigureCardProps {
+  figure: FigureWithRelations
+  animationVariants?: any // Optional framer-motion variants
+}
+
+const FigureCard = ({ figure, animationVariants }: FigureCardProps) => {
+  return (
+    <motion.div variants={animationVariants}>
+      <Link
+        href={`/catalog/${figure.id}`}
+        className="group block bg-uiBase rounded-xl overflow-hidden border border-white/5 hover:border-primary/50 transition-all duration-300 hover:shadow-[0_0_30px_-10px_rgba(225,6,44,0.2)] h-full flex flex-col"
+      >
+        <div className="aspect-square relative overflow-hidden bg-gray-900">
+          {figure.images[0] ? (
+            <img
+              src={figure.images[0].url}
+              alt={figure.name}
+              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 ease-out"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-white/20">
+              No Image
+            </div>
+          )}
+
+          {/* Badge overlay */}
+          <div className="absolute top-3 left-3 flex gap-2 flex-wrap">
+            {!figure.isReleased && figure.releaseDate && (
+              <span className="bg-blue-600/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider shadow-lg">
+                Por Lanzar
+              </span>
+            )}
+            {figure.priceMXN && (
+              <span className="bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded border border-white/10">
+                ${figure.priceMXN.toLocaleString('es-MX')}
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className="p-4 flex flex-col flex-grow relative">
+          {/* Hover accent line */}
+          <div className="absolute bottom-0 left-0 w-full h-1 bg-primary transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+
+          <div className="flex justify-between items-start gap-2 mb-1">
+            <span className="text-xs font-bold text-primary uppercase tracking-wider">
+              {figure.brand.name}
+            </span>
+          </div>
+
+          <h3 className="font-medium text-white text-base leading-tight mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+            {figure.name}
+          </h3>
+
+          <div className="mt-auto pt-3 border-t border-white/5 flex justify-between items-end">
+            {figure.line && (
+              <span className="text-xs text-gray-500">
+                {figure.line.name}
+              </span>
+            )}
+            <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
+              <ChevronRight size={16} />
+            </div>
+          </div>
+        </div>
+      </Link>
+    </motion.div>
+  )
+}
+
+export default FigureCard

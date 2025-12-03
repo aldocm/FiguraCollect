@@ -1,0 +1,240 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ==========================================
+// MODELS
+// ==========================================
+
+model User {
+  id            String       @id @default(cuid())
+  email         String       @unique
+  username      String       @unique
+  password      String
+  name          String?
+  country       String
+  bio           String?
+  role          String       @default("USER") // USER | ADMIN | SUPERADMIN
+  emailVerified Boolean      @default(false)
+  verifyToken   String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  // Relaciones
+  userFigures   UserFigure[]
+  lists         List[]
+  reviews       Review[]
+}
+
+model Brand {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relaciones
+  lines       Line[]
+  figures     Figure[]
+}
+
+model Line {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  releaseYear Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relaciones
+  brandId     String
+  brand       Brand    @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  figures     Figure[]
+}
+
+model Series {
+  id          String         @id @default(cuid())
+  name        String
+  slug        String         @unique
+  description String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  // Relaciones
+  figures     FigureSeries[]
+}
+
+model Tag {
+  id        String      @id @default(cuid())
+  name      String      @unique
+  createdAt DateTime    @default(now())
+
+  // Relaciones
+  figures   FigureTag[]
+}
+
+model Figure {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  sku         String?
+  size        String?
+  scale       String?
+  material    String?
+  maker       String?
+  priceMXN    Float?
+  priceUSD    Float?
+  priceYEN    Float?
+  releaseDate String?  // YYYY-MM format
+  isReleased  Boolean  @default(false)
+  isNSFW      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relaciones
+  brandId     String
+  brand       Brand    @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  lineId      String
+  line        Line     @relation(fields: [lineId], references: [id], onDelete: Cascade)
+
+  images      FigureImage[]
+  tags        FigureTag[]
+  series      FigureSeries[]
+  variants    FigureVariant[]
+  userFigures UserFigure[]
+  listItems   ListItem[]
+  reviews     Review[]
+}
+
+model FigureImage {
+  id        String   @id @default(cuid())
+  url       String
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  figureId  String
+  figure    Figure   @relation(fields: [figureId], references: [id], onDelete: Cascade)
+}
+
+model FigureTag {
+  id       String @id @default(cuid())
+  figureId String
+  tagId    String
+
+  figure   Figure @relation(fields: [figureId], references: [id], onDelete: Cascade)
+  tag      Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([figureId, tagId])
+}
+
+model FigureSeries {
+  id       String @id @default(cuid())
+  figureId String
+  seriesId String
+
+  figure   Figure @relation(fields: [figureId], references: [id], onDelete: Cascade)
+  series   Series @relation(fields: [seriesId], references: [id], onDelete: Cascade)
+
+  @@unique([figureId, seriesId])
+}
+
+model FigureVariant {
+  id        String   @id @default(cuid())
+  name      String
+  priceMXN  Float?
+  priceUSD  Float?
+  priceYEN  Float?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  parentFigureId String
+  parentFigure   Figure          @relation(fields: [parentFigureId], references: [id], onDelete: Cascade)
+  images         VariantImage[]
+}
+
+model VariantImage {
+  id        String   @id @default(cuid())
+  url       String
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  variantId String
+  variant   FigureVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+}
+
+model UserFigure {
+  id            String   @id @default(cuid())
+  status        String   @default("WISHLIST") // WISHLIST | PREORDER | OWNED
+  userPrice     Float?
+  preorderMonth String?  // YYYY-MM format
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  figureId      String
+  figure        Figure   @relation(fields: [figureId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, figureId])
+}
+
+model List {
+  id          String     @id @default(cuid())
+  name        String
+  description String?
+  isOfficial  Boolean    @default(false)
+  isFeatured  Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  createdById String
+  createdBy   User       @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  items       ListItem[]
+}
+
+model ListItem {
+  id        String   @id @default(cuid())
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  listId    String
+  list      List     @relation(fields: [listId], references: [id], onDelete: Cascade)
+  figureId  String
+  figure    Figure   @relation(fields: [figureId], references: [id], onDelete: Cascade)
+
+  @@unique([listId, figureId])
+}
+
+model Review {
+  id          String        @id @default(cuid())
+  rating      Float         // 1.0 - 5.0
+  title       String
+  description String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  userId      String
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  figureId    String
+  figure      Figure        @relation(fields: [figureId], references: [id], onDelete: Cascade)
+  images      ReviewImage[]
+
+  @@unique([userId, figureId])
+}
+
+model ReviewImage {
+  id        String   @id @default(cuid())
+  url       String
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  reviewId  String
+  review    Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+}
