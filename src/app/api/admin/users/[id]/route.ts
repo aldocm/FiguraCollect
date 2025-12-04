@@ -18,32 +18,50 @@ export async function PUT(
 
     const { id } = await params
     const body = await request.json()
-    const { role } = body
+    const { role, isPro, username, name, country, email } = body
 
-    if (!role || !['USER', 'ADMIN', 'SUPERADMIN'].includes(role)) {
-      return NextResponse.json(
-        { error: 'Role inválido' },
-        { status: 400 }
-      )
+    // Build update data
+    const updateData: Record<string, unknown> = {}
+
+    // Handle role update
+    if (role !== undefined) {
+      if (!['USER', 'ADMIN', 'SUPERADMIN'].includes(role)) {
+        return NextResponse.json(
+          { error: 'Role inválido' },
+          { status: 400 }
+        )
+      }
+      // Can't change own role
+      if (id === session.userId) {
+        return NextResponse.json(
+          { error: 'No puedes cambiar tu propio rol' },
+          { status: 400 }
+        )
+      }
+      updateData.role = role
     }
 
-    // Can't change own role
-    if (id === session.userId) {
-      return NextResponse.json(
-        { error: 'No puedes cambiar tu propio rol' },
-        { status: 400 }
-      )
+    // Handle isPro toggle
+    if (isPro !== undefined) {
+      updateData.isPro = isPro
     }
+
+    // Handle other fields
+    if (username !== undefined) updateData.username = username
+    if (name !== undefined) updateData.name = name
+    if (country !== undefined) updateData.country = country
+    if (email !== undefined) updateData.email = email
 
     const user = await prisma.user.update({
       where: { id },
-      data: { role },
+      data: updateData,
       select: {
         id: true,
         email: true,
         username: true,
         name: true,
-        role: true
+        role: true,
+        isPro: true
       }
     })
 

@@ -53,3 +53,74 @@ export function getMonthName(monthStr: string): string {
   ]
   return `${months[parseInt(month) - 1]} ${year}`
 }
+
+// ==========================================
+// UNIT CONVERSION UTILITIES
+// ==========================================
+
+export type MeasureUnit = 'cm' | 'in'
+
+const CM_TO_INCH = 0.393701
+const INCH_TO_CM = 2.54
+
+/**
+ * Convert centimeters to inches
+ */
+export function cmToInches(cm: number): number {
+  return Math.round(cm * CM_TO_INCH * 100) / 100
+}
+
+/**
+ * Convert inches to centimeters
+ */
+export function inchesToCm(inches: number): number {
+  return Math.round(inches * INCH_TO_CM * 100) / 100
+}
+
+/**
+ * Convert a measurement to the desired unit
+ * @param valueCm - Value in centimeters (base unit stored in DB)
+ * @param targetUnit - Target unit to convert to
+ */
+export function convertMeasure(valueCm: number | null, targetUnit: MeasureUnit): number | null {
+  if (valueCm === null) return null
+  return targetUnit === 'cm' ? valueCm : cmToInches(valueCm)
+}
+
+/**
+ * Format a dimension value with its unit
+ */
+export function formatDimension(valueCm: number | null, unit: MeasureUnit): string {
+  if (valueCm === null) return '-'
+  const value = convertMeasure(valueCm, unit)
+  return `${value} ${unit}`
+}
+
+/**
+ * Format full dimensions (H x W x D)
+ */
+export function formatDimensions(
+  heightCm: number | null,
+  widthCm: number | null,
+  depthCm: number | null,
+  unit: MeasureUnit
+): string {
+  const h = convertMeasure(heightCm, unit)
+  const w = convertMeasure(widthCm, unit)
+  const d = convertMeasure(depthCm, unit)
+
+  const parts: string[] = []
+  if (h !== null) parts.push(`${h}`)
+  if (w !== null) parts.push(`${w}`)
+  if (d !== null) parts.push(`${d}`)
+
+  if (parts.length === 0) return '-'
+  return `${parts.join(' × ')} ${unit}`
+}
+
+/**
+ * Get user-friendly unit label
+ */
+export function getUnitLabel(unit: MeasureUnit): string {
+  return unit === 'cm' ? 'Centímetros' : 'Pulgadas'
+}

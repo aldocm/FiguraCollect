@@ -2,11 +2,29 @@ import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/db'
 import { getCurrentUser, isAdmin, isSuperAdmin } from '@/lib/auth'
 import ListDetailClient from './ListDetailClient'
+import type { Metadata } from 'next'
 
 export const dynamic = 'force-dynamic'
 
 interface PageProps {
   params: Promise<{ id: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { id } = await params
+  const list = await prisma.list.findUnique({
+    where: { id },
+    select: { name: true }
+  })
+
+  if (!list) {
+    return { title: 'Lista no encontrada | FiguraCollect' }
+  }
+
+  return {
+    title: `${list.name} | Listas FiguraCollect`,
+    description: `Ver la lista ${list.name} en FiguraCollect.`
+  }
 }
 
 export default async function ListDetailPage({ params }: PageProps) {

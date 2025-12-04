@@ -4,23 +4,26 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { AddToInventoryButton } from '@/components/AddToInventoryButton'
-import { 
-  Star, ChevronLeft, ChevronRight, UserCircle, ZoomIn, ZoomOut, RotateCcw, X, 
-  Calendar, Box, Ruler, Scale, Factory, Tag, Layers
+import {
+  Star, ChevronLeft, ChevronRight, UserCircle, ZoomIn, ZoomOut, RotateCcw, X,
+  Calendar, Box, Ruler, Scale, Factory, Tag, Layers, ArrowLeftRight, Plus, Send, ImagePlus, Trash2, MessageSquarePlus, ChevronDown, ChevronUp
 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { formatDimensions, type MeasureUnit } from '@/lib/utils'
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch'
 
 // --- Types ---
 type Figure = {
-  id: string; name: string; description: string | null; sku: string | null; size: string | null; scale: string | null; material: string | null; maker: string | null; releaseDate: string | null; isReleased: boolean; priceMXN: number | null; priceUSD: number | null; priceYEN: number | null; brand: { id: string; name: string; }; line: { id: string; name: string; }; images: { id: string; url: string; }[]; tags: { tag: { name: string; }; }[]; series: { series: { id: string; name: string } }[], variants: { id: string; name: string; priceMXN: number | null; images: { url: string; }[]; }[]; reviews: { id: string; rating: number; title: string; description: string; user: { username: string; }; }[];
+  id: string; name: string; description: string | null; sku: string | null; heightCm: number | null; widthCm: number | null; depthCm: number | null; scale: string | null; material: string | null; maker: string | null; releaseDate: string | null; isReleased: boolean; priceMXN: number | null; priceUSD: number | null; priceYEN: number | null; brand: { id: string; name: string; }; line: { id: string; name: string; }; images: { id: string; url: string; }[]; tags: { tag: { name: string; }; }[]; series: { series: { id: string; name: string } }[], variants: { id: string; name: string; priceMXN: number | null; images: { url: string; }[]; }[]; reviews: { id: string; rating: number; title: string; description: string; user: { username: string; }; images?: { id: string; url: string; }[]; }[];
 }
-type User = { id: string } | null
+type User = { id: string; measureUnit?: string } | null
 type UserFigure = { id: string, status: string } | null
 
 interface FigureDetailClientProps {
   figure: Figure
   user: User
   userFigure: UserFigure
+  defaultMeasureUnit?: MeasureUnit
 }
 
 // --- DEMO DATA FOR VISUALIZATION ---
@@ -66,10 +69,10 @@ const InfoBadge = ({ icon: Icon, label, value }: { icon: any, label: string, val
 
 // --- Main Component ---
 
-export default function FigureDetailClient({ figure, user, userFigure }: FigureDetailClientProps) {
+export default function FigureDetailClient({ figure, user, userFigure, defaultMeasureUnit = 'cm' }: FigureDetailClientProps) {
   // USE DEMO DATA if figure has no images, just for visualization purposes as requested
   const useDemo = figure.images.length === 0;
-  
+
   const images = useDemo ? DEMO_IMAGES : figure.images
   const description = useDemo ? LONG_DESCRIPTION : (figure.description || "Sin descripción.")
   const variants = useDemo ? DEMO_VARIANTS : figure.variants
@@ -77,7 +80,99 @@ export default function FigureDetailClient({ figure, user, userFigure }: FigureD
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
   const [isImageModalOpen, setIsImageModalOpen] = useState(false)
   const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null)
-  
+
+  // Measure unit state - defaults to user preference or 'cm'
+  const [measureUnit, setMeasureUnit] = useState<MeasureUnit>(
+    (user?.measureUnit as MeasureUnit) || defaultMeasureUnit
+  )
+
+  // Review form state
+  const router = useRouter()
+  const [showReviewForm, setShowReviewForm] = useState(false)
+  const [reviewForm, setReviewForm] = useState({
+    rating: 5,
+    title: '',
+    description: '',
+    images: [] as string[]
+  })
+  const [submittingReview, setSubmittingReview] = useState(false)
+  const [reviewError, setReviewError] = useState('')
+
+  // Check if user can review (must own the figure and not have reviewed yet)
+  const canReview = user && userFigure?.status === 'OWNED' && !figure.reviews.some(r => r.user.username === user.id)
+  const hasAlreadyReviewed = user && figure.reviews.some(r => r.user.username === user.id)
+
+  const handleSubmitReview = async () => {
+    if (!reviewForm.title.trim() || !reviewForm.description.trim()) {
+      setReviewError('Título y descripción son requeridos')
+      return
+    }
+
+    setSubmittingReview(true)
+    setReviewError('')
+
+    try {
+      const res = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          figureId: figure.id,
+          rating: reviewForm.rating,
+          title: reviewForm.title,
+          description: reviewForm.description,
+          images: reviewForm.images
+        })
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        setReviewError(data.error || 'Error al enviar la opinión')
+        return
+      }
+
+      // Reset form and refresh
+      setReviewForm({ rating: 5, title: '', description: '', images: [] })
+      setShowReviewForm(false)
+      router.refresh()
+    } catch (e) {
+      setReviewError('Error de conexión')
+    } finally {
+      setSubmittingReview(false)
+    }
+  }
+
+  const addImageUrl = () => {
+    if (reviewForm.images.length < 3) {
+      const url = prompt('Ingresa la URL de la imagen:')
+      if (url && url.trim()) {
+        setReviewForm(f => ({ ...f, images: [...f.images, url.trim()] }))
+      }
+    }
+  }
+
+  const removeImage = (index: number) => {
+    setReviewForm(f => ({ ...f, images: f.images.filter((_, i) => i !== index) }))
+  }
+
+  // State for viewing review images
+  const [reviewImageModal, setReviewImageModal] = useState<string | null>(null)
+
+  // State for collapsed reviews (stores IDs of collapsed reviews)
+  const [collapsedReviews, setCollapsedReviews] = useState<Set<string>>(new Set())
+
+  const toggleReviewCollapse = (reviewId: string) => {
+    setCollapsedReviews(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(reviewId)) {
+        newSet.delete(reviewId)
+      } else {
+        newSet.add(reviewId)
+      }
+      return newSet
+    })
+  }
+
   const selectedImage = images[selectedImageIndex]
 
   const handlePrevImage = () => {
@@ -224,37 +319,254 @@ export default function FigureDetailClient({ figure, user, userFigure }: FigureD
                 )}
               </div>
               
-              {figure.reviews.length > 0 ? (
-                <div className="grid gap-6">
-                  {figure.reviews.map(r => (
-                    <div key={r.id} className="bg-black/20 rounded-2xl p-6 hover:bg-black/30 transition-colors border border-white/5">
-                      <div className="flex justify-between items-start mb-4">
-                         <div className="flex items-center gap-3">
-                           <div className="w-12 h-12 rounded-full bg-uiBase flex items-center justify-center text-primary border border-white/10 shadow-inner">
-                             <UserCircle size={28} />
-                           </div>
-                           <div>
-                             <p className="font-bold text-white text-base">{r.user.username}</p>
-                             <div className="flex text-accent gap-0.5 mt-1">
-                               {[...Array(5)].map((_, i) => (
-                                 <Star key={i} size={14} fill={i < r.rating ? "currentColor" : "none"} className={i < r.rating ? "text-accent" : "text-gray-700"} />
-                               ))}
-                             </div>
-                           </div>
-                         </div>
-                         <span className="text-xs text-gray-500 bg-white/5 px-2 py-1 rounded">Verificado</span>
+              {/* Review Form */}
+              <AnimatePresence>
+                {showReviewForm && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="mb-6 overflow-hidden"
+                  >
+                    <div className="bg-gradient-to-br from-primary/10 to-accent/5 rounded-2xl p-6 border border-primary/20">
+                      <div className="flex items-center justify-between mb-4">
+                        <h4 className="font-bold text-white flex items-center gap-2">
+                          <MessageSquarePlus size={18} className="text-primary" />
+                          Escribe tu opinión
+                        </h4>
+                        <button
+                          onClick={() => setShowReviewForm(false)}
+                          className="p-1 text-gray-400 hover:text-white transition-colors"
+                        >
+                          <X size={18} />
+                        </button>
                       </div>
-                      <h4 className="font-bold text-white text-lg mb-2">{r.title}</h4>
-                      <p className="text-gray-400 text-base leading-relaxed">{r.description}</p>
+
+                      {/* Rating */}
+                      <div className="mb-4">
+                        <label className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-2 block">Calificación</label>
+                        <div className="flex gap-1">
+                          {[1, 2, 3, 4, 5].map(star => (
+                            <button
+                              key={star}
+                              type="button"
+                              onClick={() => setReviewForm(f => ({ ...f, rating: star }))}
+                              className="p-1 transition-transform hover:scale-110"
+                            >
+                              <Star
+                                size={28}
+                                fill={star <= reviewForm.rating ? "currentColor" : "none"}
+                                className={star <= reviewForm.rating ? "text-accent" : "text-gray-600"}
+                              />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Title */}
+                      <div className="mb-4">
+                        <label className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-2 block">Título</label>
+                        <input
+                          type="text"
+                          value={reviewForm.title}
+                          onChange={e => setReviewForm(f => ({ ...f, title: e.target.value }))}
+                          placeholder="Ej: ¡Increíble calidad de detalle!"
+                          className="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary/50 transition-colors"
+                          maxLength={100}
+                        />
+                      </div>
+
+                      {/* Description */}
+                      <div className="mb-4">
+                        <label className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-2 block">Tu opinión</label>
+                        <textarea
+                          value={reviewForm.description}
+                          onChange={e => setReviewForm(f => ({ ...f, description: e.target.value }))}
+                          placeholder="Cuéntanos qué te parece esta figura, la calidad, los detalles, si cumplió tus expectativas..."
+                          rows={4}
+                          className="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary/50 transition-colors resize-none"
+                          maxLength={1000}
+                        />
+                      </div>
+
+                      {/* Images */}
+                      <div className="mb-4">
+                        <label className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-2 block">
+                          Imágenes <span className="text-gray-500 font-normal">(opcional, máx. 3)</span>
+                        </label>
+                        <div className="flex flex-wrap gap-2">
+                          {reviewForm.images.map((url, idx) => (
+                            <div key={idx} className="relative w-20 h-20 rounded-lg overflow-hidden border border-white/10 group">
+                              <img src={url} alt="" className="w-full h-full object-cover" />
+                              <button
+                                onClick={() => removeImage(idx)}
+                                className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                              >
+                                <Trash2 size={18} className="text-red-400" />
+                              </button>
+                            </div>
+                          ))}
+                          {reviewForm.images.length < 3 && (
+                            <button
+                              type="button"
+                              onClick={addImageUrl}
+                              className="w-20 h-20 rounded-lg border-2 border-dashed border-white/20 hover:border-primary/50 flex items-center justify-center text-gray-500 hover:text-primary transition-colors"
+                            >
+                              <ImagePlus size={24} />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Error */}
+                      {reviewError && (
+                        <p className="text-red-400 text-sm mb-4">{reviewError}</p>
+                      )}
+
+                      {/* Submit */}
+                      <button
+                        onClick={handleSubmitReview}
+                        disabled={submittingReview}
+                        className="w-full bg-primary hover:bg-primary/90 disabled:bg-gray-600 text-white font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
+                      >
+                        {submittingReview ? (
+                          'Enviando...'
+                        ) : (
+                          <>
+                            <Send size={18} />
+                            Publicar Opinión
+                          </>
+                        )}
+                      </button>
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-12 bg-black/20 rounded-2xl border border-dashed border-white/10">
-                    <Star className="w-12 h-12 text-gray-700 mx-auto mb-3" />
-                    <p className="text-gray-400 italic">Aún no hay opiniones. ¡Sé el primero en opinar!</p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Add Review Button */}
+              {!showReviewForm && user && userFigure?.status === 'OWNED' && (
+                <button
+                  onClick={() => setShowReviewForm(true)}
+                  className="w-full mb-6 py-4 bg-white/5 hover:bg-primary/20 border border-white/10 hover:border-primary/30 rounded-2xl text-gray-400 hover:text-white font-bold transition-all flex items-center justify-center gap-2 group"
+                >
+                  <Plus size={20} className="group-hover:rotate-90 transition-transform" />
+                  Escribir una opinión
+                </button>
+              )}
+
+              {/* Message for users who don't own the figure */}
+              {!showReviewForm && user && userFigure?.status !== 'OWNED' && (
+                <div className="mb-6 py-4 px-5 bg-white/5 border border-white/10 rounded-2xl text-center">
+                  <p className="text-gray-400 text-sm">
+                    <span className="text-primary font-bold">¿Tienes esta figura?</span> Agrégala a tu colección para poder opinar.
+                  </p>
                 </div>
               )}
+
+              {/* Message for non-logged users */}
+              {!showReviewForm && !user && (
+                <Link
+                  href="/login"
+                  className="block mb-6 py-4 bg-white/5 hover:bg-primary/20 border border-white/10 hover:border-primary/30 rounded-2xl text-center text-gray-400 hover:text-white font-bold transition-all"
+                >
+                  Inicia sesión para opinar
+                </Link>
+              )}
+
+              {/* Reviews List */}
+              {figure.reviews.length > 0 ? (
+                <div className="grid gap-4">
+                  {figure.reviews.map(r => {
+                    const isCollapsed = collapsedReviews.has(r.id)
+
+                    return (
+                      <div key={r.id} className="bg-black/20 rounded-2xl overflow-hidden border border-white/5 hover:border-white/10 transition-colors">
+                        {/* Header - Always visible, clickable to toggle */}
+                        <button
+                          onClick={() => toggleReviewCollapse(r.id)}
+                          className="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-uiBase flex items-center justify-center text-primary border border-white/10">
+                              <UserCircle size={22} />
+                            </div>
+                            <div className="text-left">
+                              <p className="font-bold text-white text-sm">{r.user.username}</p>
+                              <div className="flex text-accent gap-0.5">
+                                {[...Array(5)].map((_, i) => (
+                                  <Star key={i} size={12} fill={i < r.rating ? "currentColor" : "none"} className={i < r.rating ? "text-accent" : "text-gray-700"} />
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className="text-xs text-gray-500 bg-white/5 px-2 py-1 rounded">Verificado</span>
+                            {isCollapsed ? (
+                              <ChevronDown size={18} className="text-gray-500" />
+                            ) : (
+                              <ChevronUp size={18} className="text-gray-500" />
+                            )}
+                          </div>
+                        </button>
+
+                        {/* Content - Collapsible */}
+                        <AnimatePresence>
+                          {!isCollapsed && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: 'auto', opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.2 }}
+                              className="overflow-hidden"
+                            >
+                              <div className="px-4 pb-4 pt-0">
+                                <div className="border-t border-white/5 pt-4">
+                                  <h4 className="font-bold text-white text-lg mb-2">{r.title}</h4>
+                                  <p className="text-gray-400 text-base leading-relaxed">{r.description}</p>
+
+                                  {/* Review Images */}
+                                  {r.images && r.images.length > 0 && (
+                                    <div className="flex gap-2 mt-4 pt-4 border-t border-white/5">
+                                      {r.images.map((img) => (
+                                        <button
+                                          key={img.id}
+                                          onClick={(e) => {
+                                            e.stopPropagation()
+                                            setReviewImageModal(img.url)
+                                          }}
+                                          className="w-16 h-16 rounded-lg overflow-hidden border border-white/10 hover:border-primary/50 transition-colors group relative"
+                                        >
+                                          <img src={img.url} alt="" className="w-full h-full object-cover" />
+                                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                            <ZoomIn size={16} className="text-white" />
+                                          </div>
+                                        </button>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    )
+                  })}
+                </div>
+              ) : !showReviewForm ? (
+                <div className="text-center py-12 bg-black/20 rounded-2xl border border-dashed border-white/10">
+                    <Star className="w-12 h-12 text-gray-700 mx-auto mb-3" />
+                    <p className="text-gray-400 italic mb-2">Aún no hay opiniones.</p>
+                    {user && userFigure?.status === 'OWNED' && (
+                      <button
+                        onClick={() => setShowReviewForm(true)}
+                        className="text-primary hover:text-primary/80 font-bold text-sm"
+                      >
+                        ¡Sé el primero en opinar!
+                      </button>
+                    )}
+                </div>
+              ) : null}
             </motion.div>
 
           </div>
@@ -268,7 +580,7 @@ export default function FigureDetailClient({ figure, user, userFigure }: FigureD
                 initial={{ opacity: 0, x: 50 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5 }}
-                className="bg-uiBase/30 backdrop-blur-xl rounded-3xl p-6 md:p-8 border border-white/10 shadow-2xl"
+                className="bg-uiBase/30 backdrop-blur-xl rounded-3xl p-4 md:p-6 border border-white/10 shadow-2xl"
               >
                 {/* Breadcrumbs / Categories */}
                 <div className="flex flex-wrap gap-2 mb-6">
@@ -290,9 +602,9 @@ export default function FigureDetailClient({ figure, user, userFigure }: FigureD
                 </h1>
                 
                 <div className="flex items-center justify-between border-b border-white/10 pb-6 mb-6">
-                    <div className="flex items-center gap-4 text-gray-400">
+                    <div className="flex items-center gap-4 text-gray-400 flex-wrap">
                     {figure.releaseDate && (
-                        <span className="flex items-center gap-2 text-sm font-medium bg-white/5 px-3 py-1 rounded-md">
+                        <span className="flex items-center gap-2 text-sm font-medium bg-white/5 px-3 py-1 rounded-md capitalize">
                         <Calendar size={16} className="text-accent" />
                         {new Date(figure.releaseDate).toLocaleDateString('es-MX', { year: 'numeric', month: 'long' })}
                         </span>
@@ -302,16 +614,45 @@ export default function FigureDetailClient({ figure, user, userFigure }: FigureD
                         Por Lanzar
                         </span>
                     )}
+                    {/* Rating Badge - only if has reviews */}
+                    {figure.reviews.length > 0 && (
+                        <span className="flex items-center gap-1.5 text-sm font-medium bg-accent/10 px-3 py-1 rounded-md border border-accent/20">
+                        <Star size={14} className="text-accent" fill="currentColor" />
+                        <span className="text-accent font-bold">
+                            {(figure.reviews.reduce((acc, r) => acc + r.rating, 0) / figure.reviews.length).toFixed(1)}
+                        </span>
+                        <span className="text-gray-500 text-xs">
+                            ({figure.reviews.length})
+                        </span>
+                        </span>
+                    )}
                     </div>
-                    {/* Share or Like could go here */}
                 </div>
 
                 {/* Price Area */}
                 {figure.priceMXN && (
-                  <div className="mb-8">
-                    <p className="text-xs text-gray-500 uppercase font-bold mb-1 tracking-wider">Precio Estimado</p>
-                    <div className="flex items-baseline gap-2">
-                        <span className="text-5xl font-title font-bold text-white tracking-tight">
+                  <div className="mb-6">
+                    {/* AddToInventoryButton moved here */}
+                    <div className="bg-white/5 p-2 rounded-2xl border border-white/10">
+                        {user ? (
+                            <AddToInventoryButton 
+                            figureId={figure.id} 
+                            currentStatus={userFigure?.status || null} 
+                            userFigureId={userFigure?.id || null} 
+                            isReleased={figure.isReleased}
+                            />
+                        ) : (
+                            <Link 
+                            href="/login" 
+                            className="block w-full py-4 bg-primary hover:bg-primary/90 text-center rounded-xl text-white font-bold transition-all shadow-lg shadow-primary/20"
+                            >
+                            Inicia sesión para coleccionar
+                            </Link>
+                        )}
+                    </div>
+                    <p className="text-xs text-gray-500 uppercase font-bold mb-1 tracking-wider mt-6 text-center">Precio de Lanzamiento</p>
+                    <div className="flex items-baseline gap-2 justify-center">
+                        <span className="text-3xl font-title font-bold text-white tracking-tight">
                         ${figure.priceMXN.toLocaleString()}
                         </span>
                         <span className="text-xl text-gray-500 font-medium">MXN</span>
@@ -319,78 +660,104 @@ export default function FigureDetailClient({ figure, user, userFigure }: FigureD
                   </div>
                 )}
 
-                {/* VARIANTS SECTION - MOVED HERE */}
-                {variants.length > 0 && (
-                    <div className="mb-8">
-                        <p className="text-xs text-gray-500 uppercase font-bold mb-3 tracking-wider flex items-center gap-2">
-                            <Layers size={14} /> Variantes Disponibles
-                        </p>
-                        <div className="grid gap-3">
-                            {variants.map(v => (
-                                <button
-                                    key={v.id}
-                                    onClick={() => setSelectedVariantId(selectedVariantId === v.id ? null : v.id)}
-                                    className={`flex items-center gap-3 p-2 pr-4 rounded-xl border transition-all text-left w-full group ${selectedVariantId === v.id 
-                                        ? 'bg-primary/10 border-primary ring-1 ring-primary' 
-                                        : 'bg-black/20 border-white/10 hover:border-white/30 hover:bg-white/5'}`}
-                                >
-                                    <div className="w-12 h-12 rounded-lg overflow-hidden bg-uiBase flex-shrink-0">
-                                        <img src={v.images[0]?.url} alt={v.name} className="w-full h-full object-cover" />
-                                    </div>
-                                    <div className="flex-grow">
-                                        <p className={`text-sm font-bold transition-colors ${selectedVariantId === v.id ? 'text-primary' : 'text-white group-hover:text-primary'}`}>
-                                            {v.name}
-                                        </p>
-                                        {v.priceMXN && (
-                                            <p className="text-xs text-gray-400">${v.priceMXN.toLocaleString()} MXN</p>
-                                        )}
-                                    </div>
-                                    {selectedVariantId === v.id && (
-                                        <div className="w-2 h-2 rounded-full bg-primary shadow-[0_0_10px_rgba(225,6,44,0.8)]" />
-                                    )}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                )}
-
-                {/* Action Buttons */}
-                <div className="space-y-3 pt-2">
-                   {user ? (
-                     <>
-                        <div className="bg-white/5 p-2 rounded-2xl border border-white/10">
-                            <AddToInventoryButton 
-                            figureId={figure.id} 
-                            currentStatus={userFigure?.status || null} 
-                            userFigureId={userFigure?.id || null} 
-                            />
-                        </div>
-                        {/* Placeholder for wishlist or other actions */}
-                     </>
-                   ) : (
-                     <Link 
-                       href="/login" 
-                       className="block w-full py-4 bg-primary hover:bg-primary/90 text-center rounded-xl text-white font-bold transition-all shadow-lg shadow-primary/20"
-                     >
-                       Inicia sesión para coleccionar
-                     </Link>
-                   )}
-                </div>
+                {/* Action Buttons - This section is now empty or removed if no other buttons */}
+                {/* The content here was moved up, leaving this div potentially empty. */}
 
               </motion.div>
               
               {/* Specs Grid - Sticky as well */}
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2, duration: 0.5 }}
-                className="grid grid-cols-2 gap-3"
+                className="space-y-3"
               >
-                   <InfoBadge icon={Scale} label="Escala" value={figure.scale || 'N/A'} />
-                   <InfoBadge icon={Ruler} label="Tamaño" value={figure.size || 'N/A'} />
-                   <InfoBadge icon={Box} label="Material" value={figure.material || 'N/A'} />
-                   <InfoBadge icon={Factory} label="Fabricante" value={figure.maker || 'N/A'} />
-                   <InfoBadge icon={Tag} label="SKU" value={figure.sku || 'N/A'} />
+                {/* Dimensions with toggle */}
+                {(figure.heightCm || figure.widthCm || figure.depthCm) && (() => {
+                  // Check if only height is present
+                  const onlyHeight = figure.heightCm && !figure.widthCm && !figure.depthCm
+                  const cmToIn = (cm: number) => (cm * 0.393701).toFixed(2)
+
+                  return (
+                    <div className="bg-white/5 border border-white/10 rounded-lg p-4 backdrop-blur-sm">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <div className="p-2 rounded-full bg-primary/20 text-primary">
+                            <Ruler size={18} />
+                          </div>
+                          <p className="text-xs text-gray-400 uppercase font-bold tracking-wider">
+                            {onlyHeight ? 'Tamaño' : 'Dimensiones'}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => setMeasureUnit(measureUnit === 'cm' ? 'in' : 'cm')}
+                          className="flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-bold uppercase bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-gray-400 hover:text-white transition-colors"
+                          title="Cambiar unidad de medida"
+                        >
+                          <ArrowLeftRight size={12} />
+                          {measureUnit === 'cm' ? 'cm' : 'in'}
+                        </button>
+                      </div>
+
+                      {onlyHeight ? (
+                        // Single height display - "Tamaño"
+                        <div className="bg-black/20 rounded-lg p-4 text-center">
+                          <p className="text-[10px] text-gray-500 uppercase mb-1">Altura</p>
+                          <p className="text-2xl text-white font-bold">
+                            {measureUnit === 'cm' ? figure.heightCm : cmToIn(figure.heightCm)}
+                            <span className="text-base text-gray-400 font-normal ml-1">
+                              {measureUnit}
+                            </span>
+                          </p>
+                        </div>
+                      ) : (() => {
+                        // Count how many dimensions we have
+                        const dimCount = [figure.heightCm, figure.widthCm, figure.depthCm].filter(Boolean).length
+                        const gridCols = dimCount === 2 ? 'grid-cols-2' : 'grid-cols-3'
+
+                        return (
+                          <div className={`grid ${gridCols} gap-2 text-center`}>
+                            {figure.heightCm && (
+                              <div className="bg-black/20 rounded-lg p-3">
+                                <p className="text-[10px] text-gray-500 uppercase">Alto</p>
+                                <p className="text-lg text-white font-bold">
+                                  {measureUnit === 'cm' ? figure.heightCm : cmToIn(figure.heightCm)}
+                                  <span className="text-xs text-gray-400 font-normal ml-1">{measureUnit}</span>
+                                </p>
+                              </div>
+                            )}
+                            {figure.widthCm && (
+                              <div className="bg-black/20 rounded-lg p-3">
+                                <p className="text-[10px] text-gray-500 uppercase">Ancho</p>
+                                <p className="text-lg text-white font-bold">
+                                  {measureUnit === 'cm' ? figure.widthCm : cmToIn(figure.widthCm)}
+                                  <span className="text-xs text-gray-400 font-normal ml-1">{measureUnit}</span>
+                                </p>
+                              </div>
+                            )}
+                            {figure.depthCm && (
+                              <div className="bg-black/20 rounded-lg p-3">
+                                <p className="text-[10px] text-gray-500 uppercase">Prof.</p>
+                                <p className="text-lg text-white font-bold">
+                                  {measureUnit === 'cm' ? figure.depthCm : cmToIn(figure.depthCm)}
+                                  <span className="text-xs text-gray-400 font-normal ml-1">{measureUnit}</span>
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })()}
+                    </div>
+                  )
+                })()}
+
+                {/* Other specs grid */}
+                <div className="grid grid-cols-2 gap-3">
+                  <InfoBadge icon={Scale} label="Escala" value={figure.scale || null} />
+                  <InfoBadge icon={Box} label="Material" value={figure.material || null} />
+                  <InfoBadge icon={Factory} label="Fabricante" value={figure.maker || null} />
+                  <InfoBadge icon={Tag} label="SKU" value={figure.sku || null} />
+                </div>
               </motion.div>
 
             </div>
@@ -399,7 +766,7 @@ export default function FigureDetailClient({ figure, user, userFigure }: FigureD
         </div>
       </div>
 
-      {/* Full Screen Modal */}
+      {/* Full Screen Modal - Figure Images */}
       <AnimatePresence>
         {isImageModalOpen && (
           <motion.div
@@ -416,28 +783,55 @@ export default function FigureDetailClient({ figure, user, userFigure }: FigureD
             <div className="w-full h-full p-4 md:p-10 flex items-center justify-center relative" onClick={e => e.stopPropagation()}>
                <TransformWrapper>
                   <TransformComponent wrapperClass="!w-full !h-full" contentClass="!w-full !h-full flex items-center justify-center">
-                    <img 
-                      src={selectedImage.url} 
-                      alt={figure.name} 
+                    <img
+                      src={selectedImage.url}
+                      alt={figure.name}
                       className="max-w-full max-h-full object-contain"
                     />
                   </TransformComponent>
                </TransformWrapper>
 
                {/* Modal Navigation */}
-               <button 
+               <button
                  className="absolute left-4 top-1/2 -translate-y-1/2 p-4 text-white/50 hover:text-white hover:bg-white/10 rounded-full transition-all"
                  onClick={(e) => { e.stopPropagation(); handlePrevImage(); }}
                >
                  <ChevronLeft size={40} />
                </button>
-               <button 
+               <button
                  className="absolute right-4 top-1/2 -translate-y-1/2 p-4 text-white/50 hover:text-white hover:bg-white/10 rounded-full transition-all"
                  onClick={(e) => { e.stopPropagation(); handleNextImage(); }}
                >
                  <ChevronRight size={40} />
                </button>
             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Review Image Modal */}
+      <AnimatePresence>
+        {reviewImageModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/95 backdrop-blur-xl flex items-center justify-center p-4"
+            onClick={() => setReviewImageModal(null)}
+          >
+            <button className="absolute top-6 right-6 text-white/50 hover:text-white p-2 z-50">
+              <X size={32} />
+            </button>
+
+            <motion.img
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              src={reviewImageModal}
+              alt="Imagen de opinión"
+              className="max-w-full max-h-full object-contain rounded-lg"
+              onClick={e => e.stopPropagation()}
+            />
           </motion.div>
         )}
       </AnimatePresence>

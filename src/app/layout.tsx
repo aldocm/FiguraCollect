@@ -2,7 +2,6 @@
 
 import { Footer } from "@/components/Footer";
 import { Nav } from "@/components/Nav";
-import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { usePathname } from "next/navigation";
 import "./globals.css";

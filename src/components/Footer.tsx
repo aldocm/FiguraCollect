@@ -15,9 +15,9 @@ export function Footer() {
     ],
     company: [
       { name: 'Nosotros', href: '/about' },
-      { name: 'Contacto', href: '/contact' },
       { name: 'Términos', href: '/terms' },
       { name: 'Privacidad', href: '/privacy' },
+      { name: 'Cookies', href: '/cookies' },
     ],
     social: [
       { name: 'Instagram', icon: Instagram, href: '#' },
@@ -112,9 +112,8 @@ export function Footer() {
         <div className="border-t border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-500">
           <p>&copy; {new Date().getFullYear()} FiguraCollect. Todos los derechos reservados.</p>
           <div className="flex gap-6">
-            <Link href="#" className="hover:text-gray-300 transition-colors">Privacidad</Link>
-            <Link href="#" className="hover:text-gray-300 transition-colors">Cookies</Link>
-            <Link href="#" className="hover:text-gray-300 transition-colors">Términos</Link>
+            <Link href="/privacy" className="hover:text-gray-300 transition-colors">Privacidad</Link>
+            <Link href="/terms" className="hover:text-gray-300 transition-colors">Términos</Link>
           </div>
         </div>
       </div>

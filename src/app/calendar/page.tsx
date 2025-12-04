@@ -1,5 +1,11 @@
 import { prisma } from '@/lib/db'
 import CalendarClient from './CalendarClient'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Calendario de Lanzamientos | FiguraCollect',
+  description: 'Consulta las próximas fechas de lanzamiento de figuras.'
+}
 
 export const dynamic = 'force-dynamic'
 

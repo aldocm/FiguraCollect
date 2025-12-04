@@ -20,8 +20,10 @@ model User {
   country       String
   bio           String?
   role          String       @default("USER") // USER | ADMIN | SUPERADMIN
+  isPro         Boolean      @default(false) // Pro users can post multiple reviews
   emailVerified Boolean      @default(false)
   verifyToken   String?
+  measureUnit   String       @default("cm") // cm | in (centimeters or inches)
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
 
@@ -29,6 +31,7 @@ model User {
   userFigures   UserFigure[]
   lists         List[]
   reviews       Review[]
+  notifications Notification[]
 }
 
 model Brand {
@@ -36,6 +39,7 @@ model Brand {
   name        String
   slug        String   @unique
   description String?
+  country     String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -85,13 +89,17 @@ model Figure {
   name        String
   description String?
   sku         String?
-  size        String?
+  // Dimensions stored in cm (base unit)
+  heightCm    Float?
+  widthCm     Float?
+  depthCm     Float?
   scale       String?
   material    String?
   maker       String?
   priceMXN    Float?
   priceUSD    Float?
   priceYEN    Float?
+  originalPriceCurrency String? // MXN | USD | YEN
   releaseDate String?  // YYYY-MM format
   isReleased  Boolean  @default(false)
   isNSFW      Boolean  @default(false)
@@ -104,13 +112,14 @@ model Figure {
   lineId      String
   line        Line     @relation(fields: [lineId], references: [id], onDelete: Cascade)
 
-  images      FigureImage[]
-  tags        FigureTag[]
-  series      FigureSeries[]
-  variants    FigureVariant[]
-  userFigures UserFigure[]
-  listItems   ListItem[]
-  reviews     Review[]
+  images        FigureImage[]
+  tags          FigureTag[]
+  series        FigureSeries[]
+  variants      FigureVariant[]
+  userFigures   UserFigure[]
+  listItems     ListItem[]
+  reviews       Review[]
+  notifications Notification[]
 }
 
 model FigureImage {
@@ -237,4 +246,19 @@ model ReviewImage {
 
   reviewId  String
   review    Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  type      String   // FIGURE_RELEASED | PREORDER_REMINDER | etc.
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  link      String?  // URL to navigate when clicked
+  createdAt DateTime @default(now())
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  figureId  String?
+  figure    Figure?  @relation(fields: [figureId], references: [id], onDelete: SetNull)
 }

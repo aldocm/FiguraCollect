@@ -2,7 +2,13 @@
   "permissions": {
     "allow": [
       "Bash(git add:*)",
-      "Bash(git reset:*)"
+      "Bash(git reset:*)",
+      "Bash(npx prisma generate)",
+      "Bash(del check-users.js)",
+      "Bash(rm:*)",
+      "Bash(node create-superadmin.js:*)",
+      "Bash(npx prisma:*)",
+      "Bash(sqlite3:*)"
     ],
     "deny": [],
     "ask": []

@@ -1,5 +1,11 @@
 import { prisma } from '@/lib/db'
 import CatalogClient from './CatalogClient'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Catálogo | FiguraCollect',
+  description: 'Explora nuestra base de datos completa de figuras.'
+}
 
 export const dynamic = 'force-dynamic'
 

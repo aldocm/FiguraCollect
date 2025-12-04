@@ -1,5 +1,11 @@
 import { prisma } from '@/lib/db'
 import TimelineClient from './TimelineClient'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Timeline | FiguraCollect',
+  description: 'Visualiza la historia de los lanzamientos de figuras.'
+}
 
 export const dynamic = 'force-dynamic'
 

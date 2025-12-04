@@ -1,6 +1,12 @@
 import { prisma } from '@/lib/db'
 import { getCurrentUser } from '@/lib/auth'
 import ListsPageClient from './ListsPageClient'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Listas | FiguraCollect',
+  description: 'Descubre y crea listas de figuras personalizadas.'
+}
 
 export const dynamic = 'force-dynamic'
 

@@ -89,13 +89,16 @@ export async function PUT(
       name,
       description,
       sku,
-      size,
+      heightCm,
+      widthCm,
+      depthCm,
       scale,
       material,
       maker,
       priceMXN,
       priceUSD,
       priceYEN,
+      originalPriceCurrency,
       releaseDate,
       isReleased,
       isNSFW,
@@ -152,13 +155,16 @@ export async function PUT(
         name: name !== undefined ? name : existing.name,
         description: description !== undefined ? description : existing.description,
         sku: sku !== undefined ? sku : existing.sku,
-        size: size !== undefined ? size : existing.size,
+        heightCm: heightCm !== undefined ? heightCm : existing.heightCm,
+        widthCm: widthCm !== undefined ? widthCm : existing.widthCm,
+        depthCm: depthCm !== undefined ? depthCm : existing.depthCm,
         scale: scale !== undefined ? scale : existing.scale,
         material: material !== undefined ? material : existing.material,
         maker: maker !== undefined ? maker : existing.maker,
         priceMXN: priceMXN !== undefined ? priceMXN : existing.priceMXN,
         priceUSD: priceUSD !== undefined ? priceUSD : existing.priceUSD,
         priceYEN: priceYEN !== undefined ? priceYEN : existing.priceYEN,
+        originalPriceCurrency: originalPriceCurrency !== undefined ? originalPriceCurrency : existing.originalPriceCurrency,
         releaseDate: releaseDate !== undefined ? releaseDate : existing.releaseDate,
         isReleased: isReleased !== undefined ? isReleased : existing.isReleased,
         isNSFW: isNSFW !== undefined ? isNSFW : existing.isNSFW,
@@ -173,6 +179,87 @@ export async function PUT(
         series: { include: { series: true } }
       }
     })
+
+    return NextResponse.json({ figure })
+  } catch (error) {
+    console.error('Error actualizando figure:', error)
+    return NextResponse.json(
+      { error: 'Error interno del servidor' },
+      { status: 500 }
+    )
+  }
+}
+
+// PATCH - Actualización parcial simple (ej: marcar como lanzada)
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await getSession()
+
+    if (!session || !isAdmin(session.role)) {
+      return NextResponse.json(
+        { error: 'No autorizado' },
+        { status: 403 }
+      )
+    }
+
+    const { id } = await params
+    const body = await request.json()
+
+    const existing = await prisma.figure.findUnique({
+      where: { id }
+    })
+
+    if (!existing) {
+      return NextResponse.json(
+        { error: 'Figura no encontrada' },
+        { status: 404 }
+      )
+    }
+
+    // Check if figure is being marked as released (was false, now true)
+    const isBeingReleased = body.isReleased === true && !existing.isReleased
+
+    // Solo permite actualizar campos específicos
+    const allowedFields = ['isReleased', 'isNSFW']
+    const updateData: Record<string, any> = {}
+
+    for (const field of allowedFields) {
+      if (body[field] !== undefined) {
+        updateData[field] = body[field]
+      }
+    }
+
+    const figure = await prisma.figure.update({
+      where: { id },
+      data: updateData
+    })
+
+    // If figure was just released, create notifications for users who have it in wishlist or preorder
+    if (isBeingReleased) {
+      const usersWithFigure = await prisma.userFigure.findMany({
+        where: {
+          figureId: id,
+          status: { in: ['WISHLIST', 'PREORDER'] }
+        },
+        select: { userId: true, status: true }
+      })
+
+      if (usersWithFigure.length > 0) {
+        await prisma.notification.createMany({
+          data: usersWithFigure.map(uf => ({
+            userId: uf.userId,
+            type: 'FIGURE_RELEASED',
+            title: '¡Figura lanzada!',
+            message: `${existing.name} ya está disponible.`,
+            link: `/catalog/${id}`,
+            figureId: id
+          }))
+        })
+      }
+    }
 
     return NextResponse.json({ figure })
   } catch (error) {

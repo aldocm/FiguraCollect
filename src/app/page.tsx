@@ -1,5 +1,11 @@
 import { prisma } from '@/lib/db'
 import HomePageClient from './HomePageClient'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Inicio | FiguraCollect',
+  description: 'La plataforma definitiva para coleccionistas de figuras.'
+}
 
 export const dynamic = 'force-dynamic'
 

@@ -67,6 +67,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Get user data to check if admin or pro
+    const user = await prisma.user.findUnique({
+      where: { id: session.userId },
+      select: { role: true, isPro: true }
+    })
+
+    const isAdminOrPro = user?.role === 'ADMIN' || user?.role === 'SUPERADMIN' || user?.isPro
+
     // Check if user owns the figure
     const userFigure = await prisma.userFigure.findUnique({
       where: {
@@ -84,25 +92,25 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check if already reviewed
-    const existing = await prisma.review.findUnique({
-      where: {
-        userId_figureId: {
+    // Check if already reviewed (only for non-admin/non-pro users)
+    if (!isAdminOrPro) {
+      const existing = await prisma.review.findFirst({
+        where: {
           userId: session.userId,
           figureId
         }
-      }
-    })
+      })
 
-    if (existing) {
-      return NextResponse.json(
-        { error: 'Ya tienes una review para esta figura' },
-        { status: 400 }
-      )
+      if (existing) {
+        return NextResponse.json(
+          { error: 'Ya tienes una review para esta figura. Los usuarios PRO pueden publicar múltiples opiniones.' },
+          { status: 400 }
+        )
+      }
     }
 
-    // Limit images to 5
-    const imageUrls = images?.slice(0, 5) || []
+    // Limit images to 3
+    const imageUrls = images?.slice(0, 3) || []
 
     const review = await prisma.review.create({
       data: {
