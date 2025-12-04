@@ -17,7 +17,23 @@ interface FigureCardProps {
   animationVariants?: any // Optional framer-motion variants
 }
 
+const formatPrice = (figure: FigureWithRelations) => {
+  const currency = figure.originalPriceCurrency || 'YEN'
+
+  switch (currency) {
+    case 'MXN':
+      return figure.priceMXN ? `$${figure.priceMXN.toLocaleString('es-MX')} MXN` : null
+    case 'USD':
+      return figure.priceUSD ? `$${figure.priceUSD.toLocaleString('en-US')} USD` : null
+    case 'YEN':
+    default:
+      return figure.priceYEN ? `¥${figure.priceYEN.toLocaleString('ja-JP')}` : null
+  }
+}
+
 const FigureCard = ({ figure, animationVariants }: FigureCardProps) => {
+  const priceDisplay = formatPrice(figure)
+
   return (
     <motion.div variants={animationVariants}>
       <Link
@@ -38,15 +54,15 @@ const FigureCard = ({ figure, animationVariants }: FigureCardProps) => {
           )}
 
           {/* Badge overlay */}
-          <div className="absolute top-3 left-3 flex gap-2 flex-wrap">
-            {!figure.isReleased && figure.releaseDate && (
-              <span className="bg-blue-600/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider shadow-lg">
-                Por Lanzar
+          <div className="absolute top-3 left-3 right-3 flex justify-between items-start">
+            {priceDisplay && (
+              <span className="bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded border border-white/10">
+                {priceDisplay}
               </span>
             )}
-            {figure.priceMXN && (
-              <span className="bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded border border-white/10">
-                ${figure.priceMXN.toLocaleString('es-MX')}
+            {!figure.isReleased && figure.releaseDate && (
+              <span className="bg-blue-600/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider shadow-lg ml-auto">
+                Por Lanzar
               </span>
             )}
           </div>
@@ -62,7 +78,7 @@ const FigureCard = ({ figure, animationVariants }: FigureCardProps) => {
             </span>
           </div>
 
-          <h3 className="font-medium text-white text-base leading-tight mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+          <h3 className="font-medium text-white text-base leading-tight mb-2 line-clamp-2 h-[2.5rem] group-hover:text-primary transition-colors">
             {figure.name}
           </h3>
 

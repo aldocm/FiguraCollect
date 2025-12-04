@@ -8,7 +8,9 @@
       "Bash(rm:*)",
       "Bash(node create-superadmin.js:*)",
       "Bash(npx prisma:*)",
-      "Bash(sqlite3:*)"
+      "Bash(sqlite3:*)",
+      "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"sí\" npx prisma migrate reset:*)",
+      "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"sí\" npx prisma db push:*)"
     ],
     "deny": [],
     "ask": []
