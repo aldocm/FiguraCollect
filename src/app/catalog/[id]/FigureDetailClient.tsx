@@ -463,14 +463,17 @@ export default function FigureDetailClient({ figure, user, userFigure, defaultMe
                 </div>
               )}
 
-              {/* Message for non-logged users */}
+              {/* Message for non-logged users - small and discreet */}
               {!showReviewForm && !user && (
-                <Link
-                  href="/login"
-                  className="block mb-6 py-4 bg-white/5 hover:bg-primary/20 border border-white/10 hover:border-primary/30 rounded-2xl text-center text-gray-400 hover:text-white font-bold transition-all"
-                >
-                  Inicia sesión para opinar
-                </Link>
+                <div className="mb-4 flex items-center justify-center gap-2 text-sm text-gray-500">
+                  <span>¿Quieres opinar?</span>
+                  <Link
+                    href="/login"
+                    className="text-primary hover:text-primary/80 hover:underline transition-colors"
+                  >
+                    Inicia sesión
+                  </Link>
+                </div>
               )}
 
               {/* Reviews List */}
