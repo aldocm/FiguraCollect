@@ -5,7 +5,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { Brand, Figure, FigureImage, Line } from '@prisma/client'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronDown, Check, X, Filter, Search, Circle } from 'lucide-react'
+import { ChevronDown, Check, X, Filter, Search, Circle, Clock } from 'lucide-react'
 
 interface SeriesData {
     id: string
@@ -344,7 +344,7 @@ export default function CatalogClient({
 
       {/* Sidebar Filters */}
       <aside className={`
-        fixed inset-0 z-40 bg-background/95 backdrop-blur-xl lg:bg-transparent lg:backdrop-blur-none lg:static lg:z-auto lg:w-72 lg:flex-shrink-0
+        fixed inset-0 z-[60] bg-background/95 backdrop-blur-xl lg:bg-transparent lg:backdrop-blur-none lg:static lg:z-auto lg:w-72 lg:flex-shrink-0
         transition-transform duration-300 ease-in-out lg:transform-none overflow-y-auto lg:overflow-visible p-6 lg:p-0
         ${activeMobileFilters ? 'translate-x-0' : '-translate-x-full'}
       `}>
@@ -503,16 +503,17 @@ export default function CatalogClient({
                       )}
                       
                       {/* Badge overlay */}
-                      <div className="absolute top-3 left-3 flex gap-2 flex-wrap">
-                        {!figure.isReleased && figure.releaseDate && (
-                           <span className="bg-blue-600/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider shadow-lg">
-                             Por Lanzar
-                           </span>
-                        )}
+                      <div className="absolute top-3 left-3 right-3 flex justify-between items-start">
                         {figure.priceMXN && (
                           <span className="bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded border border-white/10">
                             ${figure.priceMXN}
                           </span>
+                        )}
+                        {!figure.isReleased && figure.releaseDate && (
+                           <span className="bg-blue-600/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider shadow-lg ml-auto flex items-center gap-1">
+                             <Clock size={12} className="md:hidden" />
+                             <span className="hidden md:inline">Por Lanzar</span>
+                           </span>
                         )}
                       </div>
                     </div>
@@ -531,12 +532,12 @@ export default function CatalogClient({
                         {figure.name}
                       </h3>
                       
-                      <div className="mt-auto pt-3 border-t border-white/5 flex justify-between items-end">
+                      <div className="mt-auto pt-2 border-t border-white/5 flex justify-between items-center">
                         <span className="text-xs text-gray-500">
                           {figure.line.name}
                         </span>
-                        <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
-                          <ChevronDown size={16} className="-rotate-90" />
+                        <div className="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
+                          <ChevronDown size={14} className="-rotate-90" />
                         </div>
                       </div>
                     </div>

@@ -39,7 +39,7 @@ export default function RootLayout({
           className={
             isAuthPage
               ? 'flex-grow w-full' // Removed padding for auth pages to allow full-screen layouts
-              : 'max-w-7xl mx-auto px-4 pt-24 pb-6 flex-grow w-full'
+              : 'max-w-7xl mx-auto px-4 pt-24 pb-5 flex-grow w-full'
           }
         >
           {children}

@@ -144,7 +144,7 @@ export default function ListsPageClient({
       {/* Page Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-12">
         <div>
-          <h1 className="text-4xl font-title font-black text-white mb-2">
+          <h1 className="text-2xl md:text-4xl font-title font-black text-white mb-1 md:mb-2">
             Listas de <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-500">Colección</span>
           </h1>
           <p className="text-gray-400 text-sm max-w-lg">

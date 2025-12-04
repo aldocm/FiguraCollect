@@ -215,19 +215,19 @@ export default function FigureDetailClient({ figure, user, userFigure, defaultMe
         />
       </div>
 
-      <div className="relative z-30 max-w-7xl mx-auto px-4 pt-4 lg:pt-8">
-        
-        {/* Main Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
-          
-          {/* Left Column: Visuals (7 cols) - SCROLLABLE */}
-          <div className="lg:col-span-7 flex flex-col gap-8">
+      <div className="relative z-30 max-w-8xl mx-auto px-2 md:px-2 pt-1 md:pt-4 lg:pt-8">
+
+        {/* Main Grid - Reordered for mobile */}
+        <div className="flex flex-col lg:grid lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+
+          {/* Images Section - Mobile: 1st */}
+          <div className="order-1 lg:col-span-7 lg:row-start-1 w-full">
             
             {/* Main Image Viewer */}
-            <div className="space-y-4">
-                <motion.div 
+            <div className="space-y-2 md:space-y-4">
+                <motion.div
                 layoutId={`main-image-${figure.id}`}
-                className="relative aspect-[4/5] md:aspect-square lg:aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl border border-white/10 bg-uiBase/30 group cursor-zoom-in"
+                className="relative aspect-square md:aspect-square lg:aspect-[4/3] rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl border border-white/10 bg-uiBase/30 group cursor-zoom-in"
                 onClick={() => setIsImageModalOpen(true)}
                 >
                 <AnimatePresence mode="wait">
@@ -244,35 +244,35 @@ export default function FigureDetailClient({ figure, user, userFigure, defaultMe
                 </AnimatePresence>
 
                 {/* Hover Navigation Arrows */}
-                <div className="absolute inset-0 flex items-center justify-between p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-                    <button 
+                <div className="absolute inset-0 flex items-center justify-between p-2 md:p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                    <button
                     onClick={(e) => { e.stopPropagation(); handlePrevImage(); }}
-                    className="p-3 rounded-full bg-black/50 text-white backdrop-blur-md hover:bg-primary hover:text-white transition-all pointer-events-auto transform hover:-translate-x-1"
+                    className="p-2 md:p-3 rounded-full bg-black/50 text-white backdrop-blur-md hover:bg-primary hover:text-white transition-all pointer-events-auto transform hover:-translate-x-1"
                     >
-                    <ChevronLeft size={24} />
+                    <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
                     </button>
-                    <button 
+                    <button
                     onClick={(e) => { e.stopPropagation(); handleNextImage(); }}
-                    className="p-3 rounded-full bg-black/50 text-white backdrop-blur-md hover:bg-primary hover:text-white transition-all pointer-events-auto transform hover:translate-x-1"
+                    className="p-2 md:p-3 rounded-full bg-black/50 text-white backdrop-blur-md hover:bg-primary hover:text-white transition-all pointer-events-auto transform hover:translate-x-1"
                     >
-                    <ChevronRight size={24} />
+                    <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
                     </button>
                 </div>
-                
-                <div className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-md text-white text-xs px-3 py-1.5 rounded-full pointer-events-none font-medium border border-white/10">
+
+                <div className="absolute bottom-2 right-2 md:bottom-4 md:right-4 bg-black/60 backdrop-blur-md text-white text-[10px] md:text-xs px-2 md:px-3 py-1 md:py-1.5 rounded-full pointer-events-none font-medium border border-white/10">
                     {selectedImageIndex + 1} / {images.length}
                 </div>
                 </motion.div>
 
                 {/* Thumbnail Strip - "Carrusel" */}
                 <div className="relative group">
-                    <div className="flex gap-3 overflow-x-auto pb-4 pt-2 custom-scrollbar snap-x">
+                    <div className="flex gap-2 md:gap-3 overflow-x-auto pb-2 md:pb-4 pt-1 md:pt-2 custom-scrollbar snap-x">
                         {images.map((img, idx) => (
                         <button
                             key={img.id}
                             onClick={() => setSelectedImageIndex(idx)}
-                            className={`relative flex-shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-xl overflow-hidden border-2 transition-all snap-start ${selectedImageIndex === idx 
-                                ? 'border-primary shadow-[0_0_15px_-3px_rgba(225,6,44,0.5)] scale-100 ring-2 ring-primary/30' 
+                            className={`relative flex-shrink-0 w-14 h-14 md:w-24 md:h-24 rounded-lg md:rounded-xl overflow-hidden border-2 transition-all snap-start ${selectedImageIndex === idx
+                                ? 'border-primary shadow-[0_0_15px_-3px_rgba(225,6,44,0.5)] scale-100 ring-2 ring-primary/30'
                                 : 'border-white/10 hover:border-white/40 opacity-60 hover:opacity-100 grayscale hover:grayscale-0'}`}
                         >
                             <img src={img.url} alt="" className="w-full h-full object-cover" />
@@ -281,35 +281,221 @@ export default function FigureDetailClient({ figure, user, userFigure, defaultMe
                     </div>
                 </div>
             </div>
+          </div>
 
-            {/* Description Section */}
-            <motion.div 
+          {/* Info & Specs Section - Mobile: 2nd, Desktop: right column sticky */}
+          <div className="order-2 lg:col-span-5 lg:row-start-1 lg:row-end-4 w-full">
+            <div className="lg:sticky lg:top-28 space-y-6 lg:space-y-8">
+
+              {/* Main Info Block */}
+              <motion.div
+                initial={{ opacity: 0, x: 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5 }}
+                className="bg-uiBase/30 backdrop-blur-xl rounded-2xl lg:rounded-3xl p-4 md:p-6 border border-white/10 shadow-2xl"
+              >
+                {/* Breadcrumbs / Categories */}
+                <div className="flex flex-wrap gap-2 mb-4 lg:mb-6">
+                  <Link href={`/catalog?brandId=${figure.brand.id}`} className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold border border-primary/20 hover:bg-primary/20 transition-colors">
+                    {figure.brand.name}
+                  </Link>
+                  <Link href={`/catalog?lineId=${figure.line.id}`} className="px-3 py-1 rounded-full bg-white/10 text-white text-xs font-bold border border-white/10 hover:bg-white/20 transition-colors">
+                    {figure.line.name}
+                  </Link>
+                  {figure.series.map(s => (
+                    <Link key={s.series.id} href={`/catalog?seriesId=${s.series.id}`} className="px-3 py-1 rounded-full bg-white/5 text-gray-400 text-xs border border-white/5 hover:text-white hover:bg-white/10 transition-colors">
+                      {s.series.name}
+                    </Link>
+                  ))}
+                </div>
+
+                <h1 className="text-2xl md:text-3xl lg:text-4xl font-title font-black text-white leading-[1.1] mb-3 lg:mb-4 text-balance">
+                  {figure.name}
+                </h1>
+
+                <div className="flex items-center justify-between border-b border-white/10 pb-4 lg:pb-6 mb-4 lg:mb-6">
+                    <div className="flex items-center gap-2 lg:gap-4 text-gray-400 flex-wrap">
+                    {figure.releaseDate && (
+                        <span className="flex items-center gap-1.5 lg:gap-2 text-xs lg:text-sm font-medium bg-white/5 px-2 lg:px-3 py-1 rounded-md capitalize">
+                        <Calendar size={14} className="text-accent" />
+                        {new Date(figure.releaseDate).toLocaleDateString('es-MX', { year: 'numeric', month: 'long' })}
+                        </span>
+                    )}
+                    {!figure.isReleased && (
+                        <span className="bg-blue-500/20 text-blue-400 text-[10px] font-bold px-2 py-1 rounded uppercase border border-blue-500/30 tracking-wide">
+                        Por Lanzar
+                        </span>
+                    )}
+                    {figure.reviews.length > 0 && (
+                        <span className="flex items-center gap-1.5 text-xs lg:text-sm font-medium bg-accent/10 px-2 lg:px-3 py-1 rounded-md border border-accent/20">
+                        <Star size={14} className="text-accent" fill="currentColor" />
+                        <span className="text-accent font-bold">
+                            {(figure.reviews.reduce((acc, r) => acc + r.rating, 0) / figure.reviews.length).toFixed(1)}
+                        </span>
+                        <span className="text-gray-500 text-xs">
+                            ({figure.reviews.length})
+                        </span>
+                        </span>
+                    )}
+                    </div>
+                </div>
+
+                {/* Price Area */}
+                {figure.priceMXN && (
+                  <div>
+                    <div className="bg-white/5 p-2 rounded-xl lg:rounded-2xl border border-white/10">
+                        {user ? (
+                            <AddToInventoryButton
+                            figureId={figure.id}
+                            currentStatus={userFigure?.status || null}
+                            userFigureId={userFigure?.id || null}
+                            isReleased={figure.isReleased}
+                            />
+                        ) : (
+                            <Link
+                            href="/login"
+                            className="block w-full py-3 lg:py-4 bg-primary hover:bg-primary/90 text-center rounded-xl text-white font-bold transition-all shadow-lg shadow-primary/20 text-sm lg:text-base"
+                            >
+                            Inicia sesión para coleccionar
+                            </Link>
+                        )}
+                    </div>
+                    <p className="text-[10px] text-gray-500 uppercase font-bold mb-0.5 tracking-wider mt-3 lg:mt-4 text-center">Precio de Lanzamiento</p>
+                    <div className="flex items-baseline gap-1.5 justify-center">
+                        <span className="text-xl lg:text-2xl font-title font-bold text-white tracking-tight">
+                        ${figure.priceMXN.toLocaleString()}
+                        </span>
+                        <span className="text-sm lg:text-base text-gray-500 font-medium">MXN</span>
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+
+              {/* Specs Grid */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2, duration: 0.5 }}
+                className="space-y-3"
+              >
+                {/* Dimensions with toggle */}
+                {(figure.heightCm || figure.widthCm || figure.depthCm) && (() => {
+                  const onlyHeight = figure.heightCm && !figure.widthCm && !figure.depthCm
+                  const cmToIn = (cm: number) => (cm * 0.393701).toFixed(2)
+
+                  return (
+                    <div className="bg-white/5 border border-white/10 rounded-lg p-3 lg:p-4 backdrop-blur-sm">
+                      <div className="flex items-center justify-between mb-2 lg:mb-3">
+                        <div className="flex items-center gap-2">
+                          <div className="p-1.5 lg:p-2 rounded-full bg-primary/20 text-primary">
+                            <Ruler size={16} />
+                          </div>
+                          <p className="text-[10px] lg:text-xs text-gray-400 uppercase font-bold tracking-wider">
+                            {onlyHeight ? 'Tamaño' : 'Dimensiones'}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => setMeasureUnit(measureUnit === 'cm' ? 'in' : 'cm')}
+                          className="flex items-center gap-1.5 px-2 py-1 text-[10px] font-bold uppercase bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-gray-400 hover:text-white transition-colors"
+                          title="Cambiar unidad de medida"
+                        >
+                          <ArrowLeftRight size={12} />
+                          {measureUnit === 'cm' ? 'cm' : 'in'}
+                        </button>
+                      </div>
+
+                      {onlyHeight ? (
+                        <div className="bg-black/20 rounded-lg p-3 lg:p-4 text-center">
+                          <p className="text-[10px] text-gray-500 uppercase mb-1">Altura</p>
+                          <p className="text-xl lg:text-2xl text-white font-bold">
+                            {measureUnit === 'cm' ? figure.heightCm : cmToIn(figure.heightCm)}
+                            <span className="text-sm lg:text-base text-gray-400 font-normal ml-1">
+                              {measureUnit}
+                            </span>
+                          </p>
+                        </div>
+                      ) : (() => {
+                        const dimCount = [figure.heightCm, figure.widthCm, figure.depthCm].filter(Boolean).length
+                        const gridCols = dimCount === 2 ? 'grid-cols-2' : 'grid-cols-3'
+
+                        return (
+                          <div className={`grid ${gridCols} gap-2 text-center`}>
+                            {figure.heightCm && (
+                              <div className="bg-black/20 rounded-lg p-2 lg:p-3">
+                                <p className="text-[10px] text-gray-500 uppercase">Alto</p>
+                                <p className="text-base lg:text-lg text-white font-bold">
+                                  {measureUnit === 'cm' ? figure.heightCm : cmToIn(figure.heightCm)}
+                                  <span className="text-xs text-gray-400 font-normal ml-1">{measureUnit}</span>
+                                </p>
+                              </div>
+                            )}
+                            {figure.widthCm && (
+                              <div className="bg-black/20 rounded-lg p-2 lg:p-3">
+                                <p className="text-[10px] text-gray-500 uppercase">Ancho</p>
+                                <p className="text-base lg:text-lg text-white font-bold">
+                                  {measureUnit === 'cm' ? figure.widthCm : cmToIn(figure.widthCm)}
+                                  <span className="text-xs text-gray-400 font-normal ml-1">{measureUnit}</span>
+                                </p>
+                              </div>
+                            )}
+                            {figure.depthCm && (
+                              <div className="bg-black/20 rounded-lg p-2 lg:p-3">
+                                <p className="text-[10px] text-gray-500 uppercase">Prof.</p>
+                                <p className="text-base lg:text-lg text-white font-bold">
+                                  {measureUnit === 'cm' ? figure.depthCm : cmToIn(figure.depthCm)}
+                                  <span className="text-xs text-gray-400 font-normal ml-1">{measureUnit}</span>
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })()}
+                    </div>
+                  )
+                })()}
+
+                {/* Other specs grid */}
+                <div className="grid grid-cols-2 gap-2 lg:gap-3">
+                  <InfoBadge icon={Scale} label="Escala" value={figure.scale || null} />
+                  <InfoBadge icon={Box} label="Material" value={figure.material || null} />
+                  <InfoBadge icon={Factory} label="Fabricante" value={figure.maker || null} />
+                  <InfoBadge icon={Tag} label="SKU" value={figure.sku || null} />
+                </div>
+              </motion.div>
+
+            </div>
+          </div>
+
+          {/* Description Section - Mobile: 3rd */}
+          <div className="order-3 lg:col-span-7 lg:row-start-2 w-full">
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="bg-uiBase/40 backdrop-blur-md rounded-3xl p-8 border border-white/5"
+              className="bg-uiBase/40 backdrop-blur-md rounded-2xl lg:rounded-3xl p-4 lg:p-8 border border-white/5"
             >
-              <h3 className="text-xl font-title font-bold text-white mb-6 flex items-center gap-3 border-b border-white/10 pb-4">
-                <Tag size={22} className="text-primary" /> Descripción Detallada
+              <h3 className="text-base lg:text-xl font-title font-bold text-white mb-4 lg:mb-6 flex items-center gap-2 lg:gap-3 border-b border-white/10 pb-3 lg:pb-4">
+                <Tag size={18} className="text-primary" /> Descripción Detallada
               </h3>
-              <div className="prose prose-invert prose-lg prose-p:text-gray-300 prose-p:leading-relaxed max-w-none font-body">
-                {/* Rendering text with line breaks handled properly */}
+              <div className="prose prose-invert prose-sm lg:prose-lg prose-p:text-gray-300 prose-p:leading-relaxed max-w-none font-body">
                 {description.split('\n').map((paragraph, i) => (
-                    paragraph.trim() && <p key={i} className="mb-4">{paragraph}</p>
+                    paragraph.trim() && <p key={i} className="mb-3 lg:mb-4 text-sm lg:text-base">{paragraph}</p>
                 ))}
               </div>
             </motion.div>
+          </div>
 
-            {/* Reviews Section */}
-            <motion.div 
+          {/* Reviews Section - Mobile: 4th */}
+          <div className="order-4 lg:col-span-7 lg:row-start-3 w-full">
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
-              className="bg-uiBase/40 backdrop-blur-md rounded-3xl p-8 border border-white/5"
+              className="bg-uiBase/40 backdrop-blur-md rounded-2xl lg:rounded-3xl p-4 lg:p-8 border border-white/5"
             >
-              <div className="flex items-center justify-between mb-8 border-b border-white/10 pb-4">
-                <h3 className="text-xl font-title font-bold text-white flex items-center gap-3">
-                  <Star size={22} className="text-primary" /> Opiniones de la Comunidad
+              <div className="flex items-center justify-between mb-4 lg:mb-8 border-b border-white/10 pb-3 lg:pb-4">
+                <h3 className="text-base lg:text-xl font-title font-bold text-white flex items-center gap-2 lg:gap-3">
+                  <Star size={18} className="text-primary" /> Opiniones de la Comunidad
                 </h3>
                 {avgRating && (
                   <div className="flex items-center gap-2 bg-white/10 px-4 py-1.5 rounded-full border border-white/5">
@@ -571,199 +757,6 @@ export default function FigureDetailClient({ figure, user, userFigure, defaultMe
                 </div>
               ) : null}
             </motion.div>
-
-          </div>
-
-          {/* Right Column: Info & Actions (5 cols) - STICKY */}
-          <div className="lg:col-span-5 relative h-full">
-            <div className="lg:sticky lg:top-28 space-y-8">
-              
-              {/* Main Info Block */}
-              <motion.div 
-                initial={{ opacity: 0, x: 50 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5 }}
-                className="bg-uiBase/30 backdrop-blur-xl rounded-3xl p-4 md:p-6 border border-white/10 shadow-2xl"
-              >
-                {/* Breadcrumbs / Categories */}
-                <div className="flex flex-wrap gap-2 mb-6">
-                  <Link href={`/catalog?brandId=${figure.brand.id}`} className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold border border-primary/20 hover:bg-primary/20 transition-colors">
-                    {figure.brand.name}
-                  </Link>
-                  <Link href={`/catalog?lineId=${figure.line.id}`} className="px-3 py-1 rounded-full bg-white/10 text-white text-xs font-bold border border-white/10 hover:bg-white/20 transition-colors">
-                    {figure.line.name}
-                  </Link>
-                  {figure.series.map(s => (
-                    <Link key={s.series.id} href={`/catalog?seriesId=${s.series.id}`} className="px-3 py-1 rounded-full bg-white/5 text-gray-400 text-xs border border-white/5 hover:text-white hover:bg-white/10 transition-colors">
-                      {s.series.name}
-                    </Link>
-                  ))}
-                </div>
-
-                <h1 className="text-3xl md:text-4xl lg:text-5xl font-title font-black text-white leading-[1.1] mb-4 text-balance">
-                  {figure.name}
-                </h1>
-                
-                <div className="flex items-center justify-between border-b border-white/10 pb-6 mb-6">
-                    <div className="flex items-center gap-4 text-gray-400 flex-wrap">
-                    {figure.releaseDate && (
-                        <span className="flex items-center gap-2 text-sm font-medium bg-white/5 px-3 py-1 rounded-md capitalize">
-                        <Calendar size={16} className="text-accent" />
-                        {new Date(figure.releaseDate).toLocaleDateString('es-MX', { year: 'numeric', month: 'long' })}
-                        </span>
-                    )}
-                    {!figure.isReleased && (
-                        <span className="bg-blue-500/20 text-blue-400 text-[10px] font-bold px-2 py-1 rounded uppercase border border-blue-500/30 tracking-wide">
-                        Por Lanzar
-                        </span>
-                    )}
-                    {/* Rating Badge - only if has reviews */}
-                    {figure.reviews.length > 0 && (
-                        <span className="flex items-center gap-1.5 text-sm font-medium bg-accent/10 px-3 py-1 rounded-md border border-accent/20">
-                        <Star size={14} className="text-accent" fill="currentColor" />
-                        <span className="text-accent font-bold">
-                            {(figure.reviews.reduce((acc, r) => acc + r.rating, 0) / figure.reviews.length).toFixed(1)}
-                        </span>
-                        <span className="text-gray-500 text-xs">
-                            ({figure.reviews.length})
-                        </span>
-                        </span>
-                    )}
-                    </div>
-                </div>
-
-                {/* Price Area */}
-                {figure.priceMXN && (
-                  <div className="mb-6">
-                    {/* AddToInventoryButton moved here */}
-                    <div className="bg-white/5 p-2 rounded-2xl border border-white/10">
-                        {user ? (
-                            <AddToInventoryButton 
-                            figureId={figure.id} 
-                            currentStatus={userFigure?.status || null} 
-                            userFigureId={userFigure?.id || null} 
-                            isReleased={figure.isReleased}
-                            />
-                        ) : (
-                            <Link 
-                            href="/login" 
-                            className="block w-full py-4 bg-primary hover:bg-primary/90 text-center rounded-xl text-white font-bold transition-all shadow-lg shadow-primary/20"
-                            >
-                            Inicia sesión para coleccionar
-                            </Link>
-                        )}
-                    </div>
-                    <p className="text-xs text-gray-500 uppercase font-bold mb-1 tracking-wider mt-6 text-center">Precio de Lanzamiento</p>
-                    <div className="flex items-baseline gap-2 justify-center">
-                        <span className="text-3xl font-title font-bold text-white tracking-tight">
-                        ${figure.priceMXN.toLocaleString()}
-                        </span>
-                        <span className="text-xl text-gray-500 font-medium">MXN</span>
-                    </div>
-                  </div>
-                )}
-
-                {/* Action Buttons - This section is now empty or removed if no other buttons */}
-                {/* The content here was moved up, leaving this div potentially empty. */}
-
-              </motion.div>
-              
-              {/* Specs Grid - Sticky as well */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2, duration: 0.5 }}
-                className="space-y-3"
-              >
-                {/* Dimensions with toggle */}
-                {(figure.heightCm || figure.widthCm || figure.depthCm) && (() => {
-                  // Check if only height is present
-                  const onlyHeight = figure.heightCm && !figure.widthCm && !figure.depthCm
-                  const cmToIn = (cm: number) => (cm * 0.393701).toFixed(2)
-
-                  return (
-                    <div className="bg-white/5 border border-white/10 rounded-lg p-4 backdrop-blur-sm">
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                          <div className="p-2 rounded-full bg-primary/20 text-primary">
-                            <Ruler size={18} />
-                          </div>
-                          <p className="text-xs text-gray-400 uppercase font-bold tracking-wider">
-                            {onlyHeight ? 'Tamaño' : 'Dimensiones'}
-                          </p>
-                        </div>
-                        <button
-                          onClick={() => setMeasureUnit(measureUnit === 'cm' ? 'in' : 'cm')}
-                          className="flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-bold uppercase bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-gray-400 hover:text-white transition-colors"
-                          title="Cambiar unidad de medida"
-                        >
-                          <ArrowLeftRight size={12} />
-                          {measureUnit === 'cm' ? 'cm' : 'in'}
-                        </button>
-                      </div>
-
-                      {onlyHeight ? (
-                        // Single height display - "Tamaño"
-                        <div className="bg-black/20 rounded-lg p-4 text-center">
-                          <p className="text-[10px] text-gray-500 uppercase mb-1">Altura</p>
-                          <p className="text-2xl text-white font-bold">
-                            {measureUnit === 'cm' ? figure.heightCm : cmToIn(figure.heightCm)}
-                            <span className="text-base text-gray-400 font-normal ml-1">
-                              {measureUnit}
-                            </span>
-                          </p>
-                        </div>
-                      ) : (() => {
-                        // Count how many dimensions we have
-                        const dimCount = [figure.heightCm, figure.widthCm, figure.depthCm].filter(Boolean).length
-                        const gridCols = dimCount === 2 ? 'grid-cols-2' : 'grid-cols-3'
-
-                        return (
-                          <div className={`grid ${gridCols} gap-2 text-center`}>
-                            {figure.heightCm && (
-                              <div className="bg-black/20 rounded-lg p-3">
-                                <p className="text-[10px] text-gray-500 uppercase">Alto</p>
-                                <p className="text-lg text-white font-bold">
-                                  {measureUnit === 'cm' ? figure.heightCm : cmToIn(figure.heightCm)}
-                                  <span className="text-xs text-gray-400 font-normal ml-1">{measureUnit}</span>
-                                </p>
-                              </div>
-                            )}
-                            {figure.widthCm && (
-                              <div className="bg-black/20 rounded-lg p-3">
-                                <p className="text-[10px] text-gray-500 uppercase">Ancho</p>
-                                <p className="text-lg text-white font-bold">
-                                  {measureUnit === 'cm' ? figure.widthCm : cmToIn(figure.widthCm)}
-                                  <span className="text-xs text-gray-400 font-normal ml-1">{measureUnit}</span>
-                                </p>
-                              </div>
-                            )}
-                            {figure.depthCm && (
-                              <div className="bg-black/20 rounded-lg p-3">
-                                <p className="text-[10px] text-gray-500 uppercase">Prof.</p>
-                                <p className="text-lg text-white font-bold">
-                                  {measureUnit === 'cm' ? figure.depthCm : cmToIn(figure.depthCm)}
-                                  <span className="text-xs text-gray-400 font-normal ml-1">{measureUnit}</span>
-                                </p>
-                              </div>
-                            )}
-                          </div>
-                        )
-                      })()}
-                    </div>
-                  )
-                })()}
-
-                {/* Other specs grid */}
-                <div className="grid grid-cols-2 gap-3">
-                  <InfoBadge icon={Scale} label="Escala" value={figure.scale || null} />
-                  <InfoBadge icon={Box} label="Material" value={figure.material || null} />
-                  <InfoBadge icon={Factory} label="Fabricante" value={figure.maker || null} />
-                  <InfoBadge icon={Tag} label="SKU" value={figure.sku || null} />
-                </div>
-              </motion.div>
-
-            </div>
           </div>
 
         </div>

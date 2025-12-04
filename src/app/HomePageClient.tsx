@@ -91,7 +91,7 @@ export default function HomePageClient({
   const navCards = [
     {
       title: "Catálogo Completo",
-      desc: "Explora todas las figuras, filtra por marca y descubre joyas ocultas.",
+      desc: "Explora todas las figuras, filtralas y descubre.",
       icon: LayoutGrid,
       href: "/catalog",
       color: "text-blue-400",
@@ -99,7 +99,7 @@ export default function HomePageClient({
       border: "hover:border-blue-500/50"
     },
     {
-      title: "Línea del Tiempo",
+      title: "TimeLine",
       desc: "Visualiza la evolución de las series a través de los años.",
       icon: Clock,
       href: "/timeline",
@@ -109,7 +109,7 @@ export default function HomePageClient({
     },
     {
       title: "Calendario",
-      desc: "No te pierdas ningún lanzamiento. Fechas confirmadas por mes.",
+      desc: "No te pierdas ningún lanzamiento del mes.",
       icon: Calendar,
       href: "/calendar",
       color: "text-primary",
@@ -119,28 +119,28 @@ export default function HomePageClient({
   ]
 
   return (
-    <div className="space-y-16 pb-20">
+    <div className="space-y-8 md:space-y-10 pb-20">
       
       {/* 1. Navigation Hero Section */}
       <motion.section
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="grid grid-cols-1 md:grid-cols-3 gap-4"
+        className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-4"
       >
         {navCards.map((card, index) => (
-          <Link href={card.href} key={card.title} className="block group">
-            <div className={`h-full bg-uiBase/40 backdrop-blur-md border border-white/5 rounded-2xl p-6 transition-all duration-300 ${card.border} hover:bg-white/5 hover:shadow-lg`}>
-              <div className="flex items-start justify-between mb-4">
-                <div className={`p-3 rounded-xl ${card.bg} ${card.color}`}>
-                  <card.icon size={24} />
+          <Link href={card.href} key={card.title} className={`block group ${index === 0 ? 'col-span-2 md:col-span-1' : ''}`}>
+            <div className={`h-full bg-uiBase/40 backdrop-blur-md border border-white/5 rounded-xl md:rounded-2xl p-3 md:p-4 transition-all duration-300 ${card.border} hover:bg-white/5 hover:shadow-lg`}>
+              <div className="flex items-center">
+                <div className={`p-1.5 md:p-2.5 rounded-lg md:rounded-xl ${card.bg} ${card.color} shrink-0`}>
+                  <card.icon className="w-4 h-4 md:w-5 md:h-5" />
                 </div>
-                <ArrowRight className="text-gray-600 group-hover:text-white transition-colors transform group-hover:translate-x-1" size={20} />
+                <h3 className="flex-1 ml-2 md:ml-3 text-base md:text-lg font-bold text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-gray-400 transition-all">
+                  {card.title}
+                </h3>
+                <ArrowRight className="text-gray-600 group-hover:text-white transition-colors transform group-hover:translate-x-1 shrink-0" size={16} />
               </div>
-              <h3 className="text-xl font-bold text-white mb-2 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-gray-400 transition-all">
-                {card.title}
-              </h3>
-              <p className="text-sm text-gray-400 leading-relaxed">
+              <p className="hidden md:block text-sm text-gray-400 leading-relaxed mt-2">
                 {card.desc}
               </p>
             </div>
@@ -156,9 +156,9 @@ export default function HomePageClient({
           whileInView="visible"
           viewport={{ once: true, amount: 0.2 }}
         >
-          <div className="flex justify-between items-baseline mb-6">
-            <h2 className="font-title text-3xl font-bold text-textWhite">Agregadas Recientemente</h2>
-            <Link href="/catalog" className="font-body text-sm text-accent hover:text-primary transition-colors">
+          <div className="flex justify-between items-baseline mb-4 md:mb-6">
+            <h2 className="font-title text-xl md:text-3xl font-bold text-textWhite">Agregadas Recientemente</h2>
+            <Link href="/catalog" className="font-body text-xs md:text-sm text-accent hover:text-primary transition-colors">
               Ver catálogo →
             </Link>
           </div>
@@ -170,7 +170,7 @@ export default function HomePageClient({
           >
             {recentFigures.map(figure => (
               <div key={figure.id} className="flex-shrink-0 w-48">
-                {/* @ts-ignore - types are slightly different but compatible for display */}
+            {/* @ts-expect-error - types are slightly different but compatible for display */}
                 <FigureCard figure={figure} animationVariants={itemVariants} />
               </div>
             ))}
@@ -186,9 +186,9 @@ export default function HomePageClient({
           whileInView="visible"
           viewport={{ once: true, amount: 0.2 }}
         >
-          <div className="flex justify-between items-baseline mb-6">
-            <h2 className="font-title text-3xl font-bold text-textWhite">Próximos Lanzamientos</h2>
-            <Link href="/catalog?isReleased=false" className="font-body text-sm text-accent hover:text-primary transition-colors">
+          <div className="flex justify-between items-baseline mb-4 md:mb-6">
+            <h2 className="font-title text-xl md:text-3xl font-bold text-textWhite">Próximos Lanzamientos</h2>
+            <Link href="/catalog?isReleased=false" className="font-body text-xs md:text-sm text-accent hover:text-primary transition-colors">
               Ver todos →
             </Link>
           </div>
@@ -200,7 +200,7 @@ export default function HomePageClient({
           >
             {upcomingFigures.map(figure => (
               <div key={figure.id} className="flex-shrink-0 w-48">
-                {/* @ts-ignore - types are slightly different but compatible for display */}
+            {/* @ts-expect-error - types are slightly different but compatible for display */}
                 <FigureCard figure={figure} animationVariants={itemVariants} />
               </div>
             ))}
@@ -216,7 +216,7 @@ export default function HomePageClient({
           whileInView="visible"
           viewport={{ once: true, amount: 0.2 }}
         >
-          <h2 className="font-title text-3xl font-bold text-textWhite mb-6">Listas Destacadas</h2>
+          <h2 className="font-title text-xl md:text-3xl font-bold text-textWhite mb-4 md:mb-6">Listas Destacadas</h2>
           <motion.div 
             className="flex gap-6 overflow-x-auto pb-4 -mx-4 px-4 custom-scrollbar"
             variants={listContainerVariants}
@@ -224,7 +224,7 @@ export default function HomePageClient({
             animate="visible"
           >
             {featuredLists.map(list => (
-              // @ts-ignore - types are slightly different but compatible for display
+              // @ts-expect-error - types are slightly different but compatible for display
               <FeaturedListCard key={list.id} list={list} animationVariants={itemVariants} />
             ))}
           </motion.div>

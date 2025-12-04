@@ -50,10 +50,10 @@ export default function ListDetailClient({
     .filter(Boolean)
 
   return (
-    <div className="min-h-screen pb-20">
+    <div>
       
       {/* Hero Header */}
-      <div className="relative -mx-4 md:-mx-8 lg:-mx-16 -mt-8 mb-12 overflow-hidden">
+      <div className="relative -mx-4 md:-mx-8 lg:-mx-16 -mt-8 mb-0 overflow-hidden">
         
         {/* Background Blur Layer */}
         <div className="absolute inset-0 bg-background/80 z-10 backdrop-blur-xl" />
@@ -67,23 +67,25 @@ export default function ListDetailClient({
         </div>
         
         {/* Content */}
-        <div className="relative z-20 px-4 md:px-8 lg:px-16 py-12 md:py-20 max-w-7xl mx-auto">
+        <div className="relative z-20 px-4 md:px-8 lg:px-16 py-12 md:py-14 max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row gap-8 items-start">
             
             {/* List Cover / First Image */}
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="w-32 h-32 md:w-48 md:h-48 flex-shrink-0 rounded-2xl overflow-hidden border-2 border-white/10 shadow-2xl bg-uiBase"
-            >
-              {heroImages[0] ? (
-                <img src={heroImages[0]} alt="List Cover" className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-white/20">
-                  <ListIcon size={48} />
-                </div>
-              )}
-            </motion.div>
+            <div className="hidden md:block">
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="w-20 h-20 md:w-32 md:h-32 flex-shrink-0 rounded-2xl overflow-hidden border-2 border-white/10 shadow-2xl bg-uiBase"
+              >
+                {heroImages[0] ? (
+                  <img src={heroImages[0]} alt="List Cover" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-white/20">
+                    <ListIcon size={48} />
+                  </div>
+                )}
+              </motion.div>
+            </div>
 
             <div className="flex-1 space-y-4">
               <motion.div 
@@ -110,7 +112,7 @@ export default function ListDetailClient({
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="text-4xl md:text-6xl font-title font-bold text-white leading-tight"
+                className="text-xl md:text-4xl font-title font-bold text-white leading-tight"
               >
                 {list.name}
               </motion.h1>
@@ -119,9 +121,9 @@ export default function ListDetailClient({
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="flex items-center gap-2 text-gray-300"
+                className="flex items-center gap-2 text-gray-300 text-xs md:text-base"
               >
-                <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center text-primary font-bold text-sm">
+                <div className="w-6 h-6 md:w-8 md:h-8 bg-primary/20 rounded-full flex items-center justify-center text-primary font-bold text-xs md:text-sm">
                   {list.createdBy.username.charAt(0).toUpperCase()}
                 </div>
                 <span>por <span className="text-white font-medium">@{list.createdBy.username}</span></span>
@@ -132,7 +134,7 @@ export default function ListDetailClient({
                    initial={{ opacity: 0 }}
                    animate={{ opacity: 1 }}
                    transition={{ delay: 0.3 }}
-                   className="text-gray-400 max-w-2xl text-lg"
+                   className="text-gray-400 max-w-2xl text-sm md:text-base"
                  >
                    {list.description}
                  </motion.p>
@@ -143,17 +145,17 @@ export default function ListDetailClient({
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
-                className="flex flex-wrap items-center gap-6 pt-4"
+                className="flex flex-wrap items-center gap-4 md:gap-6 pt-2 md:pt-4"
               >
-                 <div className="flex gap-8 border-r border-white/10 pr-8">
+                 <div className="flex gap-4 md:gap-8 border-r border-white/10 pr-8">
                    <div>
                      <p className="text-xs text-gray-500 uppercase font-bold">Figuras</p>
-                     <p className="text-2xl font-title font-bold text-white">{totalFigures}</p>
+                     <p className="text-lg md:text-2xl font-title font-bold text-white">{totalFigures}</p>
                    </div>
                    {hasPrices && (
                      <div>
                        <p className="text-xs text-gray-500 uppercase font-bold">Valor Est.*</p>
-                       <p className="text-2xl font-title font-bold text-accent">
+                       <p className="text-lg md:text-2xl font-title font-bold text-accent">
                          ${totalValue.toLocaleString('es-MX')}
                        </p>
                      </div>
@@ -183,7 +185,7 @@ export default function ListDetailClient({
       </div>
 
       {/* List Content */}
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto py-5">
         {list.items.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 border border-dashed border-white/10 rounded-2xl bg-uiBase/30">
             <AlertCircle className="w-16 h-16 text-gray-600 mb-4" />

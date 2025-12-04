@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
-import { Search, Filter, Calendar, ChevronDown } from 'lucide-react'
+import { Search, Filter, Calendar, ChevronDown, ChevronUp, SlidersHorizontal } from 'lucide-react'
 
 type Figure = {
   id: string
@@ -28,6 +28,7 @@ export default function TimelineClient({ lines, seriesList, brands }: TimelineCl
   const [figures, setFigures] = useState<Figure[]>([])
   const [loading, setLoading] = useState(false)
   const [hasSearched, setHasSearched] = useState(false)
+  const [filtersOpen, setFiltersOpen] = useState(false)
 
   // --- Filter Logic ---
   
@@ -107,53 +108,136 @@ export default function TimelineClient({ lines, seriesList, brands }: TimelineCl
           <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-[120px]" />
        </div>
 
-      <div className="max-w-7xl mx-auto px-4 pt-8 relative z-10">
-        
+      <div className="max-w-7xl mx-auto px-2 md:px-4 pt-2 md:pt-8 relative z-10">
+
         {/* Header & Filters */}
-        <div className="mb-16 text-center space-y-8">
+        <div className="mb-6 md:mb-16 text-left md:text-center space-y-4 md:space-y-8">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <h1 className="text-4xl md:text-6xl font-title font-black text-white mb-4">
+            <h1 className="text-2xl md:text-6xl font-title font-black text-white mb-1 md:mb-4">
               Time<span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-500">Line</span>
             </h1>
-            <p className="text-gray-400 max-w-2xl mx-auto">
-              Visualiza la evolución de tus colecciones favoritas a través de los años. 
+            <p className="text-gray-400 md:max-w-2xl md:mx-auto text-sm md:text-base">
+              Visualiza la evolución de tus colecciones favoritas a través de los años.
               Selecciona una línea o serie para comenzar.
             </p>
           </motion.div>
 
-          <motion.div 
+          {/* Mobile Filter Toggle */}
+          <motion.button
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="flex flex-wrap justify-center gap-4 bg-white/5 p-6 rounded-2xl backdrop-blur-md border border-white/10 max-w-4xl mx-auto shadow-xl"
+            onClick={() => setFiltersOpen(!filtersOpen)}
+            className="md:hidden flex items-center justify-center gap-2 bg-white/5 px-4 py-2.5 rounded-xl backdrop-blur-md border border-white/10 w-full"
+          >
+            <SlidersHorizontal size={16} className="text-primary" />
+            <span className="text-sm font-medium text-white">Filtros</span>
+            <motion.div
+              animate={{ rotate: filtersOpen ? 180 : 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <ChevronDown size={16} className="text-gray-400" />
+            </motion.div>
+          </motion.button>
+
+          {/* Filters Container - Mobile Collapsible */}
+          <AnimatePresence>
+            {filtersOpen && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3, ease: 'easeInOut' }}
+                className="md:hidden overflow-hidden w-full"
+              >
+                <div className="flex flex-wrap justify-center gap-2 bg-white/5 p-3 rounded-xl backdrop-blur-md border border-white/10 shadow-xl">
+                  {/* Brand Select */}
+                  <div className="relative w-full">
+                    <p className="text-[10px] text-gray-400 uppercase font-bold mb-0.5">Marca</p>
+                    <select
+                      value={selectedBrand}
+                      onChange={(e) => handleBrandChange(e.target.value)}
+                      className="w-full appearance-none bg-black/40 border border-white/10 rounded-lg pl-3 pr-8 py-2 text-sm text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all cursor-pointer text-center"
+                    >
+                      <option value="" disabled className="bg-[#1a1a1a] text-gray-400">Selecciona una Marca</option>
+                      {brands.map(b => (
+                        <option key={b.id} value={b.id} className="bg-[#1a1a1a] text-white">{b.name}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-2 top-[calc(50%+2px)] -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
+                  </div>
+
+                  {/* Line Select */}
+                  <div className="relative w-full">
+                    <p className="text-[10px] text-gray-400 uppercase font-bold mb-0.5">Línea</p>
+                    <select
+                      value={selectedLine}
+                      onChange={(e) => handleLineChange(e.target.value)}
+                      disabled={!selectedBrand}
+                      className="w-full appearance-none bg-black/40 border border-white/10 rounded-lg pl-3 pr-8 py-2 text-sm text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed text-center"
+                    >
+                      <option value="" className="bg-[#1a1a1a] text-gray-400">Selecciona una Línea</option>
+                      {filteredLines.map(l => (
+                        <option key={l.id} value={l.id} className="bg-[#1a1a1a] text-white">{l.name}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-2 top-[calc(50%+2px)] -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
+                  </div>
+
+                  {/* Series Select */}
+                  <div className="relative w-full">
+                    <p className="text-[10px] text-gray-400 uppercase font-bold mb-0.5">Serie</p>
+                    <select
+                      value={selectedSeries}
+                      onChange={(e) => setSelectedSeries(e.target.value)}
+                      className="w-full appearance-none bg-black/40 border border-white/10 rounded-lg pl-3 pr-8 py-2 text-sm text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all cursor-pointer text-center"
+                    >
+                      <option value="" className="bg-[#1a1a1a] text-gray-400">Todas las Series</option>
+                      {filteredSeries.map(s => (
+                        <option key={s.id} value={s.id} className="bg-[#1a1a1a] text-white">{s.name}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-2 top-[calc(50%+2px)] -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Filters Container - Desktop Always Visible */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="hidden md:flex flex-wrap justify-center gap-4 bg-white/5 p-6 rounded-2xl backdrop-blur-md border border-white/10 max-w-4xl mx-auto shadow-xl"
           >
              {/* Brand Select */}
-             <div className="relative w-full sm:w-auto min-w-[200px]">
-                 <p className="text-xs text-gray-400 uppercase font-bold mb-1">Marca</p>
-                 <select 
+             <div className="relative w-full sm:w-auto sm:min-w-[200px]">
+                 <p className="text-[10px] md:text-xs text-gray-400 uppercase font-bold mb-0.5 md:mb-1">Marca</p>
+                 <select
                     value={selectedBrand}
                     onChange={(e) => handleBrandChange(e.target.value)}
-                    className="w-full appearance-none bg-black/40 border border-white/10 rounded-xl pl-4 pr-10 py-3 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all cursor-pointer text-center sm:text-left"
+                    className="w-full appearance-none bg-black/40 border border-white/10 rounded-lg md:rounded-xl pl-3 md:pl-4 pr-8 md:pr-10 py-2 md:py-3 text-sm md:text-base text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all cursor-pointer text-center sm:text-left"
                  >
                     <option value="" disabled className="bg-[#1a1a1a] text-gray-400">Selecciona una Marca</option>
                     {brands.map(b => (
                         <option key={b.id} value={b.id} className="bg-[#1a1a1a] text-white">{b.name}</option>
                     ))}
                  </select>
-                 <ChevronDown className="absolute right-3 top-[calc(50%+2px)] -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
+                 <ChevronDown className="absolute right-2 md:right-3 top-[calc(50%+2px)] -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
              </div>
 
              {/* Line Select */}
-             <div className="relative w-full sm:w-auto min-w-[200px]">
-                 <p className="text-xs text-gray-400 uppercase font-bold mb-1">Línea</p>
-                 <select 
+             <div className="relative w-full sm:w-auto sm:min-w-[200px]">
+                 <p className="text-[10px] md:text-xs text-gray-400 uppercase font-bold mb-0.5 md:mb-1">Línea</p>
+                 <select
                     value={selectedLine}
                     onChange={(e) => handleLineChange(e.target.value)}
                     disabled={!selectedBrand}
-                    className="w-full appearance-none bg-black/40 border border-white/10 rounded-xl pl-4 pr-10 py-3 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed text-center sm:text-left"
+                    className="w-full appearance-none bg-black/40 border border-white/10 rounded-lg md:rounded-xl pl-3 md:pl-4 pr-8 md:pr-10 py-2 md:py-3 text-sm md:text-base text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed text-center sm:text-left"
                  >
                     <option value="" className="bg-[#1a1a1a] text-gray-400">
                         Selecciona una Línea
@@ -162,23 +246,23 @@ export default function TimelineClient({ lines, seriesList, brands }: TimelineCl
                         <option key={l.id} value={l.id} className="bg-[#1a1a1a] text-white">{l.name}</option>
                     ))}
                  </select>
-                 <ChevronDown className="absolute right-3 top-[calc(50%+2px)] -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
+                 <ChevronDown className="absolute right-2 md:right-3 top-[calc(50%+2px)] -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
              </div>
 
              {/* Series Select */}
-             <div className="relative w-full sm:w-auto min-w-[200px]">
-                 <p className="text-xs text-gray-400 uppercase font-bold mb-1">Serie</p>
-                 <select 
+             <div className="relative w-full sm:w-auto sm:min-w-[200px]">
+                 <p className="text-[10px] md:text-xs text-gray-400 uppercase font-bold mb-0.5 md:mb-1">Serie</p>
+                 <select
                     value={selectedSeries}
                     onChange={(e) => setSelectedSeries(e.target.value)}
-                    className="w-full appearance-none bg-black/40 border border-white/10 rounded-xl pl-4 pr-10 py-3 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all cursor-pointer text-center sm:text-left"
+                    className="w-full appearance-none bg-black/40 border border-white/10 rounded-lg md:rounded-xl pl-3 md:pl-4 pr-8 md:pr-10 py-2 md:py-3 text-sm md:text-base text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all cursor-pointer text-center sm:text-left"
                  >
                     <option value="" className="bg-[#1a1a1a] text-gray-400">Todas las Series</option>
                     {filteredSeries.map(s => (
                         <option key={s.id} value={s.id} className="bg-[#1a1a1a] text-white">{s.name}</option>
                     ))}
                  </select>
-                 <ChevronDown className="absolute right-3 top-[calc(50%+2px)] -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
+                 <ChevronDown className="absolute right-2 md:right-3 top-[calc(50%+2px)] -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
              </div>
           </motion.div>
         </div>

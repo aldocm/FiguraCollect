@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { ChevronRight } from 'lucide-react'
+import { ChevronDown, Clock } from 'lucide-react'
 import { Figure, Brand, FigureImage, Line } from '@prisma/client'
 
 // Extending the Figure type to include relations
@@ -61,8 +61,9 @@ const FigureCard = ({ figure, animationVariants }: FigureCardProps) => {
               </span>
             )}
             {!figure.isReleased && figure.releaseDate && (
-              <span className="bg-blue-600/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider shadow-lg ml-auto">
-                Por Lanzar
+              <span className="bg-blue-600/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider shadow-lg ml-auto flex items-center gap-1">
+                <Clock size={12} className="md:hidden" />
+                <span className="hidden md:inline">Por Lanzar</span>
               </span>
             )}
           </div>
@@ -82,14 +83,12 @@ const FigureCard = ({ figure, animationVariants }: FigureCardProps) => {
             {figure.name}
           </h3>
 
-          <div className="mt-auto pt-3 border-t border-white/5 flex justify-between items-end">
-            {figure.line && (
-              <span className="text-xs text-gray-500">
-                {figure.line.name}
-              </span>
-            )}
-            <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
-              <ChevronRight size={16} />
+          <div className="mt-auto hidden md:flex pt-2 border-t border-white/5 justify-between items-center">
+            <span className="text-xs text-gray-500">
+              {figure.line?.name}
+            </span>
+            <div className="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
+              <ChevronDown size={14} className="-rotate-90" />
             </div>
           </div>
         </div>

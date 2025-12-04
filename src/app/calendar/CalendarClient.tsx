@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Filter, X, ArrowRight, ChevronDown } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Filter, X, ArrowRight, ChevronDown, ChevronUp, SlidersHorizontal } from 'lucide-react'
 
 type Figure = {
   id: string
@@ -28,6 +28,7 @@ export default function CalendarClient({ brands, lines }: CalendarClientProps) {
   const [figures, setFigures] = useState<Figure[]>([])
   const [loading, setLoading] = useState(false)
   const [selectedDayFigures, setSelectedDayFigures] = useState<{ day: number, figures: Figure[] } | null>(null)
+  const [filtersOpen, setFiltersOpen] = useState(false)
 
   const year = currentDate.getFullYear()
   const month = currentDate.getMonth()
@@ -107,9 +108,9 @@ export default function CalendarClient({ brands, lines }: CalendarClientProps) {
         <div className="relative z-10">
             
             {/* Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-12">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-8 mb-6 md:mb-12">
                 <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-                    <h1 className="text-4xl font-title font-black text-white mb-2">
+                    <h1 className="text-2xl md:text-4xl font-title font-black text-white mb-1 md:mb-2">
                         Calendario de <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-500">Lanzamientos</span>
                     </h1>
                     <p className="text-gray-400 text-sm">
@@ -117,16 +118,81 @@ export default function CalendarClient({ brands, lines }: CalendarClientProps) {
                     </p>
                 </motion.div>
 
-                {/* Filters */}
-                <motion.div 
-                  initial={{ opacity: 0, x: 20 }} 
+                {/* Mobile Filter Toggle */}
+                <motion.button
+                  initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  className="flex flex-wrap gap-4 bg-white/5 p-4 rounded-2xl border border-white/10 backdrop-blur-md"
+                  onClick={() => setFiltersOpen(!filtersOpen)}
+                  className="md:hidden flex items-center justify-center gap-2 bg-white/5 px-4 py-2.5 rounded-xl backdrop-blur-md border border-white/10 w-full"
+                >
+                  <SlidersHorizontal size={16} className="text-primary" />
+                  <span className="text-sm font-medium text-white">Filtros</span>
+                  <motion.div
+                    animate={{ rotate: filtersOpen ? 180 : 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <ChevronDown size={16} className="text-gray-400" />
+                  </motion.div>
+                </motion.button>
+
+                {/* Mobile Filters - Collapsible */}
+                <AnimatePresence>
+                  {filtersOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.3, ease: 'easeInOut' }}
+                      className="md:hidden overflow-hidden w-full"
+                    >
+                      <div className="flex flex-wrap gap-2 bg-white/5 p-3 rounded-xl backdrop-blur-md border border-white/10">
+                        {/* Brand Select */}
+                        <div className="relative w-full">
+                          <p className="text-[10px] text-gray-400 uppercase font-bold mb-0.5">Marca</p>
+                          <select
+                            value={selectedBrand}
+                            onChange={(e) => handleBrandChange(e.target.value)}
+                            className="w-full appearance-none bg-black/40 border border-white/10 rounded-lg pl-3 pr-8 py-2 text-sm text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all cursor-pointer text-center"
+                          >
+                            <option value="" disabled className="bg-[#1a1a1a] text-gray-400">Selecciona una Marca</option>
+                            {brands.map(b => (
+                              <option key={b.id} value={b.id} className="bg-[#1a1a1a] text-white">{b.name}</option>
+                            ))}
+                          </select>
+                          <ChevronDown className="absolute right-2 top-[calc(50%+2px)] -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
+                        </div>
+
+                        {/* Line Select */}
+                        <div className="relative w-full">
+                          <p className="text-[10px] text-gray-400 uppercase font-bold mb-0.5">Línea</p>
+                          <select
+                            value={selectedLine}
+                            onChange={(e) => setSelectedLine(e.target.value)}
+                            disabled={!selectedBrand}
+                            className="w-full appearance-none bg-black/40 border border-white/10 rounded-lg pl-3 pr-8 py-2 text-sm text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed text-center"
+                          >
+                            <option value="" className="bg-[#1a1a1a] text-gray-400">Selecciona una Línea</option>
+                            {filteredLines.map(l => (
+                              <option key={l.id} value={l.id} className="bg-[#1a1a1a] text-white">{l.name}</option>
+                            ))}
+                          </select>
+                          <ChevronDown className="absolute right-2 top-[calc(50%+2px)] -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Desktop Filters - Always Visible */}
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="hidden md:flex flex-wrap gap-4 bg-white/5 p-4 rounded-2xl border border-white/10 backdrop-blur-md"
                 >
                     {/* Brand Select */}
-                    <div className="relative w-full sm:w-auto min-w-[180px]">
+                    <div className="relative min-w-[180px]">
                         <p className="text-xs text-gray-400 uppercase font-bold mb-1">Marca</p>
-                        <select 
+                        <select
                             value={selectedBrand}
                             onChange={(e) => handleBrandChange(e.target.value)}
                             className="w-full appearance-none bg-black/40 border border-white/10 rounded-xl pl-4 pr-10 py-2 text-sm text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all cursor-pointer"
@@ -140,9 +206,9 @@ export default function CalendarClient({ brands, lines }: CalendarClientProps) {
                     </div>
 
                     {/* Line Select */}
-                    <div className="relative w-full sm:w-auto min-w-[180px]">
+                    <div className="relative min-w-[180px]">
                         <p className="text-xs text-gray-400 uppercase font-bold mb-1">Línea</p>
-                        <select 
+                        <select
                             value={selectedLine}
                             onChange={(e) => setSelectedLine(e.target.value)}
                             disabled={!selectedBrand}
@@ -161,25 +227,25 @@ export default function CalendarClient({ brands, lines }: CalendarClientProps) {
             </div>
 
             {/* Calendar Controls */}
-            <div className="flex items-center justify-between mb-6 bg-uiBase/40 backdrop-blur-xl p-4 rounded-2xl border border-white/10">
-                <button 
+            <div className="flex items-center justify-between mb-6 bg-uiBase/40 backdrop-blur-xl py-2 px-3 md:p-4 rounded-xl md:rounded-2xl border border-white/10">
+                <button
                     onClick={handlePrevMonth}
                     disabled={!selectedBrand}
-                    className="p-2 rounded-full hover:bg-white/10 text-white transition-colors disabled:opacity-30"
+                    className="p-1.5 md:p-2 rounded-full hover:bg-white/10 text-white transition-colors disabled:opacity-30"
                 >
-                    <ChevronLeft size={24} />
+                    <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
                 </button>
-                
-                <h2 className="text-2xl font-title font-bold text-white uppercase tracking-wider">
+
+                <h2 className="text-base md:text-2xl font-title font-bold text-white uppercase tracking-wider">
                     {currentDate.toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })}
                 </h2>
 
-                <button 
+                <button
                     onClick={handleNextMonth}
                     disabled={!selectedBrand}
-                    className="p-2 rounded-full hover:bg-white/10 text-white transition-colors disabled:opacity-30"
+                    className="p-1.5 md:p-2 rounded-full hover:bg-white/10 text-white transition-colors disabled:opacity-30"
                 >
-                    <ChevronRight size={24} />
+                    <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
                 </button>
             </div>
 

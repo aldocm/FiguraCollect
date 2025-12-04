@@ -32,6 +32,7 @@ export default async function HomePage() {
       },
       include: {
         brand: true,
+        line: true,
         images: { take: 1 }
       },
       orderBy: { releaseDate: 'asc' },
@@ -40,6 +41,7 @@ export default async function HomePage() {
     prisma.figure.findMany({
       include: {
         brand: true,
+        line: true,
         images: { take: 1 }
       },
       orderBy: { createdAt: 'desc' },
