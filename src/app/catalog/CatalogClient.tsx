@@ -15,6 +15,13 @@ interface SeriesData {
     lineIds: string[]
 }
 
+interface CharacterData {
+    id: string
+    name: string
+    series: { id: string; name: string } | null
+    _count: { figures: number }
+}
+
 interface CatalogClientProps {
   figures: (Figure & {
     brand: Brand
@@ -24,6 +31,7 @@ interface CatalogClientProps {
   brands: (Brand & { _count: { figures: number } })[]
   lines: (Line & { _count: { figures: number }, brandId: string })[]
   series: SeriesData[]
+  characters: CharacterData[]
   page: number
   pages: number
 }
@@ -92,12 +100,12 @@ const FilterSection = ({ title, children, defaultOpen = true, onSearch }: Filter
   const [isOpen, setIsOpen] = useState(defaultOpen)
 
   return (
-    <div className="border-b border-white/5 py-4 last:border-0">
+    <div className={`border-b border-white/5 last:border-0 ${isOpen ? 'py-4' : 'py-3'}`}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-between w-full text-left mb-2 group"
+        className={`flex items-center justify-between w-full text-left group ${isOpen ? 'mb-2' : 'mb-1'}`}
       >
-        <span className="font-title font-bold text-textWhite group-hover:text-primary transition-colors">
+        <span className={`font-title font-bold group-hover:text-primary transition-colors ${isOpen ? 'text-textWhite' : 'text-gray-400 text-sm'}`}>
           {title}
         </span>
         <motion.div
@@ -105,7 +113,7 @@ const FilterSection = ({ title, children, defaultOpen = true, onSearch }: Filter
           transition={{ duration: 0.3 }}
           className="text-gray-500 group-hover:text-white"
         >
-          <ChevronDown size={18} />
+          <ChevronDown size={isOpen ? 18 : 16} />
         </motion.div>
       </button>
       <AnimatePresence initial={false}>
@@ -121,9 +129,9 @@ const FilterSection = ({ title, children, defaultOpen = true, onSearch }: Filter
                 <div className="px-1 pb-2">
                     <div className="relative">
                         <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
-                        <input 
-                            type="text" 
-                            placeholder="Buscar..." 
+                        <input
+                            type="text"
+                            placeholder="Buscar..."
                             onChange={(e) => onSearch(e.target.value)}
                             className="w-full bg-black/20 border border-white/10 rounded-lg py-1.5 pl-8 pr-2 text-xs text-white focus:outline-none focus:border-primary/50 transition-colors"
                         />
@@ -204,6 +212,7 @@ export default function CatalogClient({
   brands,
   lines,
   series,
+  characters,
   page,
   pages
 }: CatalogClientProps) {
@@ -217,6 +226,7 @@ export default function CatalogClient({
   const selectedBrandId = searchParams.get('brandId')
   const selectedLineIds = useMemo(() => searchParams.get('lineId')?.split(',').filter(Boolean) || [], [searchParams])
   const selectedSeriesIds = useMemo(() => searchParams.get('seriesId')?.split(',').filter(Boolean) || [], [searchParams])
+  const selectedCharacterId = searchParams.get('characterId')
 
   // Smart Filtering of Options
   const filteredLines = useMemo(() => {
@@ -227,15 +237,23 @@ export default function CatalogClient({
   const filteredSeries = useMemo(() => {
       return series.filter(s => {
           const matchBrand = selectedBrandId ? s.brandIds.includes(selectedBrandId) : true
-          // If any line is selected, series must belong to at least one of them? 
+          // If any line is selected, series must belong to at least one of them?
           // Or strictly match? Usually "belongs to any of the selected lines".
-          const matchLine = selectedLineIds.length > 0 
-              ? s.lineIds.some(id => selectedLineIds.includes(id)) 
+          const matchLine = selectedLineIds.length > 0
+              ? s.lineIds.some(id => selectedLineIds.includes(id))
               : true
-          
+
           return matchBrand && matchLine
       })
   }, [series, selectedBrandId, selectedLineIds])
+
+  // Filter characters by selected series
+  const filteredCharacters = useMemo(() => {
+      if (selectedSeriesIds.length === 0) return characters
+      return characters.filter(c =>
+          c.series && selectedSeriesIds.includes(c.series.id)
+      )
+  }, [characters, selectedSeriesIds])
 
 
   const handleUpdateParams = (key: string, value: string | string[] | null) => {
@@ -288,15 +306,24 @@ export default function CatalogClient({
       handleUpdateParams('seriesId', newIds)
   }
 
+  const handleCharacterSelect = (id: string | null) => {
+      if (id === null || selectedCharacterId === id) {
+          handleUpdateParams('characterId', null)
+      } else {
+          handleUpdateParams('characterId', id)
+      }
+  }
+
   // Clear all filters
   const clearFilters = () => {
     router.push(pathname)
   }
 
-  const hasActiveFilters = 
-    searchParams.has('brandId') || 
-    searchParams.has('lineId') || 
-    searchParams.has('seriesId') || 
+  const hasActiveFilters =
+    searchParams.has('brandId') ||
+    searchParams.has('lineId') ||
+    searchParams.has('seriesId') ||
+    searchParams.has('characterId') ||
     searchParams.has('isReleased')
 
   // Animations
@@ -414,16 +441,41 @@ export default function CatalogClient({
             />
 
             {/* Series Filter - Multi Select with Search */}
-            <SearchableFilterList 
+            <SearchableFilterList
                 title="Series"
-                items={filteredSeries} 
-                keyProp="id" 
+                items={filteredSeries}
+                keyProp="id"
                 labelProp="name"
                 allLabel="Todas las series"
                 selectedValues={selectedSeriesIds}
                 onSelect={handleSeriesSelect}
                 isMulti={true}
             />
+
+            {/* Character Filter - Single Select with Search */}
+            <FilterSection title="Personajes" defaultOpen={false} onSearch={undefined}>
+                <FilterItem
+                    label="Todos los personajes"
+                    isSelected={!selectedCharacterId}
+                    isMulti={false}
+                    onClick={() => handleCharacterSelect(null)}
+                />
+                {filteredCharacters.map(c => (
+                    <FilterItem
+                        key={c.id}
+                        label={c.series ? `${c.name} (${c.series.name})` : c.name}
+                        count={c._count.figures}
+                        isSelected={selectedCharacterId === c.id}
+                        isMulti={false}
+                        onClick={() => handleCharacterSelect(c.id)}
+                    />
+                ))}
+                {filteredCharacters.length === 0 && (
+                    <p className="text-xs text-gray-500 text-center py-2">
+                        {selectedSeriesIds.length > 0 ? 'No hay personajes en las series seleccionadas' : 'No hay personajes'}
+                    </p>
+                )}
+            </FilterSection>
 
           </div>
         </div>

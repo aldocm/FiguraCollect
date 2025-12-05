@@ -36,6 +36,7 @@ export default async function FigureDetailPage({ params }: PageProps) {
     include: {
       brand: true,
       line: true,
+      character: { include: { series: true } },
       images: { orderBy: { order: 'asc' } },
       tags: { include: { tag: true } },
       series: { include: { series: true } },

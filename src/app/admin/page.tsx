@@ -17,13 +17,14 @@ export default async function AdminPage() {
     redirect('/')
   }
 
-  const [brandCount, lineCount, seriesCount, figureCount, userCount, tagCount] = await Promise.all([
+  const [brandCount, lineCount, seriesCount, figureCount, userCount, tagCount, characterCount] = await Promise.all([
     prisma.brand.count(),
     prisma.line.count(),
     prisma.series.count(),
     prisma.figure.count(),
     prisma.user.count(),
-    prisma.tag.count()
+    prisma.tag.count(),
+    prisma.character.count()
   ])
 
   const stats = {
@@ -32,7 +33,8 @@ export default async function AdminPage() {
     series: seriesCount,
     figures: figureCount,
     users: userCount,
-    tags: tagCount
+    tags: tagCount,
+    characters: characterCount
   }
 
   return (

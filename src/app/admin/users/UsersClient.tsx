@@ -144,23 +144,23 @@ export default function UsersClient() {
         <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-violet-500/5 rounded-full blur-[100px]" />
       </div>
 
-      <div className="relative z-10 container mx-auto px-4 py-8">
+      <div className="relative z-10 container mx-auto px-2 md:px-4 py-4 md:py-8">
         {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-            <motion.div 
-                initial={{ opacity: 0, x: -20 }} 
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 md:gap-4 mb-4 md:mb-8">
+            <motion.div
+                initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="flex items-center gap-4"
+                className="flex items-center gap-2 md:gap-4"
             >
-                <Link 
-                    href="/admin" 
-                    className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors text-white/60 hover:text-white"
+                <Link
+                    href="/admin"
+                    className="p-1.5 md:p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors text-white/60 hover:text-white"
                 >
-                    <ArrowLeft size={24} />
+                    <ArrowLeft className="w-5 h-5 md:w-6 md:h-6" />
                 </Link>
                 <div>
-                    <h1 className="text-3xl font-title font-black text-white">Usuarios</h1>
-                    <p className="text-gray-400 text-sm">Gestión de roles y accesos</p>
+                    <h1 className="text-2xl md:text-3xl font-title font-black text-white">Usuarios</h1>
+                    <p className="text-gray-400 text-xs md:text-sm">Gestión de roles y accesos</p>
                 </div>
             </motion.div>
         </div>

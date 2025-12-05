@@ -73,6 +73,7 @@ model Series {
 
   // Relaciones
   figures     FigureSeries[]
+  characters  Character[]
 }
 
 model Tag {
@@ -82,6 +83,23 @@ model Tag {
 
   // Relaciones
   figures   FigureTag[]
+}
+
+model Character {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  imageUrl    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relación opcional con Series
+  seriesId    String?
+  series      Series?  @relation(fields: [seriesId], references: [id], onDelete: SetNull)
+
+  // Relaciones
+  figures     Figure[]
 }
 
 model Figure {
@@ -111,6 +129,8 @@ model Figure {
   brand       Brand    @relation(fields: [brandId], references: [id], onDelete: Cascade)
   lineId      String
   line        Line     @relation(fields: [lineId], references: [id], onDelete: Cascade)
+  characterId String?
+  character   Character? @relation(fields: [characterId], references: [id], onDelete: SetNull)
 
   images        FigureImage[]
   tags          FigureTag[]

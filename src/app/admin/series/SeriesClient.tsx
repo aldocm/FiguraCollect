@@ -100,79 +100,79 @@ export default function SeriesClient() {
         <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-pink-500/5 rounded-full blur-[100px]" />
       </div>
 
-      <div className="relative z-10 container mx-auto px-4 py-8">
+      <div className="relative z-10 container mx-auto px-2 md:px-4 py-4 md:py-8">
         {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-            <motion.div 
-                initial={{ opacity: 0, x: -20 }} 
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 md:gap-4 mb-4 md:mb-8">
+            <motion.div
+                initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="flex items-center gap-4"
+                className="flex items-center gap-2 md:gap-4"
             >
-                <Link 
-                    href="/admin" 
-                    className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors text-white/60 hover:text-white"
+                <Link
+                    href="/admin"
+                    className="p-1.5 md:p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors text-white/60 hover:text-white"
                 >
-                    <ArrowLeft size={24} />
+                    <ArrowLeft className="w-5 h-5 md:w-6 md:h-6" />
                 </Link>
                 <div>
-                    <h1 className="text-3xl font-title font-black text-white">Series</h1>
-                    <p className="text-gray-400 text-sm">Franquicias y orígenes</p>
+                    <h1 className="text-2xl md:text-3xl font-title font-black text-white">Series</h1>
+                    <p className="text-gray-400 text-xs md:text-sm">Franquicias y orígenes</p>
                 </div>
             </motion.div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-8">
+
             {/* Left Column: Create Form */}
-            <motion.div 
+            <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
                 className="lg:col-span-4 h-fit sticky top-8"
             >
-                <div className="bg-uiBase/40 backdrop-blur-md border border-white/10 rounded-3xl p-6 shadow-xl">
-                    <div className="flex items-center justify-between mb-6">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-purple-500/20 rounded-lg text-purple-400">
-                                {editingId ? <Edit2 size={20} /> : <Plus size={20} />}
+                <div className="bg-uiBase/40 backdrop-blur-md border border-white/10 rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-xl">
+                    <div className="flex items-center justify-between mb-4 md:mb-6">
+                        <div className="flex items-center gap-2 md:gap-3">
+                            <div className="p-1.5 md:p-2 bg-purple-500/20 rounded-lg text-purple-400">
+                                {editingId ? <Edit2 className="w-4 h-4 md:w-5 md:h-5" /> : <Plus className="w-4 h-4 md:w-5 md:h-5" />}
                             </div>
-                            <h2 className="text-lg font-bold text-white">{editingId ? 'Editar Serie' : 'Nueva Serie'}</h2>
+                            <h2 className="text-base md:text-lg font-bold text-white">{editingId ? 'Editar Serie' : 'Nueva Serie'}</h2>
                         </div>
                         {editingId && (
-                            <button 
+                            <button
                                 onClick={handleCancelEdit}
-                                className="p-2 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
+                                className="p-1.5 md:p-2 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
                             >
-                                <X size={20} />
+                                <X className="w-4 h-4 md:w-5 md:h-5" />
                             </button>
                         )}
                     </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-4">
+                    <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
                         {error && (
-                            <div className="bg-red-500/20 border border-red-500/50 text-red-200 p-3 rounded-xl text-sm flex items-center gap-2">
+                            <div className="bg-red-500/20 border border-red-500/50 text-red-200 p-2 md:p-3 rounded-xl text-xs md:text-sm flex items-center gap-2">
                                 <X size={16} /> {error}
                             </div>
                         )}
-                        
+
                         <div className="space-y-1">
-                            <label className="text-xs font-bold text-gray-400 uppercase tracking-wider ml-1">Nombre</label>
-                            <input 
+                            <label className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider ml-1">Nombre</label>
+                            <input
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
-                                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
+                                className="w-full bg-black/40 border border-white/10 rounded-xl px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
                                 placeholder="Ej. Dragon Ball Z"
                                 required
                             />
                         </div>
 
                         <div className="space-y-1">
-                            <label className="text-xs font-bold text-gray-400 uppercase tracking-wider ml-1">Descripción</label>
-                            <textarea 
+                            <label className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider ml-1">Descripción</label>
+                            <textarea
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
-                                rows={3}
-                                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all resize-none"
+                                rows={2}
+                                className="w-full bg-black/40 border border-white/10 rounded-xl px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all resize-none"
                                 placeholder="Opcional..."
                             />
                         </div>
@@ -180,7 +180,7 @@ export default function SeriesClient() {
                         <button
                             type="submit"
                             disabled={saving}
-                            className="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-purple-600/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed group"
+                            className="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 md:py-4 rounded-xl transition-all shadow-lg shadow-purple-600/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed group text-sm md:text-base"
                         >
                             {saving ? 'Guardando...' : (
                                 <>

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Search, Plus, Trash2, Box, X, Save, Image as ImageIcon, DollarSign, Calendar, Ruler, Tag, ChevronDown, ExternalLink, Edit2, Clock, Rocket, CheckCircle, ArrowLeftRight } from 'lucide-react'
+import { ArrowLeft, Search, Plus, Trash2, Box, X, Save, Image as ImageIcon, DollarSign, Calendar, Ruler, Tag, ChevronDown, ExternalLink, Edit2, Clock, Rocket, CheckCircle, ArrowLeftRight, User } from 'lucide-react'
 import { InputBase, TextAreaBase, SelectBase } from '@/components/ui'
 import { inchesToCm, cmToInches, type MeasureUnit } from '@/lib/utils'
 
@@ -11,6 +11,7 @@ interface Brand { id: string; name: string }
 interface Line { id: string; name: string; brandId: string }
 interface Series { id: string; name: string }
 interface TagType { id: string; name: string }
+interface Character { id: string; name: string; series: { id: string; name: string } | null }
 
 interface Figure {
   id: string
@@ -29,8 +30,15 @@ export default function FiguresClient() {
   const [lines, setLines] = useState<Line[]>([])
   const [seriesList, setSeriesList] = useState<Series[]>([])
   const [tags, setTags] = useState<TagType[]>([])
+  const [characters, setCharacters] = useState<Character[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
+
+  // New Character Modal
+  const [showNewCharacterModal, setShowNewCharacterModal] = useState(false)
+  const [newCharacterName, setNewCharacterName] = useState('')
+  const [newCharacterSeriesId, setNewCharacterSeriesId] = useState('')
+  const [savingCharacter, setSavingCharacter] = useState(false)
   
   // Form
   const [saving, setSaving] = useState(false)
@@ -55,6 +63,7 @@ export default function FiguresClient() {
     isNSFW: false,
     brandId: '',
     lineId: '',
+    characterId: '',
     images: '',
     tagIds: [] as string[],
     seriesIds: [] as string[]
@@ -64,20 +73,22 @@ export default function FiguresClient() {
   const [dimensionUnit, setDimensionUnit] = useState<MeasureUnit>('cm')
 
   const fetchData = async () => {
-    const [figuresRes, brandsRes, linesRes, seriesRes, tagsRes] = await Promise.all([
+    const [figuresRes, brandsRes, linesRes, seriesRes, tagsRes, charactersRes] = await Promise.all([
       fetch('/api/figures?limit=100'),
       fetch('/api/brands'),
       fetch('/api/lines'),
       fetch('/api/series'),
-      fetch('/api/tags')
+      fetch('/api/tags'),
+      fetch('/api/characters')
     ])
 
-    const [figuresData, brandsData, linesData, seriesData, tagsData] = await Promise.all([
+    const [figuresData, brandsData, linesData, seriesData, tagsData, charactersData] = await Promise.all([
       figuresRes.json(),
       brandsRes.json(),
       linesRes.json(),
       seriesRes.json(),
-      tagsRes.json()
+      tagsRes.json(),
+      charactersRes.json()
     ])
 
     setFigures(figuresData.figures)
@@ -85,6 +96,7 @@ export default function FiguresClient() {
     setLines(linesData.lines)
     setSeriesList(seriesData.series)
     setTags(tagsData.tags)
+    setCharacters(charactersData.characters)
     setLoading(false)
   }
 
@@ -120,6 +132,7 @@ export default function FiguresClient() {
           isNSFW: f.isNSFW,
           brandId: f.brand.id,
           lineId: f.line.id,
+          characterId: f.character?.id || '',
           images: f.images.map((img: any) => img.url).join('\n'),
           tagIds: f.tags.map((t: any) => t.tag.id),
           seriesIds: f.series.map((s: any) => s.series.id)
@@ -153,6 +166,7 @@ export default function FiguresClient() {
         isNSFW: false,
         brandId: '',
         lineId: '',
+        characterId: '',
         images: '',
         tagIds: [],
         seriesIds: []
@@ -210,6 +224,7 @@ export default function FiguresClient() {
           isNSFW: form.isNSFW,
           brandId: form.brandId,
           lineId: form.lineId,
+          characterId: form.characterId || null,
           images,
           tagIds: form.tagIds,
           seriesIds: form.seriesIds
@@ -255,6 +270,34 @@ export default function FiguresClient() {
         ? f.seriesIds.filter(id => id !== seriesId)
         : [...f.seriesIds, seriesId]
     }))
+  }
+
+  // Create new character inline
+  const handleCreateCharacter = async () => {
+    if (!newCharacterName.trim()) return
+    setSavingCharacter(true)
+    try {
+      const res = await fetch('/api/characters', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: newCharacterName,
+          seriesId: newCharacterSeriesId || null
+        })
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setCharacters([...characters, data.character])
+        setForm(f => ({ ...f, characterId: data.character.id }))
+        setShowNewCharacterModal(false)
+        setNewCharacterName('')
+        setNewCharacterSeriesId('')
+      }
+    } catch (e) {
+      console.error('Error creating character', e)
+    } finally {
+      setSavingCharacter(false)
+    }
   }
 
   // Toggle between released/pending
@@ -314,81 +357,81 @@ export default function FiguresClient() {
         <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px]" />
       </div>
 
-      <div className="relative z-10 container mx-auto px-4 py-8">
+      <div className="relative z-10 container mx-auto px-2 md:px-4 py-4 md:py-8">
         {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-            <motion.div 
-                initial={{ opacity: 0, x: -20 }} 
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 md:gap-4 mb-4 md:mb-8">
+            <motion.div
+                initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="flex items-center gap-4"
+                className="flex items-center gap-2 md:gap-4"
             >
-                <Link 
-                    href="/admin" 
-                    className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors text-white/60 hover:text-white"
+                <Link
+                    href="/admin"
+                    className="p-1.5 md:p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors text-white/60 hover:text-white"
                 >
-                    <ArrowLeft size={24} />
+                    <ArrowLeft className="w-5 h-5 md:w-6 md:h-6" />
                 </Link>
                 <div>
-                    <h1 className="text-3xl font-title font-black text-white">Figuras</h1>
-                    <p className="text-gray-400 text-sm">Catálogo completo</p>
+                    <h1 className="text-2xl md:text-3xl font-title font-black text-white">Figuras</h1>
+                    <p className="text-gray-400 text-xs md:text-sm">Catálogo completo</p>
                 </div>
             </motion.div>
         </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
-            
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 md:gap-8">
+
             {/* Left Column: Create Form (Takes more space here due to fields) */}
-            <motion.div 
+            <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
                 className="xl:col-span-5 h-fit sticky top-8"
             >
-                <div className="bg-uiBase/40 backdrop-blur-md border border-white/10 rounded-3xl p-6 shadow-xl">
-                    <div className="flex items-center justify-between mb-6">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-primary/20 rounded-lg text-primary">
-                                {editingId ? <ImageIcon size={20} /> : <Plus size={20} />}
+                <div className="bg-uiBase/40 backdrop-blur-md border border-white/10 rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-xl">
+                    <div className="flex items-center justify-between mb-4 md:mb-6">
+                        <div className="flex items-center gap-2 md:gap-3">
+                            <div className="p-1.5 md:p-2 bg-primary/20 rounded-lg text-primary">
+                                {editingId ? <ImageIcon className="w-4 h-4 md:w-5 md:h-5" /> : <Plus className="w-4 h-4 md:w-5 md:h-5" />}
                             </div>
-                            <h2 className="text-lg font-bold text-white">{editingId ? 'Editar Figura' : 'Nueva Figura'}</h2>
+                            <h2 className="text-base md:text-lg font-bold text-white">{editingId ? 'Editar Figura' : 'Nueva Figura'}</h2>
                         </div>
                         {editingId && (
-                            <button 
+                            <button
                                 onClick={handleCancelEdit}
-                                className="p-2 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
+                                className="p-1.5 md:p-2 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
                             >
-                                <X size={20} />
+                                <X className="w-4 h-4 md:w-5 md:h-5" />
                             </button>
                         )}
                     </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-6">
+                    <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
                         {error && (
-                            <div className="bg-red-500/20 border border-red-500/50 text-red-200 p-3 rounded-xl text-sm flex items-center gap-2">
+                            <div className="bg-red-500/20 border border-red-500/50 text-red-200 p-2 md:p-3 rounded-xl text-xs md:text-sm flex items-center gap-2">
                                 <X size={16} /> {error}
                             </div>
                         )}
 
                         {/* Basic Info */}
-                        <div className="space-y-4">
-                            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-white/10 pb-2">Información Básica</h3>
-                            <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-3 md:space-y-4">
+                            <h3 className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-white/10 pb-2">Información Básica</h3>
+                            <div className="grid grid-cols-2 gap-3 md:gap-4">
                                 <div className="col-span-2">
-                                    <label className="text-xs font-bold text-gray-400 uppercase tracking-wider ml-1 mb-1 block">Nombre *</label>
-                                    <input 
+                                    <label className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider ml-1 mb-1 block">Nombre *</label>
+                                    <input
                                         value={form.name}
                                         onChange={(e) => setForm({ ...form, name: e.target.value })}
-                                        className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-white focus:border-primary transition-all"
+                                        className="w-full bg-black/40 border border-white/10 rounded-xl px-3 md:px-4 py-2 text-sm md:text-base text-white focus:border-primary transition-all"
                                         required
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-xs font-bold text-gray-400 uppercase tracking-wider ml-1 mb-1 block">Marca *</label>
+                                    <label className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider ml-1 mb-1 block">Marca *</label>
                                     <div className="relative">
-                                        <select 
+                                        <select
                                             value={form.brandId}
                                             onChange={(e) => setForm({ ...form, brandId: e.target.value, lineId: '' })}
-                                            className="w-full appearance-none bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-white focus:border-primary transition-all"
+                                            className="w-full appearance-none bg-black/40 border border-white/10 rounded-xl px-3 md:px-4 py-2 text-sm md:text-base text-white focus:border-primary transition-all"
                                             required
                                         >
                                             <option value="">Selecciona</option>
@@ -398,12 +441,12 @@ export default function FiguresClient() {
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="text-xs font-bold text-gray-400 uppercase tracking-wider ml-1 mb-1 block">Línea *</label>
+                                    <label className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider ml-1 mb-1 block">Línea *</label>
                                     <div className="relative">
-                                        <select 
+                                        <select
                                             value={form.lineId}
                                             onChange={(e) => setForm({ ...form, lineId: e.target.value })}
-                                            className="w-full appearance-none bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-white focus:border-primary transition-all disabled:opacity-50"
+                                            className="w-full appearance-none bg-black/40 border border-white/10 rounded-xl px-3 md:px-4 py-2 text-sm md:text-base text-white focus:border-primary transition-all disabled:opacity-50"
                                             required
                                             disabled={!form.brandId}
                                         >
@@ -413,63 +456,93 @@ export default function FiguresClient() {
                                         <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"/>
                                     </div>
                                 </div>
+                                <div className="col-span-2">
+                                    <label className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider ml-1 mb-1 block flex items-center gap-2">
+                                        <User size={12} /> Personaje (opcional)
+                                    </label>
+                                    <div className="flex gap-2">
+                                        <div className="relative flex-1">
+                                            <select
+                                                value={form.characterId}
+                                                onChange={(e) => setForm({ ...form, characterId: e.target.value })}
+                                                className="w-full appearance-none bg-black/40 border border-white/10 rounded-xl px-3 md:px-4 py-2 text-sm md:text-base text-white focus:border-primary transition-all"
+                                            >
+                                                <option value="">Sin personaje</option>
+                                                {characters.map(c => (
+                                                    <option key={c.id} value={c.id}>
+                                                        {c.name}{c.series ? ` (${c.series.name})` : ''}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"/>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowNewCharacterModal(true)}
+                                            className="px-3 py-2 bg-cyan-600/20 border border-cyan-500/30 rounded-xl text-cyan-400 hover:bg-cyan-600/30 transition-colors"
+                                            title="Crear nuevo personaje"
+                                        >
+                                            <Plus size={16} />
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
                         {/* Prices & Dates */}
-                        <div className="space-y-4">
-                            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-white/10 pb-2 flex items-center gap-2"><DollarSign size={14}/> Precios y Fechas</h3>
-                            <p className="text-xs text-gray-400">Selecciona el precio original (base) de la figura:</p>
-                            
-                            <div className="grid grid-cols-3 gap-3">
-                                <div className="flex flex-col gap-2">
+                        <div className="space-y-3 md:space-y-4">
+                            <h3 className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-white/10 pb-2 flex items-center gap-2"><DollarSign size={14}/> Precios y Fechas</h3>
+                            <p className="text-[10px] md:text-xs text-gray-400">Selecciona el precio original (base) de la figura:</p>
+
+                            <div className="grid grid-cols-3 gap-2 md:gap-3">
+                                <div className="flex flex-col gap-1.5 md:gap-2">
                                     <div className="flex items-center justify-between">
-                                        <label className="text-xs font-bold text-gray-400 uppercase">MXN</label>
-                                        <input 
-                                            type="radio" 
-                                            name="originalCurrency" 
-                                            checked={form.originalPriceCurrency === 'MXN'} 
+                                        <label className="text-[10px] md:text-xs font-bold text-gray-400 uppercase">MXN</label>
+                                        <input
+                                            type="radio"
+                                            name="originalCurrency"
+                                            checked={form.originalPriceCurrency === 'MXN'}
                                             onChange={() => setForm({...form, originalPriceCurrency: 'MXN'})}
                                             className="accent-primary w-3 h-3"
                                         />
                                     </div>
-                                    <input type="number" placeholder="0.00" value={form.priceMXN} onChange={e => setForm({...form, priceMXN: e.target.value})} className="bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-white text-sm w-full"/>
+                                    <input type="number" placeholder="0.00" value={form.priceMXN} onChange={e => setForm({...form, priceMXN: e.target.value})} className="bg-black/40 border border-white/10 rounded-xl px-2 md:px-3 py-2 text-white text-xs md:text-sm w-full"/>
                                 </div>
-                                <div className="flex flex-col gap-2">
+                                <div className="flex flex-col gap-1.5 md:gap-2">
                                     <div className="flex items-center justify-between">
-                                        <label className="text-xs font-bold text-gray-400 uppercase">USD</label>
-                                        <input 
-                                            type="radio" 
-                                            name="originalCurrency" 
-                                            checked={form.originalPriceCurrency === 'USD'} 
+                                        <label className="text-[10px] md:text-xs font-bold text-gray-400 uppercase">USD</label>
+                                        <input
+                                            type="radio"
+                                            name="originalCurrency"
+                                            checked={form.originalPriceCurrency === 'USD'}
                                             onChange={() => setForm({...form, originalPriceCurrency: 'USD'})}
                                             className="accent-primary w-3 h-3"
                                         />
                                     </div>
-                                    <input type="number" placeholder="0.00" value={form.priceUSD} onChange={e => setForm({...form, priceUSD: e.target.value})} className="bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-white text-sm w-full"/>
+                                    <input type="number" placeholder="0.00" value={form.priceUSD} onChange={e => setForm({...form, priceUSD: e.target.value})} className="bg-black/40 border border-white/10 rounded-xl px-2 md:px-3 py-2 text-white text-xs md:text-sm w-full"/>
                                 </div>
-                                <div className="flex flex-col gap-2">
+                                <div className="flex flex-col gap-1.5 md:gap-2">
                                     <div className="flex items-center justify-between">
-                                        <label className="text-xs font-bold text-gray-400 uppercase">YEN</label>
-                                        <input 
-                                            type="radio" 
-                                            name="originalCurrency" 
-                                            checked={form.originalPriceCurrency === 'YEN'} 
+                                        <label className="text-[10px] md:text-xs font-bold text-gray-400 uppercase">YEN</label>
+                                        <input
+                                            type="radio"
+                                            name="originalCurrency"
+                                            checked={form.originalPriceCurrency === 'YEN'}
                                             onChange={() => setForm({...form, originalPriceCurrency: 'YEN'})}
                                             className="accent-primary w-3 h-3"
                                         />
                                     </div>
-                                    <input type="number" placeholder="0" value={form.priceYEN} onChange={e => setForm({...form, priceYEN: e.target.value})} className="bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-white text-sm w-full"/>
+                                    <input type="number" placeholder="0" value={form.priceYEN} onChange={e => setForm({...form, priceYEN: e.target.value})} className="bg-black/40 border border-white/10 rounded-xl px-2 md:px-3 py-2 text-white text-xs md:text-sm w-full"/>
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-3 pt-2">
+                            <div className="grid grid-cols-2 gap-2 md:gap-3 pt-2">
                                 <div>
-                                    <label className="text-xs font-bold text-gray-400 uppercase tracking-wider ml-1 mb-1 block">Lanzamiento (YYYY-MM)</label>
-                                    <input type="text" placeholder="Ej. 2024-12" value={form.releaseDate} onChange={e => setForm({...form, releaseDate: e.target.value})} className="bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-white text-sm w-full"/>
+                                    <label className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider ml-1 mb-1 block">Lanzamiento (YYYY-MM)</label>
+                                    <input type="text" placeholder="Ej. 2024-12" value={form.releaseDate} onChange={e => setForm({...form, releaseDate: e.target.value})} className="bg-black/40 border border-white/10 rounded-xl px-2 md:px-3 py-2 text-white text-xs md:text-sm w-full"/>
                                 </div>
                                 <div className="flex flex-col justify-end">
-                                    <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer bg-black/20 rounded-xl px-3 py-2 border border-white/5 h-[38px]">
+                                    <label className="flex items-center gap-2 text-xs md:text-sm text-gray-300 cursor-pointer bg-black/20 rounded-xl px-2 md:px-3 py-2 border border-white/5 h-[38px]">
                                         <input type="checkbox" checked={form.isReleased} onChange={e => setForm({...form, isReleased: e.target.checked})} className="accent-primary w-4 h-4"/>
                                         Ya lanzada
                                     </label>
@@ -478,8 +551,8 @@ export default function FiguresClient() {
                         </div>
 
                         {/* Specs */}
-                        <div className="space-y-4">
-                            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-white/10 pb-2 flex items-center gap-2"><Ruler size={14}/> Especificaciones</h3>
+                        <div className="space-y-3 md:space-y-4">
+                            <h3 className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-white/10 pb-2 flex items-center gap-2"><Ruler size={14}/> Especificaciones</h3>
 
                             {/* Dimensions with unit toggle */}
                             <div>
@@ -593,7 +666,7 @@ export default function FiguresClient() {
                         <button
                             type="submit"
                             disabled={saving}
-                            className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed group"
+                            className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 md:py-4 rounded-xl transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed group text-sm md:text-base"
                         >
                             {saving ? (
                                 'Guardando...'
@@ -848,6 +921,86 @@ export default function FiguresClient() {
 
         </div>
       </div>
+
+      {/* New Character Modal */}
+      <AnimatePresence>
+        {showNewCharacterModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+            onClick={() => setShowNewCharacterModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-[#1a1a1a] border border-white/10 rounded-2xl p-6 w-full max-w-md shadow-2xl"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="flex justify-between items-center mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-cyan-500/20 rounded-lg text-cyan-400">
+                    <User size={20} />
+                  </div>
+                  <h2 className="text-xl font-bold text-white">Nuevo Personaje</h2>
+                </div>
+                <button onClick={() => setShowNewCharacterModal(false)} className="text-gray-400 hover:text-white">
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1 block">Nombre *</label>
+                  <input
+                    value={newCharacterName}
+                    onChange={e => setNewCharacterName(e.target.value)}
+                    className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-cyan-500 transition-all"
+                    placeholder="Ej. Goku, Naruto..."
+                    autoFocus
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1 block">Serie (opcional)</label>
+                  <div className="relative">
+                    <select
+                      value={newCharacterSeriesId}
+                      onChange={e => setNewCharacterSeriesId(e.target.value)}
+                      className="w-full appearance-none bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-cyan-500 transition-all"
+                    >
+                      <option value="" className="bg-gray-900">Sin serie</option>
+                      {seriesList.map(s => (
+                        <option key={s.id} value={s.id} className="bg-gray-900">{s.name}</option>
+                      ))}
+                    </select>
+                    <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+                  </div>
+                </div>
+
+                <div className="pt-4 flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowNewCharacterModal(false)}
+                    className="flex-1 py-3 rounded-xl border border-white/10 text-gray-300 hover:bg-white/5 transition-colors font-bold"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCreateCharacter}
+                    disabled={!newCharacterName.trim() || savingCharacter}
+                    className="flex-1 py-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold shadow-lg shadow-cyan-600/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {savingCharacter ? 'Creando...' : 'Crear'}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

@@ -38,17 +38,17 @@ interface InventoryClientProps {
 // --- Components ---
 
 const StatCard = ({ label, value, icon: Icon, colorClass }: any) => (
-  <motion.div 
+  <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
-    className="bg-uiBase/30 backdrop-blur-md border border-white/5 p-5 rounded-2xl flex items-center gap-4 hover:bg-uiBase/50 transition-colors"
+    className="bg-uiBase/30 backdrop-blur-md border border-white/5 p-3 md:p-4 rounded-xl flex items-center gap-3 hover:bg-uiBase/50 transition-colors"
   >
-    <div className={`p-3 rounded-xl ${colorClass} bg-opacity-20`}>
-      <Icon size={24} className={colorClass.replace('bg-', 'text-')} />
+    <div className={`p-2 rounded-lg ${colorClass} bg-opacity-20`}>
+      <Icon className={`w-5 h-5 ${colorClass.replace('bg-', 'text-')}`} />
     </div>
     <div>
-      <p className="text-sm text-gray-400 font-medium">{label}</p>
-      <p className="text-2xl font-title font-bold text-white">{value}</p>
+      <p className="text-xs text-gray-400 font-medium">{label}</p>
+      <p className="text-lg md:text-xl font-title font-bold text-white">{value}</p>
     </div>
   </motion.div>
 )
@@ -222,20 +222,20 @@ export default function InventoryClient({ items, user }: InventoryClientProps) {
           <div className="absolute top-0 left-0 w-full h-96 bg-gradient-to-b from-primary/5 to-transparent opacity-50" />
        </div>
 
-       <div className="relative z-10 container mx-auto px-4 py-8">
-          
+       <div className="relative z-10 container mx-auto px-1 md:px-4">
+
           {/* Header Section */}
-          <header className="mb-10">
-             <h1 className="text-4xl md:text-5xl font-title font-black text-white mb-2">
+          <header className="mb-6 md:mb-8">
+             <h1 className="text-2xl md:text-4xl font-title font-black text-white mb-1 md:mb-2">
                 Mi <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-500">Colección</span>
              </h1>
-             <p className="text-gray-400 text-lg">
+             <p className="text-gray-400 text-sm">
                 Gestiona y visualiza tu universo de figuras.
              </p>
           </header>
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4 mb-6 md:mb-10">
               <StatCard 
                 label="Valor Total Estimado" 
                 value={`$${totalValue.toLocaleString()} MXN`} 

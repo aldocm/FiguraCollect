@@ -35,6 +35,7 @@ export async function GET(request: NextRequest) {
         include: {
           brand: true,
           line: true,
+          character: true,
           images: { take: 1, orderBy: { order: 'asc' } },
           tags: { include: { tag: true } },
           series: { include: { series: true } },
@@ -98,6 +99,7 @@ export async function POST(request: NextRequest) {
       isNSFW,
       brandId,
       lineId,
+      characterId,
       images,
       tagIds,
       seriesIds
@@ -130,6 +132,7 @@ export async function POST(request: NextRequest) {
         isNSFW: isNSFW || false,
         brandId,
         lineId,
+        characterId: characterId || null,
         images: images?.length ? {
           create: images.map((url: string, index: number) => ({
             url,
@@ -146,6 +149,7 @@ export async function POST(request: NextRequest) {
       include: {
         brand: true,
         line: true,
+        character: true,
         images: true,
         tags: { include: { tag: true } },
         series: { include: { series: true } }

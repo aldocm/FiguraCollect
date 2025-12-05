@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { AddToInventoryButton } from '@/components/AddToInventoryButton'
 import {
   Star, ChevronLeft, ChevronRight, UserCircle, ZoomIn, ZoomOut, RotateCcw, X,
-  Calendar, Box, Ruler, Scale, Factory, Tag, Layers, ArrowLeftRight, Plus, Send, ImagePlus, Trash2, MessageSquarePlus, ChevronDown, ChevronUp
+  Calendar, Box, Ruler, Scale, Factory, Tag, Layers, ArrowLeftRight, Plus, Send, ImagePlus, Trash2, MessageSquarePlus, ChevronDown, ChevronUp, User
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { formatDimensions, type MeasureUnit } from '@/lib/utils'
@@ -14,7 +14,7 @@ import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch'
 
 // --- Types ---
 type Figure = {
-  id: string; name: string; description: string | null; sku: string | null; heightCm: number | null; widthCm: number | null; depthCm: number | null; scale: string | null; material: string | null; maker: string | null; releaseDate: string | null; isReleased: boolean; priceMXN: number | null; priceUSD: number | null; priceYEN: number | null; brand: { id: string; name: string; }; line: { id: string; name: string; }; images: { id: string; url: string; }[]; tags: { tag: { name: string; }; }[]; series: { series: { id: string; name: string } }[], variants: { id: string; name: string; priceMXN: number | null; images: { url: string; }[]; }[]; reviews: { id: string; rating: number; title: string; description: string; user: { username: string; }; images?: { id: string; url: string; }[]; }[];
+  id: string; name: string; description: string | null; sku: string | null; heightCm: number | null; widthCm: number | null; depthCm: number | null; scale: string | null; material: string | null; maker: string | null; releaseDate: string | null; isReleased: boolean; priceMXN: number | null; priceUSD: number | null; priceYEN: number | null; brand: { id: string; name: string; }; line: { id: string; name: string; }; character?: { id: string; name: string; series?: { id: string; name: string } | null } | null; images: { id: string; url: string; }[]; tags: { tag: { name: string; }; }[]; series: { series: { id: string; name: string } }[], variants: { id: string; name: string; priceMXN: number | null; images: { url: string; }[]; }[]; reviews: { id: string; rating: number; title: string; description: string; user: { username: string; }; images?: { id: string; url: string; }[]; }[];
 }
 type User = { id: string; measureUnit?: string } | null
 type UserFigure = { id: string, status: string } | null
@@ -453,6 +453,28 @@ export default function FigureDetailClient({ figure, user, userFigure, defaultMe
                     </div>
                   )
                 })()}
+
+                {/* Character */}
+                {figure.character && (
+                  <Link
+                    href={`/catalog?characterId=${figure.character.id}`}
+                    className="flex items-center gap-3 p-3 rounded-lg bg-cyan-500/10 border border-cyan-500/20 backdrop-blur-sm hover:bg-cyan-500/20 transition-colors cursor-pointer group"
+                  >
+                    <div className="p-2 rounded-full bg-cyan-500/20 text-cyan-400 group-hover:bg-cyan-500/30 transition-colors">
+                      <User size={18} />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-xs text-gray-400 uppercase font-bold tracking-wider">Personaje</p>
+                      <p className="text-sm text-white font-medium group-hover:text-cyan-400 transition-colors">
+                        {figure.character.name}
+                        {figure.character.series && (
+                          <span className="text-cyan-400 ml-1">({figure.character.series.name})</span>
+                        )}
+                      </p>
+                    </div>
+                    <ChevronRight size={16} className="text-gray-500 group-hover:text-cyan-400 transition-colors" />
+                  </Link>
+                )}
 
                 {/* Other specs grid */}
                 <div className="grid grid-cols-2 gap-2 lg:gap-3">

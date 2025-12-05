@@ -3,47 +3,47 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Search, Plus, Trash2, Layers, Box, X, Save, ChevronDown, Edit2 } from 'lucide-react'
+import { ArrowLeft, Search, Plus, Trash2, User, Box, X, Save, Edit2, ChevronDown } from 'lucide-react'
 
-interface Brand {
+interface Series {
   id: string
   name: string
 }
 
-interface Line {
+interface Character {
   id: string
   name: string
   slug: string
   description: string | null
-  releaseYear: number | null
-  brand: Brand
+  imageUrl: string | null
+  series: Series | null
   _count: { figures: number }
 }
 
-export default function LinesClient() {
-  const [lines, setLines] = useState<Line[]>([])
-  const [brands, setBrands] = useState<Brand[]>([])
+export default function CharactersClient() {
+  const [characters, setCharacters] = useState<Character[]>([])
+  const [seriesList, setSeriesList] = useState<Series[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
 
-  // Form
+  // Form States
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
-  const [brandId, setBrandId] = useState('')
-  const [releaseYear, setReleaseYear] = useState('')
+  const [imageUrl, setImageUrl] = useState('')
+  const [seriesId, setSeriesId] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
 
   const fetchData = async () => {
-    const [linesRes, brandsRes] = await Promise.all([
-      fetch('/api/lines'),
-      fetch('/api/brands')
+    const [charactersRes, seriesRes] = await Promise.all([
+      fetch('/api/characters'),
+      fetch('/api/series')
     ])
-    const linesData = await linesRes.json()
-    const brandsData = await brandsRes.json()
-    setLines(linesData.lines)
-    setBrands(brandsData.brands)
+    const charactersData = await charactersRes.json()
+    const seriesData = await seriesRes.json()
+    setCharacters(charactersData.characters)
+    setSeriesList(seriesData.series)
     setLoading(false)
   }
 
@@ -51,12 +51,12 @@ export default function LinesClient() {
     fetchData()
   }, [])
 
-  const handleEdit = (line: Line) => {
-    setEditingId(line.id)
-    setName(line.name)
-    setDescription(line.description || '')
-    setBrandId(line.brand.id) // Use brand object from line to set brandId
-    setReleaseYear(line.releaseYear ? line.releaseYear.toString() : '')
+  const handleEdit = (c: Character) => {
+    setEditingId(c.id)
+    setName(c.name)
+    setDescription(c.description || '')
+    setImageUrl(c.imageUrl || '')
+    setSeriesId(c.series?.id || '')
     setError('')
   }
 
@@ -64,8 +64,8 @@ export default function LinesClient() {
     setEditingId(null)
     setName('')
     setDescription('')
-    setBrandId('')
-    setReleaseYear('')
+    setImageUrl('')
+    setSeriesId('')
     setError('')
   }
 
@@ -75,7 +75,7 @@ export default function LinesClient() {
     setSaving(true)
 
     try {
-      const url = editingId ? `/api/lines/${editingId}` : '/api/lines'
+      const url = editingId ? `/api/characters/${editingId}` : '/api/characters'
       const method = editingId ? 'PUT' : 'POST'
 
       const res = await fetch(url, {
@@ -83,9 +83,9 @@ export default function LinesClient() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name,
-          description,
-          brandId,
-          releaseYear: releaseYear ? parseInt(releaseYear) : null
+          description: description || null,
+          imageUrl: imageUrl || null,
+          seriesId: seriesId || null
         })
       })
 
@@ -106,23 +106,23 @@ export default function LinesClient() {
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('¿Eliminar esta línea?')) return
-    setLines(lines.filter(l => l.id !== id))
-    await fetch(`/api/lines/${id}`, { method: 'DELETE' })
+    if (!confirm('¿Eliminar este personaje?')) return
+    setCharacters(characters.filter(c => c.id !== id))
+    await fetch(`/api/characters/${id}`, { method: 'DELETE' })
     fetchData()
   }
 
-  const filteredLines = lines.filter(l => 
-    l.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    l.brand.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredCharacters = characters.filter(c =>
+    c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    c.series?.name.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   return (
     <div className="min-h-screen bg-background pb-20 relative overflow-hidden">
-       {/* Background Elements */}
-       <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 left-0 w-[600px] h-[600px] bg-blue-500/5 rounded-full blur-[120px]" />
-        <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-cyan-500/5 rounded-full blur-[100px]" />
+      {/* Background Elements */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-cyan-500/5 rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-teal-500/5 rounded-full blur-[100px]" />
       </div>
 
       <div className="relative z-10 container mx-auto px-2 md:px-4 py-4 md:py-8">
@@ -140,15 +140,15 @@ export default function LinesClient() {
                     <ArrowLeft className="w-5 h-5 md:w-6 md:h-6" />
                 </Link>
                 <div>
-                    <h1 className="text-2xl md:text-3xl font-title font-black text-white">Líneas</h1>
-                    <p className="text-gray-400 text-xs md:text-sm">Colecciones y grupos de productos</p>
+                    <h1 className="text-2xl md:text-3xl font-title font-black text-white">Personajes</h1>
+                    <p className="text-gray-400 text-xs md:text-sm">Characters de figuras</p>
                 </div>
             </motion.div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-8">
 
-            {/* Left Column: Form */}
+            {/* Left Column: Create Form */}
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -158,10 +158,10 @@ export default function LinesClient() {
                 <div className="bg-uiBase/40 backdrop-blur-md border border-white/10 rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-xl">
                     <div className="flex items-center justify-between mb-4 md:mb-6">
                         <div className="flex items-center gap-2 md:gap-3">
-                            <div className="p-1.5 md:p-2 bg-blue-500/20 rounded-lg text-blue-400">
+                            <div className="p-1.5 md:p-2 bg-cyan-500/20 rounded-lg text-cyan-400">
                                 {editingId ? <Edit2 className="w-4 h-4 md:w-5 md:h-5" /> : <Plus className="w-4 h-4 md:w-5 md:h-5" />}
                             </div>
-                            <h2 className="text-base md:text-lg font-bold text-white">{editingId ? 'Editar Línea' : 'Nueva Línea'}</h2>
+                            <h2 className="text-base md:text-lg font-bold text-white">{editingId ? 'Editar Personaje' : 'Nuevo Personaje'}</h2>
                         </div>
                         {editingId && (
                             <button
@@ -185,24 +185,23 @@ export default function LinesClient() {
                             <input
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
-                                className="w-full bg-black/40 border border-white/10 rounded-xl px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
-                                placeholder="Ej. S.H. Figuarts"
+                                className="w-full bg-black/40 border border-white/10 rounded-xl px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all"
+                                placeholder="Ej. Goku, Naruto..."
                                 required
                             />
                         </div>
 
                         <div className="space-y-1">
-                            <label className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider ml-1">Marca</label>
+                            <label className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider ml-1">Serie (opcional)</label>
                             <div className="relative">
                                 <select
-                                    value={brandId}
-                                    onChange={(e) => setBrandId(e.target.value)}
-                                    className="w-full appearance-none bg-black/40 border border-white/10 rounded-xl px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
-                                    required
+                                    value={seriesId}
+                                    onChange={(e) => setSeriesId(e.target.value)}
+                                    className="w-full appearance-none bg-black/40 border border-white/10 rounded-xl px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all"
                                 >
-                                    <option value="" className="bg-gray-900 text-gray-500">Selecciona una marca</option>
-                                    {brands.map(b => (
-                                        <option key={b.id} value={b.id} className="bg-gray-900 text-white">{b.name}</option>
+                                    <option value="" className="bg-gray-900 text-gray-500">Sin serie</option>
+                                    {seriesList.map(s => (
+                                        <option key={s.id} value={s.id} className="bg-gray-900 text-white">{s.name}</option>
                                     ))}
                                 </select>
                                 <ChevronDown className="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" size={16} />
@@ -210,15 +209,12 @@ export default function LinesClient() {
                         </div>
 
                         <div className="space-y-1">
-                            <label className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider ml-1">Año de Lanzamiento</label>
+                            <label className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider ml-1">Imagen URL (opcional)</label>
                             <input
-                                type="number"
-                                value={releaseYear}
-                                onChange={(e) => setReleaseYear(e.target.value)}
-                                min={1990}
-                                max={2030}
-                                className="w-full bg-black/40 border border-white/10 rounded-xl px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
-                                placeholder="Ej. 2008"
+                                value={imageUrl}
+                                onChange={(e) => setImageUrl(e.target.value)}
+                                className="w-full bg-black/40 border border-white/10 rounded-xl px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all"
+                                placeholder="https://..."
                             />
                         </div>
 
@@ -228,7 +224,7 @@ export default function LinesClient() {
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
                                 rows={2}
-                                className="w-full bg-black/40 border border-white/10 rounded-xl px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all resize-none"
+                                className="w-full bg-black/40 border border-white/10 rounded-xl px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all resize-none"
                                 placeholder="Opcional..."
                             />
                         </div>
@@ -236,12 +232,12 @@ export default function LinesClient() {
                         <button
                             type="submit"
                             disabled={saving}
-                            className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 md:py-4 rounded-xl transition-all shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed group text-sm md:text-base"
+                            className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 md:py-4 rounded-xl transition-all shadow-lg shadow-cyan-600/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed group text-sm md:text-base"
                         >
                             {saving ? 'Guardando...' : (
                                 <>
                                     <Save size={18} className="group-hover:scale-110 transition-transform" />
-                                    {editingId ? 'Actualizar Línea' : 'Crear Línea'}
+                                    {editingId ? 'Actualizar Personaje' : 'Crear Personaje'}
                                 </>
                             )}
                         </button>
@@ -250,7 +246,7 @@ export default function LinesClient() {
             </motion.div>
 
             {/* Right Column: List */}
-            <motion.div 
+            <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
@@ -259,9 +255,9 @@ export default function LinesClient() {
                 {/* Search Bar */}
                 <div className="relative mb-6">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
-                    <input 
-                        type="text" 
-                        placeholder="Buscar líneas..." 
+                    <input
+                        type="text"
+                        placeholder="Buscar personajes..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="w-full bg-uiBase/30 backdrop-blur-sm border border-white/10 rounded-2xl pl-12 pr-4 py-4 text-white focus:outline-none focus:border-white/30 transition-all shadow-lg"
@@ -271,36 +267,46 @@ export default function LinesClient() {
                 {/* Results */}
                 {loading ? (
                     <div className="text-center py-12 text-gray-500">Cargando...</div>
-                ) : filteredLines.length === 0 ? (
+                ) : filteredCharacters.length === 0 ? (
                     <div className="text-center py-12 bg-uiBase/20 rounded-3xl border border-white/5 border-dashed">
-                        <p className="text-gray-500">No se encontraron líneas.</p>
+                        <p className="text-gray-500">No se encontraron personajes.</p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <AnimatePresence mode='popLayout'>
-                            {filteredLines.map(line => (
+                            {filteredCharacters.map(character => (
                                 <motion.div
                                     layout
                                     initial={{ opacity: 0, scale: 0.9 }}
                                     animate={{ opacity: 1, scale: 1 }}
                                     exit={{ opacity: 0, scale: 0.9 }}
-                                    key={line.id}
-                                    className={`group bg-uiBase/40 backdrop-blur-md border rounded-2xl p-5 transition-all ${editingId === line.id ? 'border-blue-500/50 ring-1 ring-blue-500/50 bg-blue-500/5' : 'border-white/5 hover:bg-uiBase/60 hover:border-white/20'}`}
+                                    key={character.id}
+                                    className={`group bg-uiBase/40 backdrop-blur-md border rounded-2xl p-5 transition-all ${editingId === character.id ? 'border-cyan-500/50 ring-1 ring-cyan-500/50 bg-cyan-500/5' : 'border-white/5 hover:bg-uiBase/60 hover:border-white/20'}`}
                                 >
                                     <div className="flex justify-between items-start mb-4">
-                                        <div className="p-3 rounded-xl bg-white/5 text-blue-400 group-hover:bg-blue-500/20 transition-colors">
-                                            <Layers size={24} />
+                                        <div className="flex items-center gap-3">
+                                            {character.imageUrl ? (
+                                                <img
+                                                    src={character.imageUrl}
+                                                    alt={character.name}
+                                                    className="w-12 h-12 rounded-xl object-cover border border-white/10"
+                                                />
+                                            ) : (
+                                                <div className="p-3 rounded-xl bg-white/5 text-cyan-400 group-hover:bg-cyan-500/20 transition-colors">
+                                                    <User size={24} />
+                                                </div>
+                                            )}
                                         </div>
                                         <div className="flex items-center gap-1">
-                                            <button 
-                                                onClick={() => handleEdit(line)}
-                                                className="p-2 rounded-lg text-gray-600 hover:text-blue-400 hover:bg-blue-500/10 transition-colors"
+                                            <button
+                                                onClick={() => handleEdit(character)}
+                                                className="p-2 rounded-lg text-gray-600 hover:text-cyan-400 hover:bg-cyan-500/10 transition-colors"
                                                 title="Editar"
                                             >
                                                 <Edit2 size={18} />
                                             </button>
-                                            <button 
-                                                onClick={() => handleDelete(line.id)}
+                                            <button
+                                                onClick={() => handleDelete(character.id)}
                                                 className="p-2 rounded-lg text-gray-600 hover:text-red-400 hover:bg-red-500/10 transition-colors"
                                                 title="Eliminar"
                                             >
@@ -308,21 +314,19 @@ export default function LinesClient() {
                                             </button>
                                         </div>
                                     </div>
-                                    
-                                    <h3 className="text-xl font-bold text-white mb-1">{line.name}</h3>
-                                    <p className="text-sm text-gray-400 mb-2">
-                                        <span className="text-blue-400 font-medium">{line.brand.name}</span>
-                                        {line.releaseYear && ` • ${line.releaseYear}`}
-                                    </p>
-                                    
-                                    {line.description && (
-                                        <p className="text-sm text-gray-500 mb-4 line-clamp-2">{line.description}</p>
+
+                                    <h3 className="text-xl font-bold text-white mb-1">{character.name}</h3>
+                                    {character.series && (
+                                        <p className="text-sm text-cyan-400 font-medium mb-2">{character.series.name}</p>
+                                    )}
+                                    {character.description && (
+                                        <p className="text-sm text-gray-400 mb-4 line-clamp-2">{character.description}</p>
                                     )}
 
                                     <div className="flex items-center gap-4 pt-4 border-t border-white/5">
                                         <div className="flex items-center gap-2 text-xs text-gray-400">
                                             <Box size={14} />
-                                            <span className="font-bold text-white">{line._count.figures}</span> Figuras
+                                            <span className="font-bold text-white">{character._count.figures}</span> Figuras
                                         </div>
                                     </div>
                                 </motion.div>

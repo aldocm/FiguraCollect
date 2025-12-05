@@ -14,6 +14,7 @@ export async function GET(
       include: {
         brand: true,
         line: true,
+        character: { include: { series: true } },
         images: { orderBy: { order: 'asc' } },
         tags: { include: { tag: true } },
         series: { include: { series: true } },
@@ -104,6 +105,7 @@ export async function PUT(
       isNSFW,
       brandId,
       lineId,
+      characterId,
       images,
       tagIds,
       seriesIds
@@ -169,11 +171,13 @@ export async function PUT(
         isReleased: isReleased !== undefined ? isReleased : existing.isReleased,
         isNSFW: isNSFW !== undefined ? isNSFW : existing.isNSFW,
         brandId: brandId !== undefined ? brandId : existing.brandId,
-        lineId: lineId !== undefined ? lineId : existing.lineId
+        lineId: lineId !== undefined ? lineId : existing.lineId,
+        characterId: characterId !== undefined ? characterId : existing.characterId
       },
       include: {
         brand: true,
         line: true,
+        character: { include: { series: true } },
         images: true,
         tags: { include: { tag: true } },
         series: { include: { series: true } }

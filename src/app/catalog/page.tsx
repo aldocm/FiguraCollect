@@ -14,6 +14,7 @@ interface PageProps {
     brandId?: string
     lineId?: string
     seriesId?: string
+    characterId?: string
     search?: string
     isReleased?: string
     page?: string
@@ -51,6 +52,11 @@ export default async function CatalogPage({ searchParams }: PageProps) {
     }
   }
 
+  // Handle Character ID
+  if (params.characterId) {
+    where.characterId = params.characterId
+  }
+
   if (params.search) where.name = { contains: params.search }
   if (params.isReleased !== undefined && params.isReleased !== '') {
     where.isReleased = params.isReleased === 'true'
@@ -77,7 +83,7 @@ export default async function CatalogPage({ searchParams }: PageProps) {
       break
   }
 
-  const [figures, total, brands, lines, seriesRaw] = await Promise.all([
+  const [figures, total, brands, lines, seriesRaw, characters] = await Promise.all([
     prisma.figure.findMany({
       where,
       include: {
@@ -99,7 +105,7 @@ export default async function CatalogPage({ searchParams }: PageProps) {
       orderBy: { name: 'asc' }
     }),
     prisma.series.findMany({
-      include: { 
+      include: {
         _count: { select: { figures: true } },
         figures: {
             select: {
@@ -111,6 +117,13 @@ export default async function CatalogPage({ searchParams }: PageProps) {
                 }
             }
         }
+      },
+      orderBy: { name: 'asc' }
+    }),
+    prisma.character.findMany({
+      include: {
+        series: { select: { id: true, name: true } },
+        _count: { select: { figures: true } }
       },
       orderBy: { name: 'asc' }
     })
@@ -152,6 +165,7 @@ export default async function CatalogPage({ searchParams }: PageProps) {
         brands={brands}
         lines={lines}
         series={series}
+        characters={characters}
         page={page}
         pages={pages}
       />
