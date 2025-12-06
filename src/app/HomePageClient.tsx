@@ -2,91 +2,66 @@
 
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { LayoutGrid, Calendar, Clock, ArrowRight } from 'lucide-react'
+import { LayoutGrid, Calendar, Clock, ArrowRight, Sparkles } from 'lucide-react'
 import FigureCard from '@/components/FigureCard'
-import FeaturedListCard from '@/components/FeaturedListCard'
 
-// Define types for the data props based on the prisma queries in page.tsx
-type Figure = {
+// --- TYPES ---
+// These should match what we return from page.tsx
+type FigureData = {
   id: string
   name: string
-  releaseDate: string | null
-  priceMXN?: number | null
   isReleased: boolean
+  releaseDate: string | null
+  priceMXN: number | null
+  priceUSD: number | null
+  priceYEN: number | null
+  originalPriceCurrency: string | null
   brand: { name: string }
   line?: { name: string }
   images: { url: string }[]
+  averageRating: number
 }
 
-type List = {
+type HomeSectionData = {
   id: string
-  name: string
-  createdBy: { username: string }
-  items: {
-    id: string
-    figure: {
-      images: { url: string }[]
-    }
-  }[]
-  _count: { items: number }
+  title: string
+  type: string
+  viewAllUrl: string | null
+  data: FigureData[]
 }
 
 interface HomePageClientProps {
-  featuredLists: List[]
-  upcomingFigures: Figure[]
-  recentFigures: Figure[]
+  sections: HomeSectionData[]
 }
 
+// --- ANIMATIONS ---
 const sectionVariants = {
   hidden: { opacity: 0, y: 50 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: {
-      duration: 0.6,
-      ease: 'easeOut',
-    },
+    transition: { duration: 0.6, ease: 'easeOut' },
   },
 }
 
-export default function HomePageClient({
-  featuredLists,
-  upcomingFigures,
-  recentFigures,
-}: HomePageClientProps) {
-  // Define animation variants for staggered items within sections
-  const listContainerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1, // Stagger lists
-      },
-    },
-  };
+const figureContainerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.07 },
+  },
+}
 
-  const figureContainerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.07, // Stagger figures
-      },
-    },
-  };
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { type: 'spring', stiffness: 100, damping: 15 },
+  },
+}
 
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        type: 'spring',
-        stiffness: 100,
-        damping: 15,
-      },
-    },
-  };
+export default function HomePageClient({ sections }: HomePageClientProps) {
 
   const navCards = [
     {
@@ -119,7 +94,7 @@ export default function HomePageClient({
   ]
 
   return (
-    <div className="space-y-8 md:space-y-10 pb-20">
+    <div className="space-y-8 md:space-y-10 pb-8">
       
       {/* 1. Navigation Hero Section */}
       <motion.section
@@ -148,96 +123,102 @@ export default function HomePageClient({
         ))}
       </motion.section>
 
-      {/* 2. Recently Added Section */}
-      {recentFigures.length > 0 && (
-        <motion.section
-          variants={sectionVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
+      {/* 2. Dynamic Sections */}
+      {sections.map((section) => {
+        // Skip empty sections
+        if (!section.data || section.data.length === 0) return null
+
+        return (
+            <motion.section
+                key={section.id}
+                variants={sectionVariants}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.2 }}
+            >
+                <div className="flex justify-between items-baseline mb-4 md:mb-6">
+                    <h2 className="font-title text-xl md:text-3xl font-bold text-textWhite">
+                        {section.title}
+                    </h2>
+                    
+                    {/* "View All" Arrow Logic */}
+                    {section.viewAllUrl && (
+                        <Link 
+                            href={section.viewAllUrl} 
+                            className="font-body text-xs md:text-sm text-accent hover:text-primary transition-colors flex items-center gap-1"
+                        >
+                            Ver todo <ArrowRight size={14} />
+                        </Link>
+                    )}
+                </div>
+
+                <motion.div 
+                    className="flex gap-6 overflow-x-auto pb-4 -mx-4 px-4 custom-scrollbar"
+                    variants={figureContainerVariants}
+                    initial="hidden"
+                    animate="visible"
+                >
+                    {section.data.map((figure) => (
+                        <div key={figure.id} className="flex-shrink-0 w-48">
+                            {/* @ts-expect-error - types compatibility */}
+                            <FigureCard figure={figure} animationVariants={itemVariants} />
+                        </div>
+                    ))}
+
+                    {/* "See More" Card if we have 15 items (implying there might be more) */}
+                    {section.data.length >= 15 && section.viewAllUrl && (
+                         <motion.div variants={itemVariants} className="flex-shrink-0 w-48 h-full">
+                            <Link 
+                                href={section.viewAllUrl}
+                                className="h-full min-h-[250px] flex flex-col items-center justify-center rounded-xl border border-white/5 bg-white/5 hover:bg-white/10 hover:border-primary/50 transition-all group"
+                            >
+                                <div className="p-4 rounded-full bg-white/5 group-hover:bg-primary group-hover:text-white transition-colors mb-4">
+                                    <ArrowRight size={24} />
+                                </div>
+                                <span className="text-sm font-bold text-white">Ver más</span>
+                            </Link>
+                         </motion.div>
+                    )}
+                </motion.div>
+            </motion.section>
+        )
+      })}
+
+      {sections.every(s => !s.data || s.data.length === 0) && (
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.2, duration: 0.5 }}
+          className="relative py-20 px-4 flex flex-col items-center text-center"
         >
-          <div className="flex justify-between items-baseline mb-4 md:mb-6">
-            <h2 className="font-title text-xl md:text-3xl font-bold text-textWhite">Agregadas Recientemente</h2>
-            <Link href="/catalog" className="font-body text-xs md:text-sm text-accent hover:text-primary transition-colors">
-              Ver catálogo →
-            </Link>
+          {/* Decorative Background */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+             <div className="w-64 h-64 bg-gradient-to-tr from-primary/20 to-purple-500/20 rounded-full blur-[100px]" />
           </div>
-          <motion.div 
-            className="flex gap-6 overflow-x-auto pb-4 -mx-4 px-4 custom-scrollbar"
-            variants={figureContainerVariants}
-            initial="hidden"
-            animate="visible"
-          >
-            {recentFigures.map(figure => (
-              <div key={figure.id} className="flex-shrink-0 w-48">
-            {/* @ts-expect-error - types are slightly different but compatible for display */}
-                <FigureCard figure={figure} animationVariants={itemVariants} />
-              </div>
-            ))}
-          </motion.div>
-        </motion.section>
-      )}
 
-      {/* 3. Upcoming Releases Section */}
-      {upcomingFigures.length > 0 && (
-        <motion.section
-          variants={sectionVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
-        >
-          <div className="flex justify-between items-baseline mb-4 md:mb-6">
-            <h2 className="font-title text-xl md:text-3xl font-bold text-textWhite">Próximos Lanzamientos</h2>
-            <Link href="/catalog?isReleased=false" className="font-body text-xs md:text-sm text-accent hover:text-primary transition-colors">
-              Ver todos →
-            </Link>
+          <div className="relative z-10 bg-white/5 border border-white/10 p-8 md:p-12 rounded-3xl backdrop-blur-md max-w-2xl shadow-2xl">
+            <div className="inline-flex p-4 rounded-2xl bg-gradient-to-br from-primary/20 to-purple-500/20 border border-white/10 mb-6 shadow-inner">
+              <Sparkles className="w-10 h-10 md:w-12 md:h-12 text-primary" />
+            </div>
+            
+            <h2 className="text-2xl md:text-4xl font-black text-white mb-4 font-title tracking-tight">
+              ¡Bienvenido a FiguraCollect!
+            </h2>
+            
+            <p className="text-gray-400 text-lg leading-relaxed mb-8 font-body">
+              Parece que el catálogo aún se está organizando. No te preocupes, puedes empezar a explorar usando las herramientas de arriba o volver pronto para ver las novedades destacadas.
+            </p>
+
+            <div className="flex flex-wrap justify-center gap-4 text-sm font-medium text-gray-500">
+              <span className="px-4 py-2 rounded-full bg-white/5 border border-white/5">
+                ✨ Colección en crecimiento
+              </span>
+              <span className="px-4 py-2 rounded-full bg-white/5 border border-white/5">
+                🚀 Próximos lanzamientos
+              </span>
+            </div>
           </div>
-          <motion.div 
-            className="flex gap-6 overflow-x-auto pb-4 -mx-4 px-4 custom-scrollbar"
-            variants={figureContainerVariants}
-            initial="hidden"
-            animate="visible"
-          >
-            {upcomingFigures.map(figure => (
-              <div key={figure.id} className="flex-shrink-0 w-48">
-            {/* @ts-expect-error - types are slightly different but compatible for display */}
-                <FigureCard figure={figure} animationVariants={itemVariants} />
-              </div>
-            ))}
-          </motion.div>
-        </motion.section>
-      )}
-
-      {/* 4. Featured Lists Section */}
-      {featuredLists.length > 0 && (
-        <motion.section
-          variants={sectionVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
-        >
-          <h2 className="font-title text-xl md:text-3xl font-bold text-textWhite mb-4 md:mb-6">Listas Destacadas</h2>
-          <motion.div 
-            className="flex gap-6 overflow-x-auto pb-4 -mx-4 px-4 custom-scrollbar"
-            variants={listContainerVariants}
-            initial="hidden"
-            animate="visible"
-          >
-            {featuredLists.map(list => (
-              // @ts-expect-error - types are slightly different but compatible for display
-              <FeaturedListCard key={list.id} list={list} animationVariants={itemVariants} />
-            ))}
-          </motion.div>
-        </motion.section>
-      )}
-
-      {recentFigures.length === 0 && featuredLists.length === 0 && upcomingFigures.length === 0 && (
-        <div className="text-center py-20 text-textWhite/50 font-body">
-          <p>No hay figuras en el catálogo aún.</p>
-          <p className="text-sm mt-2">
-            Un administrador debe agregar figuras desde el panel de admin.
-          </p>
-        </div>
+        </motion.div>
       )}
     </div>
   )

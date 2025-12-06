@@ -30,7 +30,7 @@ export default function RootLayout({
   const isAuthPage = pathname === '/login' || pathname === '/register';
 
   return (
-    <html lang="es" className="h-full">
+    <html lang="es" className="min-h-screen">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background min-h-screen flex flex-col`}
       >

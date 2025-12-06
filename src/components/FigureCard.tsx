@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { ChevronDown, Clock } from 'lucide-react'
+import { ChevronDown, Clock, Star } from 'lucide-react'
 import { Figure, Brand, FigureImage, Line } from '@prisma/client'
 
 // Extending the Figure type to include relations
@@ -10,6 +10,7 @@ type FigureWithRelations = Figure & {
   brand: Brand
   line?: Line // Line might not always be included in the HomePage queries
   images: FigureImage[]
+  averageRating?: number
 }
 
 interface FigureCardProps {
@@ -65,6 +66,18 @@ const FigureCard = ({ figure, animationVariants }: FigureCardProps) => {
                 <Clock size={12} className="md:hidden" />
                 <span className="hidden md:inline">Por Lanzar</span>
               </span>
+            )}
+            
+            {/* Rating Badge */}
+            {figure.averageRating !== undefined && figure.averageRating > 0 && (
+               <span className={`
+                 backdrop-blur-sm text-white text-[10px] font-bold px-1.5 py-1 rounded border border-white/10 flex items-center gap-1 shadow-lg
+                 ${!figure.isReleased ? 'ml-2' : 'ml-auto'} 
+                 bg-yellow-500/80 border-yellow-400/30
+               `}>
+                 <Star size={10} className="fill-white" />
+                 {figure.averageRating.toFixed(1)}
+               </span>
             )}
           </div>
         </div>

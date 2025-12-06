@@ -12,7 +12,8 @@
       "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"sí\" npx prisma migrate reset:*)",
       "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"sí\" npx prisma db push:*)",
       "Bash(npm run dev:*)",
-      "Bash(node check-users.js:*)"
+      "Bash(node check-users.js:*)",
+      "Bash(node:*)"
     ],
     "deny": [],
     "ask": []

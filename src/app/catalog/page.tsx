@@ -83,13 +83,14 @@ export default async function CatalogPage({ searchParams }: PageProps) {
       break
   }
 
-  const [figures, total, brands, lines, seriesRaw, characters] = await Promise.all([
+  const [figuresRaw, total, brands, lines, seriesRaw, characters] = await Promise.all([
     prisma.figure.findMany({
       where,
       include: {
         brand: true,
         line: true,
-        images: { take: 1, orderBy: { order: 'asc' } }
+        images: { take: 1, orderBy: { order: 'asc' } },
+        reviews: { select: { rating: true } }
       },
       orderBy: orderBy,
       skip: (page - 1) * limit,
@@ -129,6 +130,13 @@ export default async function CatalogPage({ searchParams }: PageProps) {
     })
   ])
 
+  // Calculate average rating for each figure
+  const figures = figuresRaw.map(figure => {
+    const totalRating = figure.reviews.reduce((acc, review) => acc + review.rating, 0)
+    const averageRating = figure.reviews.length > 0 ? totalRating / figure.reviews.length : 0
+    return { ...figure, averageRating }
+  })
+
   // Transform series to include sets of valid BrandIDs and LineIDs for client-side filtering
   const series = seriesRaw.map(s => {
     const brandIds = new Set<string>()
@@ -161,6 +169,7 @@ export default async function CatalogPage({ searchParams }: PageProps) {
         </p>
       </div>
       <CatalogClient
+        // @ts-expect-error - types match closely enough
         figures={figures}
         brands={brands}
         lines={lines}

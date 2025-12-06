@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { motion, Variants } from 'framer-motion'
 import {
   Users, Layers, Tags, Box, Library, BadgeCheck,
-  ArrowRight, ShieldAlert, Activity, BarChart3, User
+  ArrowRight, ShieldAlert, Activity, BarChart3, User, LayoutTemplate, Settings2
 } from 'lucide-react'
 
 interface AdminDashboardClientProps {
@@ -114,11 +114,21 @@ export default function AdminDashboardClient({ user, stats }: AdminDashboardClie
       bg: 'from-indigo-500/20 to-violet-500/5',
       desc: 'Gestión de usuarios y roles',
       isSuper: true
+    },
+    { 
+      href: '/admin/home', 
+      label: 'Home Layout', 
+      count: -1, 
+      icon: LayoutTemplate, 
+      color: 'text-pink-400',
+      bg: 'from-pink-500/20 to-rose-500/5',
+      desc: 'Personalizar página de inicio',
+      isSuper: true
     }
   ]
 
   return (
-    <div className="min-h-screen bg-background pb-0 md:pb-20 relative overflow-hidden">
+    <div className="flex-1 bg-background pb-0 md:pb-20 relative overflow-hidden">
        {/* Background Elements */}
        <div className="fixed inset-0 pointer-events-none">
           <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-blue-900/10 to-transparent opacity-30" />
@@ -181,7 +191,9 @@ export default function AdminDashboardClient({ user, stats }: AdminDashboardClie
                                   <card.icon className="w-4 h-4 md:w-8 md:h-8" />
                               </div>
                               <div className="px-1.5 md:px-3 py-0.5 md:py-1 rounded-full bg-black/20 border border-white/5">
-                                  <span className="text-sm md:text-2xl font-black text-white">{card.count}</span>
+                                  <span className="text-sm md:text-2xl font-black text-white">
+                                    {card.count === -1 ? <Settings2 size={20} /> : card.count}
+                                  </span>
                               </div>
                           </div>
 
@@ -217,7 +229,9 @@ export default function AdminDashboardClient({ user, stats }: AdminDashboardClie
                                   <card.icon className="w-4 h-4 md:w-8 md:h-8" />
                               </div>
                               <div className="px-1.5 md:px-3 py-0.5 md:py-1 rounded-full bg-black/20 border border-white/5">
-                                  <span className="text-sm md:text-2xl font-black text-white">{card.count}</span>
+                                  <span className="text-sm md:text-2xl font-black text-white">
+                                    {card.count === -1 ? <Settings2 size={20} /> : card.count}
+                                  </span>
                               </div>
                           </div>
 

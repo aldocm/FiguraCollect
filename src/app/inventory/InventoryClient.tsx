@@ -216,7 +216,7 @@ export default function InventoryClient({ items, user }: InventoryClientProps) {
   const wishlistCount = items.filter(i => i.status === 'WISHLIST').length
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="flex-1 bg-background pb-20">
        {/* Decorative Background */}
        <div className="fixed inset-0 z-0 pointer-events-none">
           <div className="absolute top-0 left-0 w-full h-96 bg-gradient-to-b from-primary/5 to-transparent opacity-50" />

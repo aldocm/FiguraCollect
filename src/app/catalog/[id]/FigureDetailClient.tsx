@@ -199,7 +199,7 @@ export default function FigureDetailClient({ figure, user, userFigure, defaultMe
     : null
 
   return (
-    <div className="min-h-screen pb-20 relative bg-background">
+    <div className="flex-1 pb-20 relative bg-background">
       
       {/* Ambient Background */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">

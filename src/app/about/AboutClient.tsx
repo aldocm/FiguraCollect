@@ -45,7 +45,7 @@ const FaqItem = ({ question, answer }: { question: string, answer: string }) => 
 
 export default function AboutClient() {
   return (
-    <div className="min-h-screen pb-20">
+    <div className="flex-1 pb-20">
       {/* Hero Section - Moved from Home */}
       <motion.section
         className="relative py-24 md:py-32 text-center overflow-hidden"

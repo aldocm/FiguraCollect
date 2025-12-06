@@ -6,7 +6,7 @@ import { Ghost, ArrowLeft } from 'lucide-react'
 
 export default function NotFoundPage() {
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 text-center relative overflow-hidden">
+    <div className="flex-1 bg-background flex flex-col items-center justify-center p-4 text-center relative overflow-hidden">
       {/* Background Elements */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-red-500/5 rounded-full blur-[150px] animate-pulse-slow" />

@@ -12,10 +12,17 @@
   --textWhite: #F5F7FA; /* Ice White */
 }
 
+html {
+  min-height: 100%;
+}
+
 body {
   color: var(--textWhite);
   background: var(--background);
   font-family: 'Roboto', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 @layer utilities {

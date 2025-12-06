@@ -351,7 +351,7 @@ export default function CatalogClient({
   }
 
   return (
-    <div className="flex flex-col lg:flex-row gap-8 relative min-h-screen">
+    <div className="flex flex-col lg:flex-row gap-8 relative flex-1">
       
       {/* Mobile Filter Toggle */}
       <div className="lg:hidden mb-2 flex justify-between items-center bg-uiBase rounded-xl border border-white/10">
