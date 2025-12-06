@@ -48,6 +48,16 @@ const itemVariants: Variants = {
 export default function AdminDashboardClient({ user, stats }: AdminDashboardClientProps) {
   const adminCards = [
     { 
+      href: '/admin/home', 
+      label: 'Home Layout', 
+      count: -1, 
+      icon: LayoutTemplate, 
+      color: 'text-pink-400',
+      bg: 'from-pink-500/20 to-rose-500/5',
+      desc: 'Personalizar página de inicio',
+      isSuper: true
+    },
+    { 
       href: '/admin/brands', 
       label: 'Marcas', 
       count: stats.brands, 
@@ -75,15 +85,6 @@ export default function AdminDashboardClient({ user, stats }: AdminDashboardClie
       desc: 'Franquicias y series de origen'
     },
     {
-      href: '/admin/tags',
-      label: 'Tags',
-      count: stats.tags,
-      icon: Tags,
-      color: 'text-emerald-400',
-      bg: 'from-emerald-500/20 to-green-500/5',
-      desc: 'Etiquetas y categorías'
-    },
-    {
       href: '/admin/characters',
       label: 'Personajes',
       count: stats.characters,
@@ -101,6 +102,15 @@ export default function AdminDashboardClient({ user, stats }: AdminDashboardClie
       bg: 'from-primary/20 to-red-900/5',
       desc: 'Catálogo completo de figuras',
       featured: true
+    },
+    {
+      href: '/admin/tags',
+      label: 'Tags',
+      count: stats.tags,
+      icon: Tags,
+      color: 'text-emerald-400',
+      bg: 'from-emerald-500/20 to-green-500/5',
+      desc: 'Etiquetas y categorías'
     }
   ]
 
@@ -113,16 +123,6 @@ export default function AdminDashboardClient({ user, stats }: AdminDashboardClie
       color: 'text-indigo-400',
       bg: 'from-indigo-500/20 to-violet-500/5',
       desc: 'Gestión de usuarios y roles',
-      isSuper: true
-    },
-    { 
-      href: '/admin/home', 
-      label: 'Home Layout', 
-      count: -1, 
-      icon: LayoutTemplate, 
-      color: 'text-pink-400',
-      bg: 'from-pink-500/20 to-rose-500/5',
-      desc: 'Personalizar página de inicio',
       isSuper: true
     }
   ]

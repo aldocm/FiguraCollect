@@ -29,7 +29,7 @@ interface ListsPageClientProps {
 
 // --- Components ---
 
-const SectionHeader = ({ title, icon: Icon }: { title: string, icon: any }) => (
+const SectionHeader = ({ title, icon: Icon }: { title: string, icon: React.ElementType }) => (
   <div className="flex items-center gap-3 mb-6">
     <div className="p-2 bg-primary/10 rounded-lg">
       <Icon className="text-primary w-6 h-6" />

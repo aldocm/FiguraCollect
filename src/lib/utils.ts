@@ -124,3 +124,61 @@ export function formatDimensions(
 export function getUnitLabel(unit: MeasureUnit): string {
   return unit === 'cm' ? 'Centímetros' : 'Pulgadas'
 }
+
+// ==========================================
+// PRICING UTILITIES
+// ==========================================
+
+type CurrencyType = 'MXN' | 'USD' | 'YEN'
+
+interface FigureWithPrices {
+  priceMXN?: number | null
+  priceUSD?: number | null
+  priceYEN?: number | null
+  originalPriceCurrency?: string | null
+}
+
+/**
+ * Format a figure's price based on its original currency
+ */
+export function formatFigurePrice(figure: FigureWithPrices): string | null {
+  const currency = (figure.originalPriceCurrency as CurrencyType) || 'YEN'
+
+  switch (currency) {
+    case 'MXN':
+      return figure.priceMXN ? `$${figure.priceMXN.toLocaleString('es-MX')} MXN` : null
+    case 'USD':
+      return figure.priceUSD ? `$${figure.priceUSD.toLocaleString('en-US')} USD` : null
+    case 'YEN':
+    default:
+      return figure.priceYEN ? `¥${figure.priceYEN.toLocaleString('ja-JP')}` : null
+  }
+}
+
+// ==========================================
+// RATING UTILITIES
+// ==========================================
+
+interface ReviewWithRating {
+  rating: number
+}
+
+/**
+ * Calculate average rating from reviews array
+ */
+export function calculateAverageRating(reviews: ReviewWithRating[]): number {
+  if (!reviews || reviews.length === 0) return 0
+  const total = reviews.reduce((sum, review) => sum + review.rating, 0)
+  return total / reviews.length
+}
+
+// ==========================================
+// INVENTORY CONSTANTS
+// ==========================================
+
+export const INVENTORY_STATUSES = ['WISHLIST', 'PREORDER', 'OWNED'] as const
+export type InventoryStatus = typeof INVENTORY_STATUSES[number]
+
+export function isValidInventoryStatus(status: string): status is InventoryStatus {
+  return INVENTORY_STATUSES.includes(status as InventoryStatus)
+}

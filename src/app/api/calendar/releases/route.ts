@@ -12,15 +12,13 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Invalid date params' }, { status: 400 })
   }
 
-  // Calculate start and end of the month
-  const startDate = new Date(year, month, 1)
-  const endDate = new Date(year, month + 1, 0)
+  // releaseDate is stored as "YYYY-MM" or "YYYY-MM-DD" string format
+  // JavaScript months are 0-indexed, so we add 1
+  const monthStr = String(month + 1).padStart(2, '0')
+  const releaseDatePattern = `${year}-${monthStr}`
 
-  const where: any = {
-    releaseDate: {
-      gte: startDate,
-      lte: endDate
-    }
+  const where: Record<string, unknown> = {
+    releaseDate: { startsWith: releaseDatePattern }
   }
 
   if (brandId) where.brandId = brandId

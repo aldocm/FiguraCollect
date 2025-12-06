@@ -1,13 +1,15 @@
 import { prisma } from '@/lib/db'
 import CatalogClient from './CatalogClient'
 import type { Metadata } from 'next'
+import { calculateAverageRating } from '@/lib/utils'
 
 export const metadata: Metadata = {
   title: 'Catálogo | FiguraCollect',
   description: 'Explora nuestra base de datos completa de figuras.'
 }
 
-export const dynamic = 'force-dynamic'
+// ISR: revalidate every 60 seconds for fresh data with caching
+export const revalidate = 60
 
 interface PageProps {
   searchParams: Promise<{
@@ -130,12 +132,11 @@ export default async function CatalogPage({ searchParams }: PageProps) {
     })
   ])
 
-  // Calculate average rating for each figure
-  const figures = figuresRaw.map(figure => {
-    const totalRating = figure.reviews.reduce((acc, review) => acc + review.rating, 0)
-    const averageRating = figure.reviews.length > 0 ? totalRating / figure.reviews.length : 0
-    return { ...figure, averageRating }
-  })
+  // Calculate average rating for each figure using centralized function
+  const figures = figuresRaw.map(figure => ({
+    ...figure,
+    averageRating: calculateAverageRating(figure.reviews)
+  }))
 
   // Transform series to include sets of valid BrandIDs and LineIDs for client-side filtering
   const series = seriesRaw.map(s => {

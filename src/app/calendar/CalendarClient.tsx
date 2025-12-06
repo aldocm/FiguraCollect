@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Filter, X, ArrowRight, ChevronDown, ChevronUp, SlidersHorizontal } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, ChevronDown, SlidersHorizontal, Clock } from 'lucide-react'
 
 type Figure = {
   id: string
@@ -19,7 +19,45 @@ interface CalendarClientProps {
   lines: { id: string; name: string; brandId?: string }[]
 }
 
-const DAYS = ['DOM', 'LUN', 'MAR', 'MIE', 'JUE', 'VIE', 'SAB']
+// Figure Card Component
+const FigureCard = ({ fig }: { fig: Figure }) => (
+  <Link
+    href={`/catalog/${fig.id}`}
+    className="group relative aspect-[3/4] bg-uiBase/50 rounded-xl overflow-hidden border border-white/5 hover:border-primary/50 transition-all shadow-lg hover:shadow-primary/10"
+  >
+    {/* Image */}
+    <div className="w-full h-full">
+      {fig.images[0] ? (
+        <img
+          src={fig.images[0].url}
+          alt={fig.name}
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+          loading="lazy"
+        />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center text-gray-600 bg-black/20">
+          <CalendarIcon size={32} />
+        </div>
+      )}
+    </div>
+
+    {/* Overlay Gradient */}
+    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
+
+    {/* Content */}
+    <div className="absolute bottom-0 left-0 right-0 p-3 translate-y-2 group-hover:translate-y-0 transition-transform">
+      <p className="text-[10px] text-primary font-bold uppercase tracking-wider mb-0.5">
+        {fig.brand.name}
+      </p>
+      <h4 className="text-sm font-bold text-white leading-tight line-clamp-2 group-hover:text-primary transition-colors">
+        {fig.name}
+      </h4>
+      <p className="text-[10px] text-gray-400 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        {fig.line.name}
+      </p>
+    </div>
+  </Link>
+)
 
 export default function CalendarClient({ brands, lines }: CalendarClientProps) {
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -27,7 +65,6 @@ export default function CalendarClient({ brands, lines }: CalendarClientProps) {
   const [selectedLine, setSelectedLine] = useState('')
   const [figures, setFigures] = useState<Figure[]>([])
   const [loading, setLoading] = useState(false)
-  const [selectedDayFigures, setSelectedDayFigures] = useState<{ day: number, figures: Figure[] } | null>(null)
   const [filtersOpen, setFiltersOpen] = useState(false)
 
   const year = currentDate.getFullYear()
@@ -46,11 +83,6 @@ export default function CalendarClient({ brands, lines }: CalendarClientProps) {
 
   useEffect(() => {
     const fetchFigures = async () => {
-      if (!selectedBrand) {
-         setFigures([])
-         setLoading(false)
-         return
-      }
       setLoading(true)
       try {
         const params = new URLSearchParams({
@@ -74,23 +106,29 @@ export default function CalendarClient({ brands, lines }: CalendarClientProps) {
     fetchFigures()
   }, [year, month, selectedBrand, selectedLine])
 
-  // Calendar Logic
-  const firstDayOfMonth = new Date(year, month, 1).getDay()
-  const daysInMonth = new Date(year, month + 1, 0).getDate()
-  
-  const days = []
-  for (let i = 0; i < firstDayOfMonth; i++) {
-    days.push(null)
-  }
-  for (let i = 1; i <= daysInMonth; i++) {
-    days.push(i)
-  }
-
   const handlePrevMonth = () => setCurrentDate(new Date(year, month - 1, 1))
   const handleNextMonth = () => setCurrentDate(new Date(year, month + 1, 1))
 
-  // Group figures by day
-  const figuresByDay = figures.reduce((acc, fig) => {
+  // Separate figures: those with exact day vs only month
+  const { figuresWithDay, figuresMonthOnly } = useMemo(() => {
+    const withDay: Figure[] = []
+    const monthOnly: Figure[] = []
+
+    figures.forEach(fig => {
+      // If releaseDate is "YYYY-MM" (7 chars) = month only
+      // If releaseDate is "YYYY-MM-DD" (10 chars) = has specific day
+      if (fig.releaseDate.length > 7) {
+        withDay.push(fig)
+      } else {
+        monthOnly.push(fig)
+      }
+    })
+
+    return { figuresWithDay: withDay, figuresMonthOnly: monthOnly }
+  }, [figures])
+
+  // Group figures WITH specific day by day number
+  const figuresByDay = figuresWithDay.reduce((acc, fig) => {
     const day = new Date(fig.releaseDate).getDate()
     if (!acc[day]) acc[day] = []
     acc[day].push(fig)
@@ -98,7 +136,7 @@ export default function CalendarClient({ brands, lines }: CalendarClientProps) {
   }, {} as Record<number, Figure[]>)
 
   return (
-    <div className="flex-1 bg-background pb-20 relative overflow-hidden">
+    <div className="flex-1 bg-background pb-20 relative min-h-screen">
         {/* Ambient Background */}
         <div className="fixed inset-0 pointer-events-none">
             <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px]" />
@@ -108,30 +146,80 @@ export default function CalendarClient({ brands, lines }: CalendarClientProps) {
         <div className="relative z-10">
             
             {/* Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-8 mb-6 md:mb-12">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 mb-8">
                 <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
                     <h1 className="text-2xl md:text-4xl font-title font-black text-white mb-1 md:mb-2">
                         Calendario de <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-500">Lanzamientos</span>
                     </h1>
                     <p className="text-gray-400 text-sm">
-                        Mantente al día con las fechas oficiales de salida.
+                        Explora las fechas de salida confirmadas. Organiza tu colección y no pierdas de vista tus figuras más esperadas.
                     </p>
                 </motion.div>
 
-                {/* Mobile Filter Toggle */}
-                <motion.button
+                {/* Desktop Filters */}
+                <motion.div
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  onClick={() => setFiltersOpen(!filtersOpen)}
-                  className="md:hidden flex items-center justify-center gap-2 bg-white/5 px-4 py-2.5 rounded-xl backdrop-blur-md border border-white/10 w-full"
+                  className="hidden lg:flex flex-wrap items-end gap-4"
                 >
-                  <SlidersHorizontal size={16} className="text-primary" />
-                  <span className="text-sm font-medium text-white">Filtros</span>
+                    {/* Brand Select */}
+                    <div className="w-48">
+                        <label className="block text-xs text-gray-500 uppercase font-bold mb-2 ml-1">Filtrar por Marca</label>
+                        <div className="relative">
+                            <select
+                                value={selectedBrand}
+                                onChange={(e) => handleBrandChange(e.target.value)}
+                                className="w-full appearance-none bg-uiBase/50 border border-white/10 rounded-xl pl-4 pr-10 py-2.5 text-sm text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all cursor-pointer hover:bg-uiBase/80"
+                            >
+                                <option value="" className="bg-[#1a1a1a] text-gray-400">Todas las marcas</option>
+                                {brands.map(b => (
+                                    <option key={b.id} value={b.id} className="bg-[#1a1a1a] text-white">{b.name}</option>
+                                ))}
+                            </select>
+                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
+                        </div>
+                    </div>
+
+                    {/* Line Select */}
+                    <div className="w-48">
+                         <label className="block text-xs text-gray-500 uppercase font-bold mb-2 ml-1">Filtrar por Línea</label>
+                        <div className="relative">
+                            <select
+                                value={selectedLine}
+                                onChange={(e) => setSelectedLine(e.target.value)}
+                                disabled={!selectedBrand || filteredLines.length === 0}
+                                className="w-full appearance-none bg-uiBase/50 border border-white/10 rounded-xl pl-4 pr-10 py-2.5 text-sm text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed hover:enabled:bg-uiBase/80"
+                            >
+                                <option value="" className="bg-[#1a1a1a] text-gray-400">
+                                    Selecciona una Línea
+                                </option>
+                                {filteredLines.map(l => (
+                                    <option key={l.id} value={l.id} className="bg-[#1a1a1a] text-white">{l.name}</option>
+                                ))}
+                            </select>
+                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
+                        </div>
+                    </div>
+                </motion.div>
+                
+                 {/* Mobile Filter Toggle */}
+                 <motion.button
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  onClick={() => setFiltersOpen(!filtersOpen)}
+                  className="lg:hidden flex items-center justify-between bg-uiBase/50 px-4 py-3 rounded-xl border border-white/10 w-full"
+                >
+                  <div className="flex items-center gap-3">
+                      <div className="bg-primary/20 p-2 rounded-lg">
+                        <SlidersHorizontal size={18} className="text-primary" />
+                      </div>
+                      <span className="text-sm font-medium text-white">Filtros de búsqueda</span>
+                  </div>
                   <motion.div
                     animate={{ rotate: filtersOpen ? 180 : 0 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <ChevronDown size={16} className="text-gray-400" />
+                    <ChevronDown size={18} className="text-gray-400" />
                   </motion.div>
                 </motion.button>
 
@@ -143,230 +231,201 @@ export default function CalendarClient({ brands, lines }: CalendarClientProps) {
                       animate={{ opacity: 1, height: 'auto' }}
                       exit={{ opacity: 0, height: 0 }}
                       transition={{ duration: 0.3, ease: 'easeInOut' }}
-                      className="md:hidden overflow-hidden w-full"
+                      className="lg:hidden overflow-hidden w-full"
                     >
-                      <div className="flex flex-wrap gap-2 bg-white/5 p-3 rounded-xl backdrop-blur-md border border-white/10">
+                      <div className="flex flex-col gap-3 bg-uiBase/30 p-4 rounded-xl border border-white/10 mt-2">
                         {/* Brand Select */}
                         <div className="relative w-full">
-                          <p className="text-[10px] text-gray-400 uppercase font-bold mb-0.5">Marca</p>
+                          <p className="text-[10px] text-gray-400 uppercase font-bold mb-1.5">Marca</p>
                           <select
                             value={selectedBrand}
                             onChange={(e) => handleBrandChange(e.target.value)}
-                            className="w-full appearance-none bg-black/40 border border-white/10 rounded-lg pl-3 pr-8 py-2 text-sm text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all cursor-pointer text-center"
+                            className="w-full appearance-none bg-black/40 border border-white/10 rounded-lg pl-3 pr-8 py-3 text-sm text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all cursor-pointer"
                           >
-                            <option value="" disabled className="bg-[#1a1a1a] text-gray-400">Selecciona una Marca</option>
+                            <option value="" className="bg-[#1a1a1a] text-gray-400">Todas las marcas</option>
                             {brands.map(b => (
                               <option key={b.id} value={b.id} className="bg-[#1a1a1a] text-white">{b.name}</option>
                             ))}
                           </select>
-                          <ChevronDown className="absolute right-2 top-[calc(50%+2px)] -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
+                          <ChevronDown className="absolute right-3 top-[calc(50%+10px)] -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
                         </div>
 
                         {/* Line Select */}
                         <div className="relative w-full">
-                          <p className="text-[10px] text-gray-400 uppercase font-bold mb-0.5">Línea</p>
+                          <p className="text-[10px] text-gray-400 uppercase font-bold mb-1.5">Línea</p>
                           <select
                             value={selectedLine}
                             onChange={(e) => setSelectedLine(e.target.value)}
-                            disabled={!selectedBrand}
-                            className="w-full appearance-none bg-black/40 border border-white/10 rounded-lg pl-3 pr-8 py-2 text-sm text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed text-center"
+                            disabled={!selectedBrand || filteredLines.length === 0}
+                            className="w-full appearance-none bg-black/40 border border-white/10 rounded-lg pl-3 pr-8 py-3 text-sm text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             <option value="" className="bg-[#1a1a1a] text-gray-400">Selecciona una Línea</option>
                             {filteredLines.map(l => (
                               <option key={l.id} value={l.id} className="bg-[#1a1a1a] text-white">{l.name}</option>
                             ))}
                           </select>
-                          <ChevronDown className="absolute right-2 top-[calc(50%+2px)] -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
+                          <ChevronDown className="absolute right-3 top-[calc(50%+10px)] -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
                         </div>
                       </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
-
-                {/* Desktop Filters - Always Visible */}
-                <motion.div
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="hidden md:flex flex-wrap gap-4 bg-white/5 p-4 rounded-2xl border border-white/10 backdrop-blur-md"
-                >
-                    {/* Brand Select */}
-                    <div className="relative min-w-[180px]">
-                        <p className="text-xs text-gray-400 uppercase font-bold mb-1">Marca</p>
-                        <select
-                            value={selectedBrand}
-                            onChange={(e) => handleBrandChange(e.target.value)}
-                            className="w-full appearance-none bg-black/40 border border-white/10 rounded-xl pl-4 pr-10 py-2 text-sm text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all cursor-pointer"
-                        >
-                            <option value="" disabled className="bg-[#1a1a1a] text-gray-400">Selecciona una Marca</option>
-                            {brands.map(b => (
-                                <option key={b.id} value={b.id} className="bg-[#1a1a1a] text-white">{b.name}</option>
-                            ))}
-                        </select>
-                        <ChevronDown className="absolute right-3 top-[calc(50%+10px)] -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
-                    </div>
-
-                    {/* Line Select */}
-                    <div className="relative min-w-[180px]">
-                        <p className="text-xs text-gray-400 uppercase font-bold mb-1">Línea</p>
-                        <select
-                            value={selectedLine}
-                            onChange={(e) => setSelectedLine(e.target.value)}
-                            disabled={!selectedBrand}
-                            className="w-full appearance-none bg-black/40 border border-white/10 rounded-xl pl-4 pr-10 py-2 text-sm text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            <option value="" className="bg-[#1a1a1a] text-gray-400">
-                                Selecciona una Línea
-                            </option>
-                            {filteredLines.map(l => (
-                                <option key={l.id} value={l.id} className="bg-[#1a1a1a] text-white">{l.name}</option>
-                            ))}
-                        </select>
-                        <ChevronDown className="absolute right-3 top-[calc(50%+10px)] -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
-                    </div>
-                </motion.div>
             </div>
 
             {/* Calendar Controls */}
-            <div className="flex items-center justify-between mb-6 bg-uiBase/40 backdrop-blur-xl py-2 px-3 md:p-4 rounded-xl md:rounded-2xl border border-white/10">
-                <button
-                    onClick={handlePrevMonth}
-                    disabled={!selectedBrand}
-                    className="p-1.5 md:p-2 rounded-full hover:bg-white/10 text-white transition-colors disabled:opacity-30"
-                >
-                    <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
-                </button>
+            <div className="sticky top-4 z-20 bg-background/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl shadow-black/50 mb-8">
+                <div className="flex items-center justify-between p-2 md:p-3">
+                    <button
+                        onClick={handlePrevMonth}
+                        className="p-2 md:p-3 rounded-xl hover:bg-white/10 text-white transition-all active:scale-95"
+                    >
+                        <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
+                    </button>
 
-                <h2 className="text-base md:text-2xl font-title font-bold text-white uppercase tracking-wider">
-                    {currentDate.toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })}
-                </h2>
+                    <div className="flex flex-col items-center">
+                        <h2 className="text-lg md:text-2xl font-title font-black text-white uppercase tracking-wider">
+                            {currentDate.toLocaleDateString('es-MX', { month: 'long' })}
+                        </h2>
+                        <span className="text-xs md:text-sm text-primary font-bold">
+                            {year}
+                        </span>
+                    </div>
 
-                <button
-                    onClick={handleNextMonth}
-                    disabled={!selectedBrand}
-                    className="p-1.5 md:p-2 rounded-full hover:bg-white/10 text-white transition-colors disabled:opacity-30"
-                >
-                    <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
-                </button>
+                    <button
+                        onClick={handleNextMonth}
+                        className="p-2 md:p-3 rounded-xl hover:bg-white/10 text-white transition-all active:scale-95"
+                    >
+                        <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
+                    </button>
+                </div>
             </div>
 
-            {/* Month Grid */}
-            <div className="bg-uiBase/30 backdrop-blur-md rounded-3xl p-1 md:p-6 border border-white/10 shadow-2xl relative min-h-[500px]">
-                
-                {!selectedBrand && (
-                   <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-background/60 backdrop-blur-sm rounded-3xl">
-                       <div className="bg-white/10 p-6 rounded-full mb-4">
-                           <Filter size={48} className="text-primary" />
-                       </div>
-                       <h3 className="text-2xl font-bold text-white mb-2">Selecciona una Marca</h3>
-                       <p className="text-gray-400">Para ver el calendario de lanzamientos.</p>
-                   </div>
-                )}
-
-                {/* Day Headers */}
-                <div className="grid grid-cols-7 mb-4">
-                    {DAYS.map(day => (
-                        <div key={day} className="text-center text-gray-500 text-xs font-bold tracking-widest py-2">
-                            {day}
+            {/* Calendar Content */}
+            <AnimatePresence mode="wait">
+              {loading ? (
+                <motion.div
+                  key="loading"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.2 }}
+                  className="min-h-[400px] flex flex-col items-center justify-center bg-uiBase/20 rounded-3xl border border-white/5"
+                >
+                    <div className="relative">
+                        <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+                        <CalendarIcon className="absolute inset-0 m-auto text-primary/50" size={24} />
+                    </div>
+                    <p className="text-gray-400 mt-4 font-medium animate-pulse">Consultando oráculo...</p>
+                </motion.div>
+              ) : figuresMonthOnly.length === 0 && Object.keys(figuresByDay).length === 0 ? (
+                <motion.div
+                  key="empty"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className="min-h-[400px] flex flex-col items-center justify-center bg-uiBase/20 rounded-3xl border border-white/5 text-center p-8"
+                >
+                  <div className="bg-white/5 p-6 rounded-full mb-4">
+                    <CalendarIcon size={48} className="text-gray-600" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-2">Sin lanzamientos</h3>
+                  <p className="text-gray-400 max-w-md mx-auto">
+                    No hemos encontrado figuras programadas para este mes con los filtros actuales. Intenta cambiar de mes o limpiar los filtros.
+                  </p>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key={`content-${year}-${month}`}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="space-y-8"
+                >
+                  {/* Month Releases (Figures without specific day) */}
+                  {figuresMonthOnly.length > 0 && (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3 ml-1">
+                        <div className="p-2 bg-orange-500/10 rounded-lg">
+                            <Clock size={20} className="text-orange-500" />
                         </div>
-                    ))}
-                </div>
+                        <div>
+                            <h3 className="text-lg font-bold text-white">Lanzamientos del Mes</h3>
+                            <p className="text-xs text-gray-400">Fecha exacta por confirmar</p>
+                        </div>
+                        <span className="ml-auto text-xs bg-white/10 text-white px-3 py-1 rounded-full font-medium">
+                          {figuresMonthOnly.length}
+                        </span>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-2 md:gap-3">
+                        {figuresMonthOnly.map(fig => (
+                          <FigureCard key={fig.id} fig={fig} />
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
-                {/* Days Grid */}
-                <div className="grid grid-cols-7 gap-1 md:gap-3 auto-rows-[80px] md:auto-rows-[140px]">
-                    {days.map((day, index) => {
-                        const dayFigures = day ? figuresByDay[day] : []
-                        const isToday = day === new Date().getDate() && month === new Date().getMonth() && year === new Date().getFullYear()
+                  {/* Divider if both exist */}
+                  {figuresMonthOnly.length > 0 && Object.keys(figuresByDay).length > 0 && (
+                      <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent my-8" />
+                  )}
 
+                  {/* Daily Releases */}
+                  <div className="space-y-6">
+                    {Object.entries(figuresByDay)
+                        .sort(([a], [b]) => parseInt(a) - parseInt(b))
+                        .map(([day, dayFigures]) => {
+                        const isToday = parseInt(day) === new Date().getDate() &&
+                                        month === new Date().getMonth() &&
+                                        year === new Date().getFullYear()
+                        
+                        const dateObj = new Date(year, month, parseInt(day))
+                        
                         return (
-                            <div 
-                                key={index} 
-                                onClick={() => day && dayFigures?.length ? setSelectedDayFigures({ day, figures: dayFigures }) : null}
-                                className={`
-                                    relative rounded-xl border p-2 transition-all
-                                    ${!day ? 'bg-transparent border-transparent' : 'bg-white/5 border-white/5 hover:bg-white/10 cursor-pointer'}
-                                    ${isToday ? 'ring-1 ring-primary bg-primary/10' : ''}
-                                    ${dayFigures?.length ? 'hover:border-primary/50 hover:shadow-[0_0_15px_rgba(225,6,44,0.2)]' : ''}
-                                `}
-                            >
-                                {day && (
-                                    <>
-                                        <span className={`text-sm font-bold ${isToday ? 'text-primary' : 'text-gray-400'}`}>
+                            <div key={day} className="relative">
+                                {isToday && (
+                                    <div className="absolute -left-4 top-0 bottom-0 w-1 bg-primary rounded-full hidden md:block shadow-[0_0_15px_rgba(225,6,44,0.6)]" />
+                                )}
+                                
+                                {/* Day Header */}
+                                <div className={`flex items-center gap-4 mb-4 ${isToday ? 'ml-2' : ''}`}>
+                                    <div className={`flex flex-col items-center justify-center w-12 h-14 md:w-14 md:h-16 rounded-2xl border shadow-lg ${
+                                        isToday 
+                                            ? 'bg-primary text-white border-primary shadow-primary/30' 
+                                            : 'bg-uiBase/80 text-gray-400 border-white/10'
+                                    }`}>
+                                        <span className="text-xs uppercase font-bold tracking-wider opacity-80">
+                                            {dateObj.toLocaleDateString('es-MX', { weekday: 'short' }).replace('.', '')}
+                                        </span>
+                                        <span className="text-xl md:text-2xl font-black leading-none">
                                             {day}
                                         </span>
-                                        
-                                        {/* Preview Images */}
-                                        {dayFigures && dayFigures.length > 0 && (
-                                            <div className="absolute inset-2 top-8 flex flex-wrap content-end gap-1">
-                                                {dayFigures.slice(0, 3).map((fig, i) => (
-                                                    <div key={fig.id} className="relative flex-grow h-full max-h-[80%] min-w-[30%] rounded-md overflow-hidden bg-black">
-                                                        {fig.images[0] && (
-                                                            <img src={fig.images[0].url} alt="" className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity" />
-                                                        )}
-                                                    </div>
-                                                ))}
-                                                {dayFigures.length > 3 && (
-                                                    <div className="absolute bottom-0 right-0 bg-primary text-white text-[10px] font-bold px-1 rounded">
-                                                        +{dayFigures.length - 3}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
-                                    </>
-                                )}
+                                    </div>
+                                    
+                                    <div className="h-px flex-1 bg-white/10" />
+                                    
+                                    {isToday && (
+                                        <span className="px-3 py-1 bg-primary/20 text-primary text-xs font-bold rounded-full border border-primary/20 animate-pulse">
+                                            HOY
+                                        </span>
+                                    )}
+                                </div>
+
+                                {/* Figures Grid for Day */}
+                                <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-2 md:gap-3 ${isToday ? 'pl-2 md:pl-0' : ''}`}>
+                                    {dayFigures.map(fig => (
+                                        <FigureCard key={fig.id} fig={fig} />
+                                    ))}
+                                </div>
                             </div>
                         )
                     })}
-                </div>
-            </div>
-        </div>
-
-        {/* Detail Modal */}
-        <AnimatePresence>
-            {selectedDayFigures && (
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
-                    onClick={() => setSelectedDayFigures(null)}
-                >
-                    <motion.div
-                        initial={{ scale: 0.9, y: 20 }}
-                        animate={{ scale: 1, y: 0 }}
-                        exit={{ scale: 0.9, y: 20 }}
-                        className="bg-[#1a1a1a] rounded-3xl border border-white/10 max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col"
-                        onClick={e => e.stopPropagation()}
-                    >
-                        <div className="p-6 border-b border-white/10 flex justify-between items-center bg-uiBase">
-                            <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                                <CalendarIcon className="text-primary" size={20} />
-                                Lanzamientos del {selectedDayFigures.day} de {currentDate.toLocaleDateString('es-MX', { month: 'long' })}
-                            </h3>
-                            <button onClick={() => setSelectedDayFigures(null)} className="text-gray-400 hover:text-white">
-                                <X size={24} />
-                            </button>
-                        </div>
-
-                        <div className="p-6 overflow-y-auto custom-scrollbar space-y-4">
-                            {selectedDayFigures.figures.map(fig => (
-                                <Link key={fig.id} href={`/catalog/${fig.id}`} className="flex items-center gap-4 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-all border border-white/5 hover:border-white/20 group">
-                                    <div className="w-16 h-16 rounded-lg bg-black overflow-hidden flex-shrink-0">
-                                        {fig.images[0] && (
-                                            <img src={fig.images[0].url} alt="" className="w-full h-full object-cover" />
-                                        )}
-                                    </div>
-                                    <div className="flex-grow">
-                                        <h4 className="font-bold text-white group-hover:text-primary transition-colors">{fig.name}</h4>
-                                        <p className="text-xs text-gray-400">{fig.brand.name} • {fig.line.name}</p>
-                                    </div>
-                                    <ArrowRight size={20} className="text-gray-600 group-hover:text-primary opacity-0 group-hover:opacity-100 transition-all transform group-hover:translate-x-1" />
-                                </Link>
-                            ))}
-                        </div>
-                    </motion.div>
+                  </div>
                 </motion.div>
-            )}
-        </AnimatePresence>
+              )}
+            </AnimatePresence>
+        </div>
     </div>
   )
 }

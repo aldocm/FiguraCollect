@@ -12,7 +12,15 @@ export const metadata: Metadata = {
 
 export const dynamic = 'force-dynamic'
 
-export default async function InventoryPage() {
+const ITEMS_PER_PAGE = 24
+
+interface PageProps {
+  searchParams: Promise<{ page?: string }>
+}
+
+export default async function InventoryPage({ searchParams }: PageProps) {
+  const params = await searchParams
+  const page = Math.max(1, parseInt(params.page || '1'))
   const user = await getCurrentUser()
 
   // --------------------------------------------------------------------------
@@ -86,25 +94,40 @@ export default async function InventoryPage() {
   // AUTHENTICATED VIEW (Normal Flow)
   // --------------------------------------------------------------------------
 
-  // Fetch all items for the user to enable client-side filtering/animations
-  const inventory = await prisma.userFigure.findMany({
-    where: { userId: user.id },
-    include: {
-      figure: {
-        include: {
-          brand: true,
-          line: true,
-          images: { take: 1, orderBy: { order: 'asc' } }
+  // Fetch items with pagination
+  const [inventory, totalCount] = await Promise.all([
+    prisma.userFigure.findMany({
+      where: { userId: user.id },
+      include: {
+        figure: {
+          include: {
+            brand: true,
+            line: true,
+            images: { take: 1, orderBy: { order: 'asc' } }
+          }
         }
-      }
-    },
-    orderBy: { createdAt: 'desc' }
-  })
+      },
+      orderBy: { createdAt: 'desc' },
+      take: ITEMS_PER_PAGE,
+      skip: (page - 1) * ITEMS_PER_PAGE
+    }),
+    prisma.userFigure.count({
+      where: { userId: user.id }
+    })
+  ])
+
+  const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE)
 
   return (
-    <InventoryClient 
-      items={inventory} 
-      user={{ name: user.name }} 
+    <InventoryClient
+      items={inventory}
+      user={{ name: user.name }}
+      pagination={{
+        currentPage: page,
+        totalPages,
+        totalItems: totalCount,
+        itemsPerPage: ITEMS_PER_PAGE
+      }}
     />
   )
 }

@@ -60,7 +60,7 @@ export default function ListDetailClient({
         <div className="absolute inset-0 z-0 grid grid-cols-4 opacity-30">
            {heroImages.map((url: string, i: number) => (
              <div key={i} className="relative h-64 md:h-80">
-               <img src={url} alt="" className="w-full h-full object-cover" />
+               <img src={url} alt="" className="w-full h-full object-cover" loading="lazy" />
                <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background" />
              </div>
            ))}
@@ -78,7 +78,7 @@ export default function ListDetailClient({
                 className="w-20 h-20 md:w-32 md:h-32 flex-shrink-0 rounded-2xl overflow-hidden border-2 border-white/10 shadow-2xl bg-uiBase"
               >
                 {heroImages[0] ? (
-                  <img src={heroImages[0]} alt="List Cover" className="w-full h-full object-cover" />
+                  <img src={heroImages[0]} alt="List Cover" className="w-full h-full object-cover" loading="lazy" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-white/20">
                     <ListIcon size={48} />

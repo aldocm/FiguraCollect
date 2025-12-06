@@ -1,9 +1,11 @@
 'use client'
 
+import React from 'react'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
+import { motion, Variants } from 'framer-motion'
 import { ChevronDown, Clock, Star } from 'lucide-react'
 import { Figure, Brand, FigureImage, Line } from '@prisma/client'
+import { formatFigurePrice } from '@/lib/utils'
 
 // Extending the Figure type to include relations
 type FigureWithRelations = Figure & {
@@ -15,25 +17,11 @@ type FigureWithRelations = Figure & {
 
 interface FigureCardProps {
   figure: FigureWithRelations
-  animationVariants?: any // Optional framer-motion variants
-}
-
-const formatPrice = (figure: FigureWithRelations) => {
-  const currency = figure.originalPriceCurrency || 'YEN'
-
-  switch (currency) {
-    case 'MXN':
-      return figure.priceMXN ? `$${figure.priceMXN.toLocaleString('es-MX')} MXN` : null
-    case 'USD':
-      return figure.priceUSD ? `$${figure.priceUSD.toLocaleString('en-US')} USD` : null
-    case 'YEN':
-    default:
-      return figure.priceYEN ? `¥${figure.priceYEN.toLocaleString('ja-JP')}` : null
-  }
+  animationVariants?: Variants
 }
 
 const FigureCard = ({ figure, animationVariants }: FigureCardProps) => {
-  const priceDisplay = formatPrice(figure)
+  const priceDisplay = formatFigurePrice(figure)
 
   return (
     <motion.div variants={animationVariants}>
@@ -47,6 +35,7 @@ const FigureCard = ({ figure, animationVariants }: FigureCardProps) => {
               src={figure.images[0].url}
               alt={figure.name}
               className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 ease-out"
+              loading="lazy"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-white/20">
@@ -110,4 +99,4 @@ const FigureCard = ({ figure, animationVariants }: FigureCardProps) => {
   )
 }
 
-export default FigureCard
+export default React.memo(FigureCard)

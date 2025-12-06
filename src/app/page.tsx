@@ -1,13 +1,15 @@
 import { prisma } from '@/lib/db'
 import HomePageClient from './HomePageClient'
 import type { Metadata } from 'next'
+import { calculateAverageRating } from '@/lib/utils'
 
 export const metadata: Metadata = {
   title: 'Inicio | FiguraCollect',
   description: 'La plataforma definitiva para coleccionistas de figuras.'
 }
 
-export const dynamic = 'force-dynamic'
+// ISR: revalidate every 60 seconds for fresh data with caching
+export const revalidate = 60
 
 export default async function HomePage() {
   // 1. Fetch Sections Config from DB
@@ -100,10 +102,10 @@ export default async function HomePage() {
         console.error(`Error fetching data for section ${section.id}`, e)
     }
 
-    // Calculate ratings
+    // Calculate ratings using centralized function
     const processedFigures = figures.map(f => ({
         ...f,
-        averageRating: f.reviews ? f.reviews.reduce((acc: number, r: { rating: number }) => acc + r.rating, 0) / (f.reviews.length || 1) : 0
+        averageRating: calculateAverageRating(f.reviews || [])
     }))
 
     return {

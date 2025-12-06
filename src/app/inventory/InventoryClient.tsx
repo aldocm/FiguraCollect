@@ -3,10 +3,10 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  Search, Filter, ArrowUpDown, Package, Heart, CalendarClock, 
+import {
+  Search, Filter, ArrowUpDown, Package, Heart, CalendarClock,
   DollarSign, TrendingUp, Grid, List as ListIcon, MoreVertical,
-  CheckCircle2, Trash2, AlertCircle
+  CheckCircle2, Trash2, AlertCircle, ChevronLeft, ChevronRight
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
@@ -30,14 +30,22 @@ type InventoryItem = {
   }
 }
 
+interface PaginationInfo {
+  currentPage: number
+  totalPages: number
+  totalItems: number
+  itemsPerPage: number
+}
+
 interface InventoryClientProps {
   items: InventoryItem[]
   user: { name: string | null }
+  pagination?: PaginationInfo
 }
 
 // --- Components ---
 
-const StatCard = ({ label, value, icon: Icon, colorClass }: any) => (
+const StatCard = ({ label, value, icon: Icon, colorClass }: { label: string, value: number, icon: React.ElementType, colorClass: string }) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
@@ -188,9 +196,78 @@ const InventoryCard = ({ item, onUpdate }: { item: InventoryItem, onUpdate: () =
   )
 }
 
+// --- Pagination Component ---
+const Pagination = ({ pagination }: { pagination: PaginationInfo }) => {
+  const { currentPage, totalPages, totalItems, itemsPerPage } = pagination
+  const router = useRouter()
+
+  const goToPage = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      router.push(`/inventory?page=${page}`)
+    }
+  }
+
+  if (totalPages <= 1) return null
+
+  const startItem = (currentPage - 1) * itemsPerPage + 1
+  const endItem = Math.min(currentPage * itemsPerPage, totalItems)
+
+  return (
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-8 p-4 bg-uiBase/30 backdrop-blur-md rounded-xl border border-white/5">
+      <p className="text-sm text-gray-400">
+        Mostrando <span className="text-white font-medium">{startItem}-{endItem}</span> de{' '}
+        <span className="text-white font-medium">{totalItems}</span> items
+      </p>
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => goToPage(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="p-2 rounded-lg bg-white/5 border border-white/10 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/10 transition-colors"
+        >
+          <ChevronLeft size={18} />
+        </button>
+        <div className="flex items-center gap-1">
+          {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+            let pageNum: number
+            if (totalPages <= 5) {
+              pageNum = i + 1
+            } else if (currentPage <= 3) {
+              pageNum = i + 1
+            } else if (currentPage >= totalPages - 2) {
+              pageNum = totalPages - 4 + i
+            } else {
+              pageNum = currentPage - 2 + i
+            }
+            return (
+              <button
+                key={pageNum}
+                onClick={() => goToPage(pageNum)}
+                className={`w-10 h-10 rounded-lg font-medium transition-colors ${
+                  currentPage === pageNum
+                    ? 'bg-primary text-white'
+                    : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
+                }`}
+              >
+                {pageNum}
+              </button>
+            )
+          })}
+        </div>
+        <button
+          onClick={() => goToPage(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="p-2 rounded-lg bg-white/5 border border-white/10 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/10 transition-colors"
+        >
+          <ChevronRight size={18} />
+        </button>
+      </div>
+    </div>
+  )
+}
+
 // --- Main Client Component ---
 
-export default function InventoryClient({ items, user }: InventoryClientProps) {
+export default function InventoryClient({ items, user, pagination }: InventoryClientProps) {
   const router = useRouter()
   const [filterStatus, setFilterStatus] = useState<string | 'ALL'>('ALL')
   const [searchQuery, setSearchQuery] = useState('')
@@ -200,7 +277,7 @@ export default function InventoryClient({ items, user }: InventoryClientProps) {
     router.refresh()
   }
 
-  // Filtering Logic
+  // Filtering Logic (client-side filtering on current page items)
   const filteredItems = items.filter(item => {
     const matchesStatus = filterStatus === 'ALL' || item.status === filterStatus
     const matchesSearch = item.figure.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -208,8 +285,8 @@ export default function InventoryClient({ items, user }: InventoryClientProps) {
     return matchesStatus && matchesSearch
   })
 
-  // Stats Calculation
-  const totalCount = items.length
+  // Stats Calculation (using pagination total if available)
+  const totalCount = pagination?.totalItems ?? items.length
   const totalValue = items.reduce((acc, item) => acc + (item.userPrice || item.figure.priceMXN || 0), 0)
   const ownedCount = items.filter(i => i.status === 'OWNED').length
   const preorderCount = items.filter(i => i.status === 'PREORDER').length
@@ -322,6 +399,9 @@ export default function InventoryClient({ items, user }: InventoryClientProps) {
                 </motion.div>
              )}
           </AnimatePresence>
+
+          {/* Pagination */}
+          {pagination && <Pagination pagination={pagination} />}
 
        </div>
     </div>

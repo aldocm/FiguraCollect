@@ -13,7 +13,16 @@
       "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"sí\" npx prisma db push:*)",
       "Bash(npm run dev:*)",
       "Bash(node check-users.js:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(curl:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm install:*)",
+      "WebSearch",
+      "WebFetch(domain:www.goodsmile.com)",
+      "WebFetch(domain:www.goodsmile.info)",
+      "WebFetch(domain:www.kotobukiya.co.jp)"
     ],
     "deny": [],
     "ask": []

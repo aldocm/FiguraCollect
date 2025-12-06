@@ -1,10 +1,11 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { User as UserIcon, Menu, X, LogOut, ShoppingBag, Shield, Bell, Check, Package, Search, ChevronDown, Box, Tag, Layers, ArrowRight } from 'lucide-react'
+import { User as UserIcon, Menu, X, LogOut, ShoppingBag, Shield, Bell, Check, Package, Search, ChevronDown, ArrowRight } from 'lucide-react'
+import { SearchResult, getSearchTypeIcon, getSearchTypeLabel, getSearchResultPath } from '@/lib/search'
 
 interface User {
   id: string
@@ -25,14 +26,6 @@ interface Notification {
     name: string
     images: { url: string }[]
   } | null
-}
-
-interface SearchResult {
-  id: string
-  name: string
-  type: 'figure' | 'brand' | 'line' | 'series'
-  image?: string
-  subtitle?: string
 }
 
 export function Nav() {
@@ -56,7 +49,77 @@ export function Nav() {
   const router = useRouter()
   const pathname = usePathname()
 
-  // Fetch user
+  // --- Memoized values ---
+  const isAdmin = useMemo(() => user?.role === 'ADMIN' || user?.role === 'SUPERADMIN', [user?.role])
+
+  const navLinks = useMemo(() => [
+    { name: 'Catálogo', href: '/catalog' },
+    { name: 'Calendario', href: '/calendar' },
+    { name: 'Listas', href: '/lists' },
+    { name: 'Timeline', href: '/timeline' },
+  ], [])
+
+  const navVariants = useMemo(() => ({
+    hidden: { y: -100, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { type: 'spring', stiffness: 100, damping: 20 }
+    }
+  }), [])
+
+  // --- Callbacks ---
+  const fetchNotifications = useCallback(async () => {
+    try {
+      const res = await fetch('/api/notifications?limit=10')
+      if (res.ok) {
+        const data = await res.json()
+        setNotifications(data.notifications)
+        setUnreadCount(data.unreadCount)
+      }
+    } catch (e) {
+      console.error('Error fetching notifications', e)
+    }
+  }, [])
+
+  const markAsRead = useCallback(async (notificationIds?: string[]) => {
+    try {
+      await fetch('/api/notifications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(notificationIds ? { notificationIds } : { markAllRead: true })
+      })
+      fetchNotifications()
+    } catch (e) {
+      console.error('Error marking notifications as read', e)
+    }
+  }, [fetchNotifications])
+
+  const handleNotificationClick = useCallback((notification: Notification) => {
+    if (!notification.isRead) {
+      markAsRead([notification.id])
+    }
+    if (notification.link) {
+      router.push(notification.link)
+      setShowNotifications(false)
+    }
+  }, [markAsRead, router])
+
+  const handleSearchSelect = useCallback((result: SearchResult) => {
+    router.push(getSearchResultPath(result))
+    setShowSearchResults(false)
+    setSearchQuery('')
+  }, [router])
+
+  const handleLogout = useCallback(async () => {
+    await fetch('/api/auth/logout', { method: 'POST' })
+    setUser(null)
+    router.push('/')
+    router.refresh()
+  }, [router])
+
+  // --- Effects ---
+  // Fetch user and handle scroll
   useEffect(() => {
     fetch('/api/auth/me')
       .then(res => res.ok ? res.json() : null)
@@ -73,15 +136,21 @@ export function Nav() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  // Fetch notifications when user is logged in
+  // Fetch notifications when user is logged in with visibility check
   useEffect(() => {
     if (user) {
       fetchNotifications()
-      // Poll for new notifications every 30 seconds
-      const interval = setInterval(fetchNotifications, 30000)
+
+      // Poll for new notifications every 60 seconds, but only when tab is visible
+      const interval = setInterval(() => {
+        if (document.visibilityState === 'visible') {
+          fetchNotifications()
+        }
+      }, 60000)
+
       return () => clearInterval(interval)
     }
-  }, [user])
+  }, [user, fetchNotifications])
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -130,7 +199,7 @@ export function Nav() {
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [showSearchResults, searchResults, selectedSearchIndex])
+  }, [showSearchResults, searchResults, selectedSearchIndex, handleSearchSelect])
 
   // Search debounce effect
   useEffect(() => {
@@ -159,108 +228,6 @@ export function Nav() {
 
     return () => clearTimeout(timer)
   }, [searchQuery])
-
-  const handleSearchSelect = (result: SearchResult) => {
-    let path = ''
-    switch (result.type) {
-      case 'figure':
-        path = `/catalog/${result.id}`
-        break
-      case 'brand':
-        path = `/catalog?brandId=${result.id}`
-        break
-      case 'line':
-        path = `/catalog?lineId=${result.id}`
-        break
-      case 'series':
-        path = `/catalog?seriesId=${result.id}`
-        break
-    }
-    router.push(path)
-    setShowSearchResults(false)
-    setSearchQuery('')
-  }
-
-  const getSearchIcon = (type: string) => {
-    switch (type) {
-      case 'figure': return Package
-      case 'brand': return Box
-      case 'line': return Layers
-      case 'series': return Tag
-      default: return Package
-    }
-  }
-
-  const getSearchTypeLabel = (type: string) => {
-    switch (type) {
-      case 'figure': return 'Figura'
-      case 'brand': return 'Marca'
-      case 'line': return 'Línea'
-      case 'series': return 'Serie'
-      default: return type
-    }
-  }
-
-  const fetchNotifications = async () => {
-    try {
-      const res = await fetch('/api/notifications?limit=10')
-      if (res.ok) {
-        const data = await res.json()
-        setNotifications(data.notifications)
-        setUnreadCount(data.unreadCount)
-      }
-    } catch (e) {
-      console.error('Error fetching notifications', e)
-    }
-  }
-
-  const markAsRead = async (notificationIds?: string[]) => {
-    try {
-      await fetch('/api/notifications', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(notificationIds ? { notificationIds } : { markAllRead: true })
-      })
-      fetchNotifications()
-    } catch (e) {
-      console.error('Error marking notifications as read', e)
-    }
-  }
-
-  const handleNotificationClick = (notification: Notification) => {
-    if (!notification.isRead) {
-      markAsRead([notification.id])
-    }
-    if (notification.link) {
-      router.push(notification.link)
-      setShowNotifications(false)
-    }
-  }
-
-  const handleLogout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' })
-    setUser(null)
-    router.push('/')
-    router.refresh()
-  }
-
-  const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPERADMIN'
-
-  const navLinks = [
-    { name: 'Catálogo', href: '/catalog' },
-    { name: 'Calendario', href: '/calendar' },
-    { name: 'Listas', href: '/lists' },
-    { name: 'Timeline', href: '/timeline' },
-  ]
-
-  const navVariants = {
-    hidden: { y: -100, opacity: 0 },
-    visible: { 
-      y: 0, 
-      opacity: 1,
-      transition: { type: 'spring', stiffness: 100, damping: 20 }
-    }
-  }
 
   return (
     <motion.nav
@@ -349,7 +316,7 @@ export function Nav() {
                       >
                         <div className="max-h-[400px] overflow-y-auto py-2">
                           {searchResults.map((result, index) => {
-                            const Icon = getSearchIcon(result.type)
+                            const Icon = getSearchTypeIcon(result.type)
                             return (
                               <button
                                 key={`${result.type}-${result.id}`}
@@ -361,7 +328,7 @@ export function Nav() {
                               >
                                 <div className="w-10 h-10 rounded-lg bg-white/5 flex-shrink-0 overflow-hidden flex items-center justify-center">
                                   {result.image ? (
-                                    <img src={result.image} alt="" className="w-full h-full object-cover" />
+                                    <img src={result.image} alt="" className="w-full h-full object-cover" loading="lazy" />
                                   ) : (
                                     <Icon size={18} className="text-gray-400" />
                                   )}

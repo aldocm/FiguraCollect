@@ -3,15 +3,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, X, Box, Tag, Layers, Package, ArrowRight, Command } from 'lucide-react'
-
-interface SearchResult {
-  id: string
-  name: string
-  type: 'figure' | 'brand' | 'line' | 'series'
-  image?: string
-  subtitle?: string
-}
+import { Search, X, ArrowRight, Command } from 'lucide-react'
+import { SearchResult, getSearchTypeIcon, getSearchTypeLabel, getSearchResultPath } from '@/lib/search'
 
 interface SearchModalProps {
   isOpen: boolean
@@ -101,43 +94,8 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   }, [query])
 
   const handleSelect = (result: SearchResult) => {
-    let path = ''
-    switch (result.type) {
-      case 'figure':
-        path = `/catalog/${result.id}`
-        break
-      case 'brand':
-        path = `/catalog?brandId=${result.id}`
-        break
-      case 'line':
-        path = `/catalog?lineId=${result.id}`
-        break
-      case 'series':
-        path = `/catalog?seriesId=${result.id}`
-        break
-    }
-    router.push(path)
+    router.push(getSearchResultPath(result))
     onClose()
-  }
-
-  const getIcon = (type: string) => {
-    switch (type) {
-      case 'figure': return Package
-      case 'brand': return Box
-      case 'line': return Layers
-      case 'series': return Tag
-      default: return Package
-    }
-  }
-
-  const getTypeLabel = (type: string) => {
-    switch (type) {
-      case 'figure': return 'Figura'
-      case 'brand': return 'Marca'
-      case 'line': return 'Línea'
-      case 'series': return 'Serie'
-      default: return type
-    }
   }
 
   return (
@@ -195,7 +153,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                 ) : results.length > 0 ? (
                   <div className="py-2">
                     {results.map((result, index) => {
-                      const Icon = getIcon(result.type)
+                      const Icon = getSearchTypeIcon(result.type)
                       return (
                         <button
                           key={`${result.type}-${result.id}`}
@@ -208,7 +166,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                           {/* Image or Icon */}
                           <div className="w-12 h-12 rounded-lg bg-white/5 flex-shrink-0 overflow-hidden flex items-center justify-center">
                             {result.image ? (
-                              <img src={result.image} alt="" className="w-full h-full object-cover" />
+                              <img src={result.image} alt="" className="w-full h-full object-cover" loading="lazy" />
                             ) : (
                               <Icon size={20} className="text-gray-500" />
                             )}
@@ -219,7 +177,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                             <p className="text-white font-medium truncate">{result.name}</p>
                             <p className="text-xs text-gray-500 flex items-center gap-2">
                               <span className="px-1.5 py-0.5 bg-white/5 rounded text-[10px] uppercase font-bold">
-                                {getTypeLabel(result.type)}
+                                {getSearchTypeLabel(result.type)}
                               </span>
                               {result.subtitle && <span className="truncate">{result.subtitle}</span>}
                             </p>

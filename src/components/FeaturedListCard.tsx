@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { motion } from 'framer-motion'
+import { motion, Variants } from 'framer-motion'
 import { User, FigureImage } from '@prisma/client'
 import { ListPlus, ImageOff } from 'lucide-react'
 
@@ -27,7 +27,7 @@ type ListWithRelations = {
 
 interface FeaturedListCardProps {
   list: ListWithRelations
-  animationVariants?: any // Optional framer-motion variants
+  animationVariants?: Variants
 }
 
 const FeaturedListCard = ({ list, animationVariants }: FeaturedListCardProps) => {
