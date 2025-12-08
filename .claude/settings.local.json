@@ -22,7 +22,8 @@
       "WebSearch",
       "WebFetch(domain:www.goodsmile.com)",
       "WebFetch(domain:www.goodsmile.info)",
-      "WebFetch(domain:www.kotobukiya.co.jp)"
+      "WebFetch(domain:www.kotobukiya.co.jp)",
+      "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"Si\" npx prisma migrate reset:*)"
     ],
     "deny": [],
     "ask": []
