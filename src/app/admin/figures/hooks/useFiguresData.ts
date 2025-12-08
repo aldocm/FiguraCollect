@@ -13,6 +13,7 @@ interface FiguresData {
   loading: boolean
   setFigures: React.Dispatch<React.SetStateAction<Figure[]>>
   setCharacters: React.Dispatch<React.SetStateAction<Character[]>>
+  setSeriesList: React.Dispatch<React.SetStateAction<Series[]>>
   refetch: () => Promise<void>
 }
 
@@ -67,6 +68,7 @@ export function useFiguresData(): FiguresData {
     loading,
     setFigures,
     setCharacters,
+    setSeriesList,
     refetch: fetchData
   }
 }

@@ -27,6 +27,7 @@ interface FigureFormProps {
   onToggleTag: (tagId: string) => void
   onToggleSeries: (seriesId: string) => void
   onShowNewCharacterModal: () => void
+  onShowNewSeriesModal: () => void
 }
 
 export const FigureForm = memo(function FigureForm({
@@ -46,7 +47,8 @@ export const FigureForm = memo(function FigureForm({
   onCancelEdit,
   onToggleTag,
   onToggleSeries,
-  onShowNewCharacterModal
+  onShowNewCharacterModal,
+  onShowNewSeriesModal
 }: FigureFormProps) {
   return (
     <motion.div
@@ -89,7 +91,10 @@ export const FigureForm = memo(function FigureForm({
             brands={brands}
             filteredLines={filteredLines}
             characters={characters}
+            seriesList={seriesList}
             onShowNewCharacterModal={onShowNewCharacterModal}
+            onShowNewSeriesModal={onShowNewSeriesModal}
+            onToggleSeries={onToggleSeries}
           />
 
           {/* Prices & Dates */}
@@ -106,12 +111,10 @@ export const FigureForm = memo(function FigureForm({
           {/* Images */}
           <ImagesSection form={form} setForm={setForm} />
 
-          {/* Taxonomy */}
+          {/* Tags */}
           <TaxonomySection
             form={form}
-            seriesList={seriesList}
             tags={tags}
-            onToggleSeries={onToggleSeries}
             onToggleTag={onToggleTag}
           />
 
@@ -143,14 +146,20 @@ function BasicInfoSection({
   brands,
   filteredLines,
   characters,
-  onShowNewCharacterModal
+  seriesList,
+  onShowNewCharacterModal,
+  onShowNewSeriesModal,
+  onToggleSeries
 }: {
   form: FigureFormData
   setForm: React.Dispatch<React.SetStateAction<FigureFormData>>
   brands: Brand[]
   filteredLines: Line[]
   characters: Character[]
+  seriesList: Series[]
   onShowNewCharacterModal: () => void
+  onShowNewSeriesModal: () => void
+  onToggleSeries: (seriesId: string) => void
 }) {
   return (
     <div className="space-y-3 md:space-y-4">
@@ -169,6 +178,18 @@ function BasicInfoSection({
             required
           />
         </div>
+        <div className="col-span-2">
+          <label className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider ml-1 mb-1 block">
+            Descripción
+          </label>
+          <textarea
+            value={form.description}
+            onChange={(e) => setForm({ ...form, description: e.target.value })}
+            rows={3}
+            className="w-full bg-black/40 border border-white/10 rounded-xl px-3 md:px-4 py-2 text-sm md:text-base text-white focus:border-primary transition-all resize-none"
+            placeholder="Descripción de la figura..."
+          />
+        </div>
         <div>
           <label className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider ml-1 mb-1 block">
             Marca *
@@ -177,7 +198,7 @@ function BasicInfoSection({
             <select
               value={form.brandId}
               onChange={(e) => setForm({ ...form, brandId: e.target.value, lineId: '' })}
-              className="w-full appearance-none bg-black/40 border border-white/10 rounded-xl px-3 md:px-4 py-2 text-sm md:text-base text-white focus:border-primary transition-all"
+              className="w-full appearance-none bg-black/40 border border-white/10 rounded-xl px-3 md:px-4 py-2 text-sm md:text-base text-white focus:border-primary transition-all [&>option]:bg-gray-900 [&>option]:text-white"
               required
             >
               <option value="">Selecciona</option>
@@ -194,7 +215,7 @@ function BasicInfoSection({
             <select
               value={form.lineId}
               onChange={(e) => setForm({ ...form, lineId: e.target.value })}
-              className="w-full appearance-none bg-black/40 border border-white/10 rounded-xl px-3 md:px-4 py-2 text-sm md:text-base text-white focus:border-primary transition-all disabled:opacity-50"
+              className="w-full appearance-none bg-black/40 border border-white/10 rounded-xl px-3 md:px-4 py-2 text-sm md:text-base text-white focus:border-primary transition-all disabled:opacity-50 [&>option]:bg-gray-900 [&>option]:text-white"
               required
               disabled={!form.brandId}
             >
@@ -202,6 +223,40 @@ function BasicInfoSection({
               {filteredLines.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
             </select>
             <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+          </div>
+        </div>
+        <div className="col-span-2">
+          <label className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider ml-1 mb-1 block">
+            Serie (opcional)
+          </label>
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <select
+                value={form.seriesIds[0] || ''}
+                onChange={(e) => {
+                  if (e.target.value) {
+                    onToggleSeries(e.target.value)
+                  } else {
+                    setForm({ ...form, seriesIds: [] })
+                  }
+                }}
+                className="w-full appearance-none bg-black/40 border border-white/10 rounded-xl px-3 md:px-4 py-2 text-sm md:text-base text-white focus:border-primary transition-all [&>option]:bg-gray-900 [&>option]:text-white"
+              >
+                <option value="">Sin serie</option>
+                {seriesList.map(s => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </select>
+              <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+            </div>
+            <button
+              type="button"
+              onClick={onShowNewSeriesModal}
+              className="px-3 py-2 bg-purple-600/20 border border-purple-500/30 rounded-xl text-purple-400 hover:bg-purple-600/30 transition-colors"
+              title="Crear nueva serie"
+            >
+              <Plus size={16} />
+            </button>
           </div>
         </div>
         <div className="col-span-2">
@@ -213,7 +268,7 @@ function BasicInfoSection({
               <select
                 value={form.characterId}
                 onChange={(e) => setForm({ ...form, characterId: e.target.value })}
-                className="w-full appearance-none bg-black/40 border border-white/10 rounded-xl px-3 md:px-4 py-2 text-sm md:text-base text-white focus:border-primary transition-all"
+                className="w-full appearance-none bg-black/40 border border-white/10 rounded-xl px-3 md:px-4 py-2 text-sm md:text-base text-white focus:border-primary transition-all [&>option]:bg-gray-900 [&>option]:text-white"
               >
                 <option value="">Sin personaje</option>
                 {characters.map(c => (
@@ -445,45 +500,20 @@ function ImagesSection({
 
 function TaxonomySection({
   form,
-  seriesList,
   tags,
-  onToggleSeries,
   onToggleTag
 }: {
   form: FigureFormData
-  seriesList: Series[]
   tags: TagType[]
-  onToggleSeries: (seriesId: string) => void
   onToggleTag: (tagId: string) => void
 }) {
   return (
     <div className="space-y-4">
       <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-white/10 pb-2 flex items-center gap-2">
-        <Tag size={14} /> Taxonomía
+        <Tag size={14} /> Tags
       </h3>
 
       <div>
-        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 ml-1">Series</p>
-        <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto custom-scrollbar p-1 border border-white/5 rounded-xl bg-black/20">
-          {seriesList.map(s => (
-            <button
-              key={s.id}
-              type="button"
-              onClick={() => onToggleSeries(s.id)}
-              className={`px-2 py-1 text-[10px] font-bold uppercase rounded border transition-colors ${
-                form.seriesIds.includes(s.id)
-                  ? 'bg-purple-500/20 border-purple-500 text-purple-300'
-                  : 'bg-white/5 border-white/10 text-gray-500 hover:border-white/30'
-              }`}
-            >
-              {s.name}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div>
-        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 ml-1">Tags</p>
         <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto custom-scrollbar p-1 border border-white/5 rounded-xl bg-black/20">
           {tags.map(t => (
             <button

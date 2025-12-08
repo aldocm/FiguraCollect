@@ -11,9 +11,10 @@ import {
   FigureCatalogItem,
   PendingFigureItem,
   ViewModeTabs,
-  NewCharacterModal
+  NewCharacterModal,
+  NewSeriesModal
 } from './components'
-import type { ViewMode, Character } from './types'
+import type { ViewMode, Character, Series } from './types'
 
 export default function FiguresClient() {
   // Data hook
@@ -27,6 +28,7 @@ export default function FiguresClient() {
     loading,
     setFigures,
     setCharacters,
+    setSeriesList,
     refetch
   } = useFiguresData()
 
@@ -50,6 +52,7 @@ export default function FiguresClient() {
   // Local state
   const [searchTerm, setSearchTerm] = useState('')
   const [showNewCharacterModal, setShowNewCharacterModal] = useState(false)
+  const [showNewSeriesModal, setShowNewSeriesModal] = useState(false)
   const [viewMode, setViewMode] = useState<ViewMode>('catalog')
   const [pendingViewSnapshot, setPendingViewSnapshot] = useState<string[]>([])
 
@@ -122,6 +125,11 @@ export default function FiguresClient() {
     setForm(f => ({ ...f, characterId: character.id }))
   }, [setCharacters, setForm])
 
+  const handleSeriesCreated = useCallback((series: Series) => {
+    setSeriesList(prev => [...prev, series])
+    setForm(f => ({ ...f, seriesIds: [series.id] }))
+  }, [setSeriesList, setForm])
+
   const handleToggleDimensionUnit = useCallback(() => {
     setDimensionUnit(u => u === 'cm' ? 'in' : 'cm')
   }, [setDimensionUnit])
@@ -175,6 +183,7 @@ export default function FiguresClient() {
             onToggleTag={toggleTag}
             onToggleSeries={toggleSeries}
             onShowNewCharacterModal={() => setShowNewCharacterModal(true)}
+            onShowNewSeriesModal={() => setShowNewSeriesModal(true)}
           />
 
           {/* Right Column: List */}
@@ -283,6 +292,13 @@ export default function FiguresClient() {
         onClose={() => setShowNewCharacterModal(false)}
         seriesList={seriesList}
         onCharacterCreated={handleCharacterCreated}
+      />
+
+      {/* New Series Modal */}
+      <NewSeriesModal
+        isOpen={showNewSeriesModal}
+        onClose={() => setShowNewSeriesModal(false)}
+        onSeriesCreated={handleSeriesCreated}
       />
     </div>
   )

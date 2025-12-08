@@ -47,7 +47,7 @@ export function ImageGallery({
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="w-full h-full object-contain p-2 md:p-6"
+            className="w-full h-full object-contain"
           />
         </AnimatePresence>
 

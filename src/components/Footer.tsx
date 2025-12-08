@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Github, Twitter, Instagram, Youtube, Mail } from 'lucide-react'
+import { Github, Twitter, Instagram, Youtube, Heart, Coffee } from 'lucide-react'
 
 export function Footer() {
   
@@ -86,23 +86,24 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Newsletter Column */}
+          {/* Support Column */}
           <div>
-            <h3 className="text-white font-bold mb-4 font-title">Mantente al día</h3>
-            <p className="text-gray-400 text-sm mb-4">Suscríbete para recibir las últimas noticias de lanzamientos.</p>
-            <form className="flex gap-2">
-              <div className="relative flex-grow">
-                <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
-                <input 
-                  type="email" 
-                  placeholder="Tu email" 
-                  className="w-full bg-white/5 border border-white/10 rounded-lg py-2 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-primary transition-colors"
-                />
-              </div>
-              <button className="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors">
-                OK
-              </button>
-            </form>
+            <h3 className="text-white font-bold mb-4 font-title flex items-center gap-2">
+              <Heart size={18} className="text-primary" />
+              Apoya el proyecto
+            </h3>
+            <p className="text-gray-400 text-sm mb-4">
+              Ayuda a que FiguraCollect siga creciendo. Tu apoyo nos permite seguir mejorando la plataforma para toda la comunidad.
+            </p>
+            <a
+              href="https://ko-fi.com/aldocm"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-[#FF5E5B] hover:bg-[#FF5E5B]/90 text-white px-5 py-2.5 rounded-lg text-sm font-bold transition-all hover:scale-105 active:scale-95 shadow-lg shadow-[#FF5E5B]/20"
+            >
+              <Coffee size={18} />
+              Invítame un café
+            </a>
           </div>
 
         </div>

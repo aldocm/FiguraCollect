@@ -49,32 +49,32 @@ const FigureCard = ({ figure, animationVariants }: FigureCardProps) => {
             </div>
           )}
 
-          {/* Badge overlay */}
+          {/* Top badges - Release status & Rating */}
           <div className="absolute top-3 left-3 right-3 flex justify-between items-start">
-            {priceDisplay && (
-              <span className="bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded border border-white/10">
-                {priceDisplay}
-              </span>
-            )}
             {!figure.isReleased && figure.releaseDate && (
-              <span className="bg-blue-600/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider shadow-lg ml-auto flex items-center gap-1">
+              <span className="bg-blue-600/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider shadow-lg flex items-center gap-1">
                 <Clock size={12} className="md:hidden" />
                 <span className="hidden md:inline">Por Lanzar</span>
               </span>
             )}
-            
+
             {/* Rating Badge */}
             {figure.averageRating !== undefined && figure.averageRating > 0 && (
-               <span className={`
-                 backdrop-blur-sm text-white text-[10px] font-bold px-1.5 py-1 rounded border border-white/10 flex items-center gap-1 shadow-lg
-                 ${!figure.isReleased ? 'ml-2' : 'ml-auto'} 
-                 bg-yellow-500/80 border-yellow-400/30
-               `}>
+               <span className="backdrop-blur-sm text-white text-[10px] font-bold px-1.5 py-1 rounded border border-white/10 flex items-center gap-1 shadow-lg ml-auto bg-yellow-500/80 border-yellow-400/30">
                  <Star size={10} className="fill-white" />
                  {figure.averageRating.toFixed(1)}
                </span>
             )}
           </div>
+
+          {/* Bottom badge - Price */}
+          {priceDisplay && (
+            <div className="absolute bottom-3 right-3">
+              <span className="bg-black/70 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded border border-white/10">
+                {priceDisplay}
+              </span>
+            </div>
+          )}
         </div>
 
         <div className="p-4 flex flex-col flex-grow relative">

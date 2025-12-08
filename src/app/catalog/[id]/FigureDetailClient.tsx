@@ -27,6 +27,7 @@ type Figure = {
   priceMXN: number | null
   priceUSD: number | null
   priceYEN: number | null
+  originalPriceCurrency: string | null
   brand: { id: string; name: string }
   line: { id: string; name: string }
   character?: { id: string; name: string; series?: { id: string; name: string } | null } | null
@@ -145,14 +146,31 @@ export default function FigureDetailClient({
                   {/* Price Section */}
                   <div className="lg:mb-6">
                     <p className="text-xs text-gray-400 font-medium mb-1">Precio</p>
-                    <div className="flex items-start gap-0.5 lg:gap-1">
-                      <span className="text-[10px] lg:text-sm font-bold text-white mt-0.5 lg:mt-1">$</span>
-                      <span className="text-lg lg:text-3xl font-bold text-white">{figure.priceMXN?.toLocaleString() || "---"}</span>
-                      <span className="text-[10px] lg:text-sm font-bold text-gray-400 mt-0.5 lg:mt-1">MXN</span>
-                    </div>
-                    {figure.priceYEN && (
-                       <p className="text-[10px] lg:text-xs text-gray-400 lg:text-gray-500 lg:mt-1">¥{figure.priceYEN.toLocaleString()} JPY</p>
-                    )}
+                    {(() => {
+                      const currency = figure.originalPriceCurrency || 'MXN'
+                      const priceMap = {
+                        MXN: { value: figure.priceMXN, symbol: '$', suffix: 'MXN' },
+                        USD: { value: figure.priceUSD, symbol: '$', suffix: 'USD' },
+                        YEN: { value: figure.priceYEN, symbol: '¥', suffix: 'JPY' }
+                      }
+                      const main = priceMap[currency as keyof typeof priceMap] || priceMap.MXN
+                      const secondary = currency === 'YEN' ? priceMap.MXN : priceMap.YEN
+
+                      return (
+                        <>
+                          <div className="flex items-start gap-0.5 lg:gap-1">
+                            <span className="text-[10px] lg:text-sm font-bold text-white mt-0.5 lg:mt-1">{main.symbol}</span>
+                            <span className="text-lg lg:text-3xl font-bold text-white">{main.value?.toLocaleString() || "---"}</span>
+                            <span className="text-[10px] lg:text-sm font-bold text-gray-400 mt-0.5 lg:mt-1">{main.suffix}</span>
+                          </div>
+                          {secondary.value && (
+                            <p className="text-[10px] lg:text-xs text-gray-400 lg:text-gray-500 lg:mt-1">
+                              {secondary.symbol}{secondary.value.toLocaleString()} {secondary.suffix}
+                            </p>
+                          )}
+                        </>
+                      )
+                    })()}
                   </div>
 
                   {/* Release Status */}
@@ -265,10 +283,12 @@ export default function FigureDetailClient({
                    <span className="text-gray-400 font-medium">Escala</span>
                    <span className="text-white text-right">{figure.scale || "Sin escala"}</span>
                 </div>
-                <div className="grid grid-cols-2 p-2 lg:p-3 hover:bg-white/5">
-                   <span className="text-gray-400 font-medium">SKU / ID</span>
-                   <span className="text-white text-right font-mono text-xs">{figure.sku || figure.id.slice(0,8)}</span>
-                </div>
+                {figure.sku && (
+                  <div className="grid grid-cols-2 p-2 lg:p-3 hover:bg-white/5">
+                     <span className="text-gray-400 font-medium">SKU</span>
+                     <span className="text-white text-right font-mono text-xs">{figure.sku}</span>
+                  </div>
+                )}
              </div>
           </div>
         </div>

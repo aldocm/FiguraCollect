@@ -555,20 +555,24 @@ export default function CatalogClient({
                          </div>
                       )}
                       
-                      {/* Badge overlay */}
-                      <div className="absolute top-3 left-3 right-3 flex justify-between items-start">
-                        {figure.priceMXN && (
-                          <span className="bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded border border-white/10">
-                            ${figure.priceMXN}
-                          </span>
-                        )}
-                        {!figure.isReleased && figure.releaseDate && (
-                           <span className="bg-blue-600/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider shadow-lg ml-auto flex items-center gap-1">
+                      {/* Top badge - Release status */}
+                      {!figure.isReleased && figure.releaseDate && (
+                        <div className="absolute top-3 left-3">
+                           <span className="bg-blue-600/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider shadow-lg flex items-center gap-1">
                              <Clock size={12} className="md:hidden" />
                              <span className="hidden md:inline">Por Lanzar</span>
                            </span>
-                        )}
-                      </div>
+                        </div>
+                      )}
+
+                      {/* Bottom badge - Price */}
+                      {figure.priceMXN && (
+                        <div className="absolute bottom-3 right-3">
+                          <span className="bg-black/70 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded border border-white/10">
+                            ${figure.priceMXN.toLocaleString()}
+                          </span>
+                        </div>
+                      )}
                     </div>
 
                     <div className="p-4 flex flex-col flex-grow relative">
