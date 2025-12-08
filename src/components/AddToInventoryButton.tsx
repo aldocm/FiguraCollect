@@ -17,7 +17,11 @@ export function AddToInventoryButton({ figureId, currentStatus, userFigureId, is
   const router = useRouter()
 
   const handleAdd = async (newStatus: string) => {
-    if (status === newStatus) return // No hacer nada si ya está en ese estado
+    // Si ya está en ese estado, lo quitamos (toggle)
+    if (status === newStatus) {
+      await handleRemove()
+      return
+    }
     
     setLoading(true)
 
@@ -48,13 +52,26 @@ export function AddToInventoryButton({ figureId, currentStatus, userFigureId, is
   }
 
   const handleRemove = async () => {
-    if (!userFigureId) return
+    // Si no tenemos userFigureId (caso raro si status está set), intentamos limpiar local
+    if (!userFigureId && !status) return
+
     setLoading(true)
 
     try {
-      await fetch(`/api/inventory/${userFigureId}`, {
-        method: 'DELETE'
-      })
+      // Solo llamamos a la API si tenemos un ID real.
+      // Si acabamos de crear (sin recargar página) userFigureId podría ser null en props,
+      // pero aquí estamos asumiendo que el componente padre se refresca o que manejamos
+      // el estado localmente. Para ser seguros, si userFigureId es null pero tenemos status,
+      // podría ser una desincronización, pero intentaremos seguir el flujo de UI.
+      // NOTA: Para este componente funcionar perfecto sin recarga, el padre debería pasar el nuevo ID.
+      // Por ahora confiamos en router.refresh().
+      
+      if (userFigureId) {
+          await fetch(`/api/inventory/${userFigureId}`, {
+            method: 'DELETE'
+          })
+      }
+      
       setStatus(null)
       router.refresh()
     } catch (error) {
@@ -69,7 +86,7 @@ export function AddToInventoryButton({ figureId, currentStatus, userFigureId, is
     key: 'WISHLIST',
     label: 'Wishlist',
     icon: Heart,
-    activeClass: 'bg-pink-500/20 text-pink-400 border-pink-500/50',
+    activeClass: 'bg-pink-500/20 text-pink-400 border-pink-500/50 hover:bg-pink-500/30',
     inactiveClass: 'bg-white/5 text-gray-400 border-white/10 hover:bg-white/10 hover:text-white'
   }
 
@@ -78,14 +95,14 @@ export function AddToInventoryButton({ figureId, currentStatus, userFigureId, is
         key: 'OWNED',
         label: 'Lo tengo',
         icon: Box,
-        activeClass: 'bg-green-500/20 text-green-400 border-green-500/50',
+        activeClass: 'bg-green-500/20 text-green-400 border-green-500/50 hover:bg-green-500/30',
         inactiveClass: 'bg-white/5 text-gray-400 border-white/10 hover:bg-white/10 hover:text-white'
       }
     : {
         key: 'PREORDER',
         label: 'Pre-ordenar',
         icon: CalendarClock,
-        activeClass: 'bg-blue-500/20 text-blue-400 border-blue-500/50',
+        activeClass: 'bg-blue-500/20 text-blue-400 border-blue-500/50 hover:bg-blue-500/30',
         inactiveClass: 'bg-white/5 text-gray-400 border-white/10 hover:bg-white/10 hover:text-white'
       }
 
@@ -134,26 +151,6 @@ export function AddToInventoryButton({ figureId, currentStatus, userFigureId, is
           )}
         </button>
       </div>
-
-      {/* Estado actual y opción de eliminar */}
-      {status && (
-        <div className="flex items-center justify-between px-1 pt-2">
-            <p className="text-xs text-gray-500">
-                Estado actual: <span className="text-white font-medium">{
-                    status === 'WISHLIST' ? 'En Wishlist' : 
-                    status === 'PREORDER' ? 'Pre-ordenado' : 'En Colección'
-                }</span>
-            </p>
-            <button
-                onClick={handleRemove}
-                disabled={loading}
-                className="flex items-center gap-1 text-xs text-red-400 hover:text-red-300 transition-colors px-2 py-1 rounded-md hover:bg-red-500/10"
-            >
-                <Trash2 size={12} />
-                Eliminar
-            </button>
-        </div>
-      )}
     </div>
   )
 }
