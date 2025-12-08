@@ -1,5 +1,3 @@
-import type { MeasureUnit } from '@/lib/utils'
-
 export interface Brand { id: string; name: string }
 export interface Line { id: string; name: string; brandId: string }
 export interface Series { id: string; name: string }

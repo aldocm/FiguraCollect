@@ -20,7 +20,7 @@ type ListData = {
 }
 
 interface ListsPageClientProps {
-  user: any // Using any for user object simplicity here, ideally strict typed
+  user: { id: string } | null
   featuredLists: ListData[]
   officialLists: ListData[]
   userLists: ListData[]

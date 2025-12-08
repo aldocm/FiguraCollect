@@ -30,7 +30,8 @@ export default async function CatalogPage({ searchParams }: PageProps) {
   const limit = 20
   const sort = params.sort || 'newest'
 
-  const where: any = {}
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const where: Record<string, any> = {}
 
   if (params.brandId) where.brandId = params.brandId
   
@@ -64,7 +65,8 @@ export default async function CatalogPage({ searchParams }: PageProps) {
     where.isReleased = params.isReleased === 'true'
   }
 
-  let orderBy: any = { createdAt: 'desc' }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let orderBy: Record<string, any> = { createdAt: 'desc' }
 
   switch (sort) {
     case 'date_asc':
@@ -170,7 +172,6 @@ export default async function CatalogPage({ searchParams }: PageProps) {
         </p>
       </div>
       <CatalogClient
-        // @ts-expect-error - types match closely enough
         figures={figures}
         brands={brands}
         lines={lines}

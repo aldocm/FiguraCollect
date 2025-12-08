@@ -80,7 +80,6 @@ export default async function ListDetailPage({ params }: PageProps) {
   return (
     <ListDetailClient
       list={serializedList}
-      currentUser={user}
       canEdit={!!canEdit}
       canSetFeatured={!!canSetFeatured}
     />

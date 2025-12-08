@@ -23,7 +23,10 @@
       "WebFetch(domain:www.goodsmile.com)",
       "WebFetch(domain:www.goodsmile.info)",
       "WebFetch(domain:www.kotobukiya.co.jp)",
-      "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"Si\" npx prisma migrate reset:*)"
+      "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"Si\" npx prisma migrate reset:*)",
+      "Bash(npm run build:*)",
+      "Bash(powershell -Command \"Remove-Item -Recurse -Force .next\")",
+      "Bash(npx eslint:*)"
     ],
     "deny": [],
     "ask": []

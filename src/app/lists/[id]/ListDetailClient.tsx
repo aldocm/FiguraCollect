@@ -2,21 +2,44 @@
 
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { User, List as ListIcon, CheckCircle2, Star, Share2, Calendar, AlertCircle } from 'lucide-react'
+import { List as ListIcon, CheckCircle2, Star, Share2, AlertCircle } from 'lucide-react'
 import FigureCard from '@/components/FigureCard'
 import { ListActions } from '@/components/ListActions'
 
 // Types matching the query
+interface ListItem {
+  id: string
+  order: number
+  figureId: string
+  figure: {
+    id: string
+    name: string
+    priceMXN: number | null
+    images: { url: string }[]
+    brand: { name: string }
+    line: { name: string }
+  }
+}
+
+interface ListData {
+  id: string
+  name: string
+  description: string | null
+  isOfficial: boolean
+  isFeatured: boolean
+  createdAt: string
+  createdBy: { username: string }
+  items: ListItem[]
+}
+
 interface ListDetailClientProps {
-  list: any // We'll type this properly or use 'any' for now given complex relations
-  currentUser: any
+  list: ListData
   canEdit: boolean
   canSetFeatured: boolean
 }
 
 export default function ListDetailClient({
   list,
-  currentUser,
   canEdit,
   canSetFeatured
 }: ListDetailClientProps) {
@@ -31,22 +54,22 @@ export default function ListDetailClient({
 
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       y: 0,
-      transition: { type: 'spring', stiffness: 100 } 
+      transition: { type: 'spring' as const, stiffness: 100 }
     }
   }
 
   // Calculate some stats
   const totalFigures = list.items.length
-  const totalValue = list.items.reduce((acc: number, item: any) => acc + (item.figure.priceMXN || 0), 0)
+  const totalValue = list.items.reduce((acc: number, item: ListItem) => acc + (item.figure.priceMXN || 0), 0)
   const hasPrices = totalValue > 0
 
   // Background images for hero (take up to 4)
   const heroImages = list.items
     .slice(0, 4)
-    .map((item: any) => item.figure.images[0]?.url)
+    .map((item: ListItem) => item.figure.images[0]?.url)
     .filter(Boolean)
 
   return (
@@ -207,7 +230,7 @@ export default function ListDetailClient({
             initial="hidden"
             animate="visible"
           >
-            {list.items.map((item: any) => (
+            {list.items.map((item: ListItem) => (
               <motion.div key={item.id} variants={itemVariants} layoutId={item.figureId}>
                  {/* We use the FigureCard but we need to adapt data structure slightly if needed.
                      FigureCard expects 'figure' prop with relations.

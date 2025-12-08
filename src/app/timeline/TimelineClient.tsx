@@ -8,7 +8,6 @@ import {
   Filter,
   Calendar,
   ChevronDown,
-  ChevronUp,
   SlidersHorizontal,
 } from "lucide-react";
 
@@ -402,7 +401,7 @@ export default function TimelineClient({
               <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-0.5 md:w-1 bg-gradient-to-b from-primary via-white/20 to-transparent transform md:-translate-x-1/2" />
 
               <div className="space-y-12 md:space-y-24 pb-20">
-                {sortedYears.map((year, yearIndex) => (
+                {sortedYears.map((year) => (
                   <div key={year} className="relative">
                     {/* Year Marker */}
                     <div className="sticky top-24 z-20 flex justify-start md:justify-center mb-8 pl-12 md:pl-0">

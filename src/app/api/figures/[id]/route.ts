@@ -228,7 +228,7 @@ export async function PATCH(
 
     // Solo permite actualizar campos específicos
     const allowedFields = ['isReleased', 'isNSFW']
-    const updateData: Record<string, any> = {}
+    const updateData: Record<string, boolean> = {}
 
     for (const field of allowedFields) {
       if (body[field] !== undefined) {

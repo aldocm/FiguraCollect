@@ -4,14 +4,20 @@ import React from 'react'
 import Link from 'next/link'
 import { motion, Variants } from 'framer-motion'
 import { ChevronDown, Clock, Star } from 'lucide-react'
-import { Figure, Brand, FigureImage, Line } from '@prisma/client'
 import { formatFigurePrice } from '@/lib/utils'
 
-// Extending the Figure type to include relations
-type FigureWithRelations = Figure & {
-  brand: Brand
-  line?: Line // Line might not always be included in the HomePage queries
-  images: FigureImage[]
+// Flexible type that only requires the properties FigureCard actually uses
+type FigureWithRelations = {
+  id: string
+  name: string
+  isReleased?: boolean
+  releaseDate?: string | null
+  priceMXN?: number | null
+  priceUSD?: number | null
+  priceYEN?: number | null
+  brand: { name: string }
+  line?: { name: string } | null
+  images: { url: string }[]
   averageRating?: number
 }
 

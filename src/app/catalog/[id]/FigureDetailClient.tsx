@@ -2,10 +2,9 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
 import { AddToInventoryButton } from '@/components/AddToInventoryButton'
 import {
-  Star, Calendar, Box, Scale, Factory, Tag, Share2, Heart, ShieldCheck, Ruler, Clock
+  Star, Calendar, Tag, ShieldCheck, Clock
 } from 'lucide-react'
 import type { MeasureUnit } from '@/lib/utils'
 import { ImageGallery, DimensionsCard, ReviewSection, ImageModal } from './components'
@@ -33,8 +32,8 @@ type Figure = {
   character?: { id: string; name: string; series?: { id: string; name: string } | null } | null
   images: { id: string; url: string }[]
   tags: { tag: { name: string } }[]
-  series: { series: { id: string; name: string } }
-  variants: { id: string; name: string; priceMXN: number | null; images: { url: string }[] }
+  series: { series: { id: string; name: string } }[]
+  variants: { id: string; name: string; priceMXN: number | null; priceUSD: number | null; priceYEN: number | null; images: { url: string }[] }[]
   reviews: { id: string; rating: number; title: string; description: string; user: { username: string }; images?: { id: string; url: string }[] }[]
 }
 

@@ -11,7 +11,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ figures: [] })
   }
 
-  const where: any = {
+  const where: { releaseDate: { not: null }, lineId?: string, series?: { some: { seriesId: string } }, brandId?: string } = {
     // Only show figures that have a release date for the timeline to make sense
     releaseDate: { not: null }
   }

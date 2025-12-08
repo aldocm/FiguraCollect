@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Heart, Box, CalendarClock, Trash2, Check } from 'lucide-react'
+import { Heart, Box, CalendarClock, Check } from 'lucide-react'
 
 interface Props {
   figureId: string

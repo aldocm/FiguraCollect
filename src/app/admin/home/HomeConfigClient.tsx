@@ -9,7 +9,6 @@ import {
   Filter, Tag, DollarSign, Search, Calendar
 } from 'lucide-react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 
 // --- TYPES ---
 type HomeSection = {
@@ -23,7 +22,6 @@ type HomeSection = {
 }
 
 export default function HomeConfigClient() {
-  const router = useRouter()
   const [sections, setSections] = useState<HomeSection[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -90,7 +88,6 @@ export default function HomeConfigClient() {
         setLines(lRes.lines || [])
         setSeries(sRes.series || [])
         setCharacters(cRes.characters || [])
-        // @ts-expect-error - API shape variance
         setLists(listRes.lists || [])
     } catch (e) {
         console.error("Failed to load dropdowns", e)
@@ -146,7 +143,7 @@ export default function HomeConfigClient() {
 
         setFormData({
             title: section.title,
-            type: section.type as any,
+            type: section.type as 'QUERY' | 'LIST',
             brandId: config.brandId || '',
             lineId: config.lineId || '',
             seriesId: config.seriesId || '',
@@ -173,7 +170,8 @@ export default function HomeConfigClient() {
     e.preventDefault()
     setSaving(true)
 
-    const config: any = {}
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const config: Record<string, any> = {}
     
     if (formData.type === 'QUERY') {
         if (formData.brandId) config.brandId = formData.brandId

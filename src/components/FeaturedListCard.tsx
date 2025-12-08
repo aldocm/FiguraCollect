@@ -2,13 +2,7 @@
 
 import Link from 'next/link'
 import { motion, Variants } from 'framer-motion'
-import { User, FigureImage } from '@prisma/client'
 import { ListPlus, ImageOff } from 'lucide-react'
-
-// Define types for the data props based on the prisma queries in page.tsx
-type FigureImageOnly = {
-  images: { url: string }[]
-}
 
 type ListItemWithFigureImage = {
   id: string

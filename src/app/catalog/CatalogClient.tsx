@@ -161,6 +161,7 @@ interface SearchableFilterListProps<T> {
     onSelect: (id: string | null) => void
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function SearchableFilterList<T extends { [key: string]: any }>({ title, items, keyProp, labelProp, selectedValues, isMulti, allLabel, onSelect }: SearchableFilterListProps<T>) {
     const [searchTerm, setSearchTerm] = useState('')
     
@@ -185,7 +186,7 @@ function SearchableFilterList<T extends { [key: string]: any }>({ title, items, 
                             onClick={() => onSelect(null)}
                         />
                     )}
-                    {filteredItems.map((item: any) => (
+                    {filteredItems.map((item) => (
                         <FilterItem 
                             key={item[keyProp]}
                             label={item[labelProp]}
@@ -343,7 +344,7 @@ export default function CatalogClient({
       y: 0,
       opacity: 1,
       transition: {
-        type: 'spring',
+        type: 'spring' as const,
         stiffness: 100,
         damping: 15
       }

@@ -192,7 +192,7 @@ export default function CookiesPage() {
                 <h4 className="font-bold text-white mb-2">Configuración del navegador</h4>
                 <p className="text-sm text-gray-400">
                   La mayoría de navegadores te permiten bloquear o eliminar cookies desde su configuración.
-                  Busca "cookies" en la ayuda de tu navegador.
+                  Busca &quot;cookies&quot; en la ayuda de tu navegador.
                 </p>
               </div>
 

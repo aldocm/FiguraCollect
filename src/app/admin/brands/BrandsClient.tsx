@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, Search, Plus, Trash2, Layers, Box, Edit2, Save, X } from 'lucide-react'
-import { InputBase, TextAreaBase } from '@/components/ui'
 
 interface Brand {
   id: string

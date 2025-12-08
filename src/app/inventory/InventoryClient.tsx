@@ -4,8 +4,8 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  Search, Filter, ArrowUpDown, Package, Heart, CalendarClock,
-  DollarSign, TrendingUp, Grid, List as ListIcon, MoreVertical,
+  Search, Package, Heart, CalendarClock,
+  DollarSign,
   CheckCircle2, Trash2, AlertCircle, ChevronLeft, ChevronRight
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -45,7 +45,7 @@ interface InventoryClientProps {
 
 // --- Components ---
 
-const StatCard = ({ label, value, icon: Icon, colorClass }: { label: string, value: number, icon: React.ElementType, colorClass: string }) => (
+const StatCard = ({ label, value, icon: Icon, colorClass }: { label: string, value: number | string, icon: React.ElementType, colorClass: string }) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
@@ -79,8 +79,7 @@ const StatusBadge = ({ status }: { status: string }) => {
 }
 
 const InventoryCard = ({ item, onUpdate }: { item: InventoryItem, onUpdate: () => void }) => {
-  const [isLoading, setIsLoading] = useState(false)
-  const router = useRouter()
+  const [, setIsLoading] = useState(false)
 
   const handleStatusChange = async (newStatus: string) => {
     setIsLoading(true)
@@ -267,7 +266,7 @@ const Pagination = ({ pagination }: { pagination: PaginationInfo }) => {
 
 // --- Main Client Component ---
 
-export default function InventoryClient({ items, user, pagination }: InventoryClientProps) {
+export default function InventoryClient({ items, pagination }: InventoryClientProps) {
   const router = useRouter()
   const [filterStatus, setFilterStatus] = useState<string | 'ALL'>('ALL')
   const [searchQuery, setSearchQuery] = useState('')
@@ -286,7 +285,6 @@ export default function InventoryClient({ items, user, pagination }: InventoryCl
   })
 
   // Stats Calculation (using pagination total if available)
-  const totalCount = pagination?.totalItems ?? items.length
   const totalValue = items.reduce((acc, item) => acc + (item.userPrice || item.figure.priceMXN || 0), 0)
   const ownedCount = items.filter(i => i.status === 'OWNED').length
   const preorderCount = items.filter(i => i.status === 'PREORDER').length

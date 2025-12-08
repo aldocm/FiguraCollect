@@ -40,7 +40,7 @@ const sectionVariants = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.6, ease: 'easeOut' },
+    transition: { duration: 0.6, ease: 'easeOut' as const },
   },
 }
 
@@ -57,7 +57,7 @@ const itemVariants = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: { type: 'spring', stiffness: 100, damping: 15 },
+    transition: { type: 'spring' as const, stiffness: 100, damping: 15 },
   },
 }
 
@@ -160,7 +160,6 @@ export default function HomePageClient({ sections }: HomePageClientProps) {
                 >
                     {section.data.map((figure) => (
                         <div key={figure.id} className="flex-shrink-0 w-48">
-                            {/* @ts-expect-error - types compatibility */}
                             <FigureCard figure={figure} animationVariants={itemVariants} />
                         </div>
                     ))}

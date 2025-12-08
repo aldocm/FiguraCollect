@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { User as UserIcon, Menu, X, LogOut, ShoppingBag, Shield, Bell, Check, Package, Search, ChevronDown, ArrowRight } from 'lucide-react'
+import { Menu, X, LogOut, ShoppingBag, Shield, Bell, Check, Package, Search, ChevronDown, ArrowRight } from 'lucide-react'
 import { SearchResult, getSearchTypeIcon, getSearchTypeLabel, getSearchResultPath } from '@/lib/search'
 
 interface User {
@@ -39,7 +39,7 @@ export function Nav() {
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<SearchResult[]>([])
-  const [searchLoading, setSearchLoading] = useState(false)
+  const [, setSearchLoading] = useState(false)
   const [showSearchResults, setShowSearchResults] = useState(false)
   const [selectedSearchIndex, setSelectedSearchIndex] = useState(0)
   const notificationRef = useRef<HTMLDivElement>(null)
@@ -64,7 +64,7 @@ export function Nav() {
     visible: {
       y: 0,
       opacity: 1,
-      transition: { type: 'spring', stiffness: 100, damping: 20 }
+      transition: { type: 'spring' as const, stiffness: 100, damping: 20 }
     }
   }), [])
 

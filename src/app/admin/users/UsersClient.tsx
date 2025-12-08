@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Search, Trash2, Shield, Mail, MapPin, User as UserIcon, AlertTriangle, X, Edit2, Crown } from 'lucide-react'
+import { ArrowLeft, Search, Trash2, Shield, Mail, MapPin, User as UserIcon, X, Edit2, Crown } from 'lucide-react'
 
 interface User {
   id: string

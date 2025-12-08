@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { motion, Variants } from 'framer-motion'
 import {
   Users, Layers, Tags, Box, Library, BadgeCheck,
-  ArrowRight, ShieldAlert, Activity, BarChart3, User, LayoutTemplate, Settings2
+  ArrowRight, ShieldAlert, User, LayoutTemplate, Settings2
 } from 'lucide-react'
 
 interface AdminDashboardClientProps {

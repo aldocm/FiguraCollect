@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Search, Plus, Trash2, Tags, Box, X, Save } from 'lucide-react'
+import { ArrowLeft, Search, Plus, Tags, Box, X, Save } from 'lucide-react'
 
 interface Tag {
   id: string

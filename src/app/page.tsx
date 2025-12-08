@@ -26,8 +26,8 @@ export default async function HomePage() {
   // 2. Process each section to fetch its data
   // We will build an array of resolved sections
   const resolvedSections = await Promise.all(sectionsConfig.map(async (section) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let figures: any[] = []
-    let items: any[] = [] // for lists
     const config = JSON.parse(section.config)
 
     try {
@@ -46,7 +46,8 @@ export default async function HomePage() {
         } 
         else if (section.type === 'QUERY') {
             // Build WHERE clause
-            const where: any = {}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const where: Record<string, any> = {}
             if (config.brandId) where.brandId = config.brandId
             if (config.lineId) where.lineId = config.lineId
             if (config.characterId) where.characterId = config.characterId
@@ -74,7 +75,8 @@ export default async function HomePage() {
             figures = await prisma.figure.findMany({
                 where,
                 include: { brand: true, line: true, images: { take: 1 }, reviews: { select: { rating: true } } },
-                orderBy: orderBy as any,
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                orderBy: orderBy as Record<string, any>,
                 take: 15
             })
         } 
