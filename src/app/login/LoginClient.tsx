@@ -138,7 +138,9 @@ export default function LoginPage() {
                   <div className="space-y-2">
                       <div className="flex justify-between items-baseline">
                           <label className="text-xs font-bold text-gray-400 uppercase tracking-wider ml-1">{t.login.password}</label>
+                          {/* TODO: Implementar recuperación de contraseña
                           <Link href="#" className="text-xs text-primary hover:text-primary/80 transition-colors font-medium">{t.login.forgotPassword}</Link>
+                          */}
                       </div>
                       <div className="relative group">
                           <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-primary transition-colors" size={20} />

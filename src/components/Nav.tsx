@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, X, LogOut, ShoppingBag, Shield, Bell, Check, Package, Search, ChevronDown, ArrowRight, Globe } from 'lucide-react'
+import { Menu, X, LogOut, ShoppingBag, Shield, Bell, Check, Package, Search, ChevronDown, ArrowRight, Globe, PlusCircle } from 'lucide-react'
 import { SearchResult, getSearchTypeIcon, getSearchTypeLabel, getSearchResultPath } from '@/lib/search'
 import { useLanguage } from '@/contexts/LanguageContext'
 
@@ -488,13 +488,22 @@ export function Nav() {
                             className="absolute right-0 mt-2 w-56 bg-[#1a1a1a] border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50"
                           >
                             <div className="p-2">
-                              <Link 
-                                href="/inventory" 
+                              <Link
+                                href="/inventory"
                                 onClick={() => setShowUserMenu(false)}
                                 className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 text-sm text-gray-300 hover:text-white transition-colors"
                               >
                                 <ShoppingBag size={16} />
                                 {t.nav.myInventory}
+                              </Link>
+
+                              <Link
+                                href="/contribute"
+                                onClick={() => setShowUserMenu(false)}
+                                className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 text-sm text-gray-300 hover:text-white transition-colors"
+                              >
+                                <PlusCircle size={16} />
+                                {t.nav.contribute}
                               </Link>
 
                               {isAdmin && (
@@ -617,6 +626,9 @@ export function Nav() {
                 <div className="space-y-4">
                   <Link href="/inventory" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 text-white/80">
                     <ShoppingBag size={20} /> {t.nav.myInventory}
+                  </Link>
+                  <Link href="/contribute" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 text-white/80">
+                    <PlusCircle size={20} /> {t.nav.contribute}
                   </Link>
                   {isAdmin && (
                     <Link href="/admin" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 text-white/80">
