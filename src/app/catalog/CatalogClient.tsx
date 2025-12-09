@@ -557,13 +557,11 @@ export default function CatalogClient({
                          </div>
                       )}
                       
-                      {/* Top badge - Release status (clock icon, top right) */}
-                      {!figure.isReleased && figure.releaseYear && (
-                        <div className="absolute top-3 right-3">
-                           <span className="bg-blue-600/90 backdrop-blur-sm text-white p-1.5 rounded shadow-lg">
-                             <Clock size={14} />
-                           </span>
-                        </div>
+                      {/* Top badge - Release status (top right) */}
+                      {!figure.isReleased && (
+                        <span className="absolute top-3 right-3 bg-blue-600/90 backdrop-blur-sm text-white p-1.5 rounded shadow-lg flex items-center justify-center">
+                          <Clock size={14} />
+                        </span>
                       )}
 
                       {/* Bottom badge - Price */}

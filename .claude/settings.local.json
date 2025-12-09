@@ -28,7 +28,8 @@
       "Bash(powershell -Command \"Remove-Item -Recurse -Force .next\")",
       "Bash(npx eslint:*)",
       "Bash(mkdir:*)",
-      "Bash(npm i:*)"
+      "Bash(npm i:*)",
+      "Bash(npx next build)"
     ],
     "deny": [],
     "ask": []

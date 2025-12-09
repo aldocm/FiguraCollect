@@ -8,6 +8,7 @@ import {
   ArrowLeft, Clock, Check, X, Package, Building2,
   Layers, Film, Users, RefreshCw, AlertCircle
 } from 'lucide-react'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 type ContentType = 'figures' | 'brands' | 'lines' | 'series' | 'characters'
 
@@ -65,15 +66,16 @@ interface Props {
   initialCounts: Counts
 }
 
-const tabs: { key: ContentType; label: string; icon: React.ElementType }[] = [
-  { key: 'figures', label: 'Figuras', icon: Package },
-  { key: 'brands', label: 'Marcas', icon: Building2 },
-  { key: 'lines', label: 'Líneas', icon: Layers },
-  { key: 'series', label: 'Series', icon: Film },
-  { key: 'characters', label: 'Personajes', icon: Users }
-]
-
 export default function PendingClient({ initialCounts }: Props) {
+  const { t } = useLanguage()
+
+  const tabs: { key: ContentType; label: string; icon: React.ElementType }[] = [
+    { key: 'figures', label: t.admin.figures, icon: Package },
+    { key: 'brands', label: t.admin.brands, icon: Building2 },
+    { key: 'lines', label: t.admin.lines, icon: Layers },
+    { key: 'series', label: t.admin.series, icon: Film },
+    { key: 'characters', label: t.admin.characters, icon: Users }
+  ]
   const [activeTab, setActiveTab] = useState<ContentType>('figures')
   const [counts, setCounts] = useState<Counts>(initialCounts)
   const [data, setData] = useState<{
@@ -126,7 +128,7 @@ export default function PendingClient({ initialCounts }: Props) {
   }
 
   const handleDelete = async (type: string, id: string) => {
-    if (!confirm('¿Estás seguro de eliminar este contenido?')) return
+    if (!confirm(t.pending.confirmDelete)) return
 
     setProcessing(id)
     try {
@@ -165,10 +167,10 @@ export default function PendingClient({ initialCounts }: Props) {
             <div>
               <h1 className="text-2xl md:text-3xl font-bold text-white flex items-center gap-3">
                 <Clock className="text-amber-400" />
-                Contenido Pendiente
+                {t.pending.title}
               </h1>
               <p className="text-gray-400 text-sm mt-1">
-                {counts.total} elementos pendientes de aprobación
+                {counts.total} {t.pending.itemsPending}
               </p>
             </div>
           </div>
@@ -225,8 +227,8 @@ export default function PendingClient({ initialCounts }: Props) {
           ) : currentData.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-gray-400">
               <Check size={48} className="mb-4 text-green-400" />
-              <p className="text-lg">No hay contenido pendiente</p>
-              <p className="text-sm">Todo está al día</p>
+              <p className="text-lg">{t.pending.noPending}</p>
+              <p className="text-sm">{t.pending.allClear}</p>
             </div>
           ) : (
             <AnimatePresence mode="popLayout">
@@ -236,6 +238,8 @@ export default function PendingClient({ initialCounts }: Props) {
                     key={item.id}
                     item={item}
                     processing={processing === item.id}
+                    createdByLabel={t.pending.by}
+                    unknownLabel={t.pending.unknown}
                     onApprove={() => handleApprove('figures', item.id)}
                     onDelete={() => handleDelete('figures', item.id)}
                   />
@@ -244,8 +248,10 @@ export default function PendingClient({ initialCounts }: Props) {
                   <GenericItem
                     key={item.id}
                     name={item.name}
-                    subtitle={item.country || 'Sin país'}
+                    subtitle={item.country || t.pending.noCountry}
                     createdBy={item.createdBy?.username}
+                    createdByLabel={t.pending.by}
+                    unknownLabel={t.pending.unknown}
                     processing={processing === item.id}
                     onApprove={() => handleApprove('brands', item.id)}
                     onDelete={() => handleDelete('brands', item.id)}
@@ -258,6 +264,8 @@ export default function PendingClient({ initialCounts }: Props) {
                     name={item.name}
                     subtitle={item.brand.name}
                     createdBy={item.createdBy?.username}
+                    createdByLabel={t.pending.by}
+                    unknownLabel={t.pending.unknown}
                     processing={processing === item.id}
                     onApprove={() => handleApprove('lines', item.id)}
                     onDelete={() => handleDelete('lines', item.id)}
@@ -268,8 +276,10 @@ export default function PendingClient({ initialCounts }: Props) {
                   <GenericItem
                     key={item.id}
                     name={item.name}
-                    subtitle="Serie"
+                    subtitle={t.admin.series}
                     createdBy={item.createdBy?.username}
+                    createdByLabel={t.pending.by}
+                    unknownLabel={t.pending.unknown}
                     processing={processing === item.id}
                     onApprove={() => handleApprove('series', item.id)}
                     onDelete={() => handleDelete('series', item.id)}
@@ -280,8 +290,10 @@ export default function PendingClient({ initialCounts }: Props) {
                   <GenericItem
                     key={item.id}
                     name={item.name}
-                    subtitle={item.series?.name || 'Sin serie'}
+                    subtitle={item.series?.name || t.pending.noSeries}
                     createdBy={item.createdBy?.username}
+                    createdByLabel={t.pending.by}
+                    unknownLabel={t.pending.unknown}
                     processing={processing === item.id}
                     onApprove={() => handleApprove('characters', item.id)}
                     onDelete={() => handleDelete('characters', item.id)}
@@ -300,11 +312,15 @@ export default function PendingClient({ initialCounts }: Props) {
 function FigureItem({
   item,
   processing,
+  createdByLabel,
+  unknownLabel,
   onApprove,
   onDelete
 }: {
   item: PendingFigure
   processing: boolean
+  createdByLabel: string
+  unknownLabel: string
   onApprove: () => void
   onDelete: () => void
 }) {
@@ -336,7 +352,7 @@ function FigureItem({
         <p className="text-sm text-gray-400">{item.brand.name} - {item.line.name}</p>
         <p className="text-xs text-gray-500 flex items-center gap-1">
           <AlertCircle size={12} />
-          Por: {item.createdBy?.username || 'Desconocido'}
+          {createdByLabel}: {item.createdBy?.username || unknownLabel}
         </p>
       </div>
       <div className="flex items-center gap-2">
@@ -363,6 +379,8 @@ function GenericItem({
   name,
   subtitle,
   createdBy,
+  createdByLabel,
+  unknownLabel,
   processing,
   onApprove,
   onDelete,
@@ -371,6 +389,8 @@ function GenericItem({
   name: string
   subtitle: string
   createdBy?: string
+  createdByLabel: string
+  unknownLabel: string
   processing: boolean
   onApprove: () => void
   onDelete: () => void
@@ -392,7 +412,7 @@ function GenericItem({
         <p className="text-sm text-gray-400">{subtitle}</p>
         <p className="text-xs text-gray-500 flex items-center gap-1">
           <AlertCircle size={12} />
-          Por: {createdBy || 'Desconocido'}
+          {createdByLabel}: {createdBy || unknownLabel}
         </p>
       </div>
       <div className="flex items-center gap-2">

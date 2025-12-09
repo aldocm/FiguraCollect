@@ -113,12 +113,12 @@ export default function AdminDashboardClient({ user, stats }: AdminDashboardClie
   const moderationCards = [
     {
       href: '/admin/pending',
-      label: 'Pendientes',
+      label: t.admin.pending,
       count: stats.pending || 0,
       icon: Clock,
       color: 'text-amber-400',
       bg: 'from-amber-500/20 to-orange-500/5',
-      desc: 'Aprobar contenido de usuarios'
+      desc: t.admin.approvePending
     }
   ]
 
@@ -144,12 +144,12 @@ export default function AdminDashboardClient({ user, stats }: AdminDashboardClie
     },
     {
       href: '/admin/settings',
-      label: 'Configuración',
+      label: t.admin.settings,
       count: -1,
       icon: Settings,
       color: 'text-purple-400',
       bg: 'from-purple-500/20 to-violet-500/5',
-      desc: 'Configuración del sistema'
+      desc: t.admin.systemSettings
     }
   ]
 
@@ -247,7 +247,7 @@ export default function AdminDashboardClient({ user, stats }: AdminDashboardClie
               <div className="p-2 rounded-lg bg-primary/20">
                 <Box className="w-4 h-4 md:w-5 md:h-5 text-primary" />
               </div>
-              <h2 className="text-lg md:text-xl font-bold text-white">Gestión de Catálogo</h2>
+              <h2 className="text-lg md:text-xl font-bold text-white">{t.admin.catalogManagement}</h2>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
               {catalogCards.map((card) => renderCard(card))}
@@ -265,10 +265,10 @@ export default function AdminDashboardClient({ user, stats }: AdminDashboardClie
               <div className="p-2 rounded-lg bg-amber-500/20">
                 <Clock className="w-4 h-4 md:w-5 md:h-5 text-amber-400" />
               </div>
-              <h2 className="text-lg md:text-xl font-bold text-white">Moderación</h2>
+              <h2 className="text-lg md:text-xl font-bold text-white">{t.admin.moderation}</h2>
               {(stats.pending || 0) > 0 && (
                 <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 text-xs font-bold">
-                  {stats.pending} pendiente{(stats.pending || 0) !== 1 ? 's' : ''}
+                  {stats.pending} {t.admin.pending.toLowerCase()}{(stats.pending || 0) !== 1 ? 's' : ''}
                 </span>
               )}
             </div>
@@ -288,7 +288,7 @@ export default function AdminDashboardClient({ user, stats }: AdminDashboardClie
                 <div className="p-2 rounded-lg bg-purple-500/20">
                   <ShieldAlert className="w-4 h-4 md:w-5 md:h-5 text-purple-400" />
                 </div>
-                <h2 className="text-lg md:text-xl font-bold text-white">Configuración del Sistema</h2>
+                <h2 className="text-lg md:text-xl font-bold text-white">{t.admin.systemConfig}</h2>
                 <span className="px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 text-xs font-bold">
                   SUPERADMIN
                 </span>

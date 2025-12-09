@@ -49,23 +49,21 @@ const FigureCard = ({ figure, animationVariants }: FigureCardProps) => {
             </div>
           )}
 
-          {/* Top badges - Rating (left) & Release status (right) */}
-          <div className="absolute top-3 left-3 right-3 flex justify-between items-start">
-            {/* Rating Badge */}
-            {figure.averageRating !== undefined && figure.averageRating > 0 && (
-               <span className="backdrop-blur-sm text-white text-[10px] font-bold px-1.5 py-1 rounded border border-white/10 flex items-center gap-1 shadow-lg bg-yellow-500/80 border-yellow-400/30">
-                 <Star size={10} className="fill-white" />
-                 {figure.averageRating.toFixed(1)}
-               </span>
-            )}
+          {/* Top badges */}
+          {/* Rating Badge - top left */}
+          {figure.averageRating !== undefined && figure.averageRating > 0 && (
+            <span className="absolute top-3 left-3 backdrop-blur-sm text-white text-[10px] font-bold px-1.5 py-1 rounded border border-white/10 flex items-center gap-1 shadow-lg bg-yellow-500/80 border-yellow-400/30">
+              <Star size={10} className="fill-white" />
+              {figure.averageRating.toFixed(1)}
+            </span>
+          )}
 
-            {/* Upcoming Release Badge - Clock icon only, top right */}
-            {!figure.isReleased && figure.releaseDate && (
-              <span className="bg-blue-600/90 backdrop-blur-sm text-white p-1.5 rounded shadow-lg ml-auto">
-                <Clock size={14} />
-              </span>
-            )}
-          </div>
+          {/* Upcoming Release Badge - top right */}
+          {!figure.isReleased && (
+            <span className="absolute top-3 right-3 bg-blue-600/90 backdrop-blur-sm text-white p-1.5 rounded shadow-lg flex items-center justify-center">
+              <Clock size={14} />
+            </span>
+          )}
 
           {/* Bottom badge - Price */}
           {priceDisplay && (
