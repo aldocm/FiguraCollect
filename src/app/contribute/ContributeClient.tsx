@@ -389,7 +389,7 @@ export default function ContributeClient() {
                           required
                         >
                           <option value="">{t.contribute.placeholders.select}</option>
-                          {brands.map(b => (
+                          {[...brands].sort((a, b) => a.name.localeCompare(b.name)).map(b => (
                             <option key={b.id} value={b.id}>{b.name}</option>
                           ))}
                         </select>
@@ -407,7 +407,7 @@ export default function ContributeClient() {
                           disabled={!figureForm.brandId}
                         >
                           <option value="">{t.contribute.placeholders.select}</option>
-                          {filteredLines.map(l => (
+                          {[...filteredLines].sort((a, b) => a.name.localeCompare(b.name)).map(l => (
                             <option key={l.id} value={l.id}>{l.name}</option>
                           ))}
                         </select>
@@ -641,7 +641,7 @@ export default function ContributeClient() {
                       required
                     >
                       <option value="">{t.contribute.placeholders.selectBrand}</option>
-                      {brands.map(b => (
+                      {[...brands].sort((a, b) => a.name.localeCompare(b.name)).map(b => (
                         <option key={b.id} value={b.id}>{b.name}</option>
                       ))}
                     </select>
@@ -689,7 +689,7 @@ export default function ContributeClient() {
                       className={selectClass}
                     >
                       <option value="">{t.contribute.labels.noSeries}</option>
-                      {seriesList.map(s => (
+                      {[...seriesList].sort((a, b) => a.name.localeCompare(b.name)).map(s => (
                         <option key={s.id} value={s.id}>{s.name}</option>
                       ))}
                     </select>

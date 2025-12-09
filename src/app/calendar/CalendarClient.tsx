@@ -174,7 +174,7 @@ export default function CalendarClient({ brands, lines }: CalendarClientProps) {
                                 className="w-full appearance-none bg-uiBase/50 border border-white/10 rounded-xl pl-4 pr-10 py-2.5 text-sm text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all cursor-pointer hover:bg-uiBase/80"
                             >
                                 <option value="" className="bg-[#1a1a1a] text-gray-400">{t.catalog.allBrands}</option>
-                                {brands.map(b => (
+                                {[...brands].sort((a, b) => a.name.localeCompare(b.name)).map(b => (
                                     <option key={b.id} value={b.id} className="bg-[#1a1a1a] text-white">{b.name}</option>
                                 ))}
                             </select>
@@ -195,7 +195,7 @@ export default function CalendarClient({ brands, lines }: CalendarClientProps) {
                                 <option value="" className="bg-[#1a1a1a] text-gray-400">
                                     {t.calendar.selectLine}
                                 </option>
-                                {filteredLines.map(l => (
+                                {[...filteredLines].sort((a, b) => a.name.localeCompare(b.name)).map(l => (
                                     <option key={l.id} value={l.id} className="bg-[#1a1a1a] text-white">{l.name}</option>
                                 ))}
                             </select>
@@ -245,7 +245,7 @@ export default function CalendarClient({ brands, lines }: CalendarClientProps) {
                             className="w-full appearance-none bg-black/40 border border-white/10 rounded-lg pl-3 pr-8 py-3 text-sm text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all cursor-pointer"
                           >
                             <option value="" className="bg-[#1a1a1a] text-gray-400">Todas las marcas</option>
-                            {brands.map(b => (
+                            {[...brands].sort((a, b) => a.name.localeCompare(b.name)).map(b => (
                               <option key={b.id} value={b.id} className="bg-[#1a1a1a] text-white">{b.name}</option>
                             ))}
                           </select>
@@ -262,7 +262,7 @@ export default function CalendarClient({ brands, lines }: CalendarClientProps) {
                             className="w-full appearance-none bg-black/40 border border-white/10 rounded-lg pl-3 pr-8 py-3 text-sm text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             <option value="" className="bg-[#1a1a1a] text-gray-400">Selecciona una Línea</option>
-                            {filteredLines.map(l => (
+                            {[...filteredLines].sort((a, b) => a.name.localeCompare(b.name)).map(l => (
                               <option key={l.id} value={l.id} className="bg-[#1a1a1a] text-white">{l.name}</option>
                             ))}
                           </select>

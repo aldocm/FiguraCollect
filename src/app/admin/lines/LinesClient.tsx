@@ -201,7 +201,7 @@ export default function LinesClient() {
                                     required
                                 >
                                     <option value="" className="bg-gray-900 text-gray-500">Selecciona una marca</option>
-                                    {brands.map(b => (
+                                    {[...brands].sort((a, b) => a.name.localeCompare(b.name)).map(b => (
                                         <option key={b.id} value={b.id} className="bg-gray-900 text-white">{b.name}</option>
                                     ))}
                                 </select>

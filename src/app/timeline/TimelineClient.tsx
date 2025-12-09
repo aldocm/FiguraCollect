@@ -193,7 +193,7 @@ export default function TimelineClient({
                       >
                         Selecciona una Marca
                       </option>
-                      {brands.map((b) => (
+                      {[...brands].sort((a, b) => a.name.localeCompare(b.name)).map((b) => (
                         <option
                           key={b.id}
                           value={b.id}
@@ -223,7 +223,7 @@ export default function TimelineClient({
                       <option value="" className="bg-[#1a1a1a] text-gray-400">
                         Selecciona una Línea
                       </option>
-                      {filteredLines.map((l) => (
+                      {[...filteredLines].sort((a, b) => a.name.localeCompare(b.name)).map((l) => (
                         <option
                           key={l.id}
                           value={l.id}
@@ -252,7 +252,7 @@ export default function TimelineClient({
                       <option value="" className="bg-[#1a1a1a] text-gray-400">
                         Todas las Series
                       </option>
-                      {filteredSeries.map((s) => (
+                      {[...filteredSeries].sort((a, b) => a.name.localeCompare(b.name)).map((s) => (
                         <option
                           key={s.id}
                           value={s.id}
@@ -296,7 +296,7 @@ export default function TimelineClient({
                 >
                   Selecciona una Marca
                 </option>
-                {brands.map((b) => (
+                {[...brands].sort((a, b) => a.name.localeCompare(b.name)).map((b) => (
                   <option
                     key={b.id}
                     value={b.id}
@@ -326,7 +326,7 @@ export default function TimelineClient({
                 <option value="" className="bg-[#1a1a1a] text-gray-400">
                   Selecciona una Línea
                 </option>
-                {filteredLines.map((l) => (
+                {[...filteredLines].sort((a, b) => a.name.localeCompare(b.name)).map((l) => (
                   <option
                     key={l.id}
                     value={l.id}
@@ -355,7 +355,7 @@ export default function TimelineClient({
                 <option value="" className="bg-[#1a1a1a] text-gray-400">
                   Todas las Series
                 </option>
-                {filteredSeries.map((s) => (
+                {[...filteredSeries].sort((a, b) => a.name.localeCompare(b.name)).map((s) => (
                   <option
                     key={s.id}
                     value={s.id}

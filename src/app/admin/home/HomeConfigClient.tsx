@@ -463,7 +463,7 @@ export default function HomeConfigClient() {
                                                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-primary focus:outline-none appearance-none [&>option]:bg-gray-800 [&>option]:text-white"
                                             >
                                                 <option value="">Todas las marcas</option>
-                                                {brands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+                                                {[...brands].sort((a, b) => a.name.localeCompare(b.name)).map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
                                             </select>
                                         </div>
                                         <div className="space-y-1">
@@ -474,7 +474,7 @@ export default function HomeConfigClient() {
                                                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-primary focus:outline-none appearance-none [&>option]:bg-gray-800 [&>option]:text-white"
                                             >
                                                 <option value="">Todas las líneas</option>
-                                                {lines.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
+                                                {[...lines].sort((a, b) => a.name.localeCompare(b.name)).map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
                                             </select>
                                         </div>
                                         <div className="space-y-1">
@@ -485,7 +485,7 @@ export default function HomeConfigClient() {
                                                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-primary focus:outline-none appearance-none [&>option]:bg-gray-800 [&>option]:text-white"
                                             >
                                                 <option value="">Todas las series</option>
-                                                {series.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                                {[...series].sort((a, b) => a.name.localeCompare(b.name)).map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                                             </select>
                                         </div>
                                         <div className="space-y-1">
@@ -496,7 +496,7 @@ export default function HomeConfigClient() {
                                                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-primary focus:outline-none appearance-none [&>option]:bg-gray-800 [&>option]:text-white"
                                             >
                                                 <option value="">Todos los personajes</option>
-                                                {characters.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                                                {[...characters].sort((a, b) => a.name.localeCompare(b.name)).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                                             </select>
                                         </div>
                                     </div>
@@ -615,7 +615,7 @@ export default function HomeConfigClient() {
                                         className="w-full bg-black/40 border border-orange-500/30 rounded-xl px-4 py-3 text-white focus:border-orange-500 focus:outline-none appearance-none [&>option]:bg-gray-800 [&>option]:text-white"
                                     >
                                         <option value="">Selecciona una lista...</option>
-                                        {lists.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
+                                        {[...lists].sort((a, b) => a.name.localeCompare(b.name)).map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
                                     </select>
                                     <ListIcon className="absolute right-4 top-3.5 text-orange-500/50 pointer-events-none" size={18} />
                                 </div>

@@ -2,6 +2,7 @@
 
 import React from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { motion, Variants } from 'framer-motion'
 import { ChevronDown, Clock, Star } from 'lucide-react'
 import { formatFigurePrice } from '@/lib/utils'
@@ -26,8 +27,22 @@ interface FigureCardProps {
   animationVariants?: Variants
 }
 
+// Dominios que bloquean optimización (hotlink protection)
+const UNOPTIMIZED_DOMAINS = ['hasbro.com', 'shop.hasbro.com']
+
+const shouldSkipOptimization = (url: string) => {
+  try {
+    const hostname = new URL(url).hostname
+    return UNOPTIMIZED_DOMAINS.some(domain => hostname.includes(domain))
+  } catch {
+    return false
+  }
+}
+
 const FigureCard = ({ figure, animationVariants }: FigureCardProps) => {
   const priceDisplay = formatFigurePrice(figure)
+  const imageUrl = figure.images[0]?.url
+  const skipOptimization = imageUrl ? shouldSkipOptimization(imageUrl) : false
 
   return (
     <motion.div variants={animationVariants}>
@@ -36,12 +51,15 @@ const FigureCard = ({ figure, animationVariants }: FigureCardProps) => {
         className="group block bg-uiBase rounded-xl overflow-hidden border border-white/5 hover:border-primary/50 transition-all duration-300 hover:shadow-[0_0_30px_-10px_rgba(225,6,44,0.2)] h-full flex flex-col"
       >
         <div className="aspect-square relative overflow-hidden bg-gray-900">
-          {figure.images[0] ? (
-            <img
-              src={figure.images[0].url}
+          {imageUrl ? (
+            <Image
+              src={imageUrl}
               alt={figure.name}
-              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 ease-out"
-              loading="lazy"
+              fill
+              sizes="(max-width: 640px) 180px, (max-width: 1024px) 220px, 280px"
+              quality={60}
+              className="object-cover group-hover:scale-110 transition-transform duration-500 ease-out"
+              unoptimized={skipOptimization}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-white/20">

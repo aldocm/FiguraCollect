@@ -214,7 +214,7 @@ function BasicInfoSection({
               required
             >
               <option value="">Selecciona</option>
-              {brands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+              {[...brands].sort((a, b) => a.name.localeCompare(b.name)).map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
             </select>
             <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
           </div>
@@ -232,7 +232,7 @@ function BasicInfoSection({
               disabled={!form.brandId}
             >
               <option value="">Selecciona</option>
-              {filteredLines.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
+              {[...filteredLines].sort((a, b) => a.name.localeCompare(b.name)).map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
             </select>
             <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
           </div>
@@ -255,7 +255,7 @@ function BasicInfoSection({
                 className="w-full appearance-none bg-black/40 border border-white/10 rounded-xl px-3 md:px-4 py-2 text-sm md:text-base text-white focus:border-primary transition-all [&>option]:bg-gray-900 [&>option]:text-white"
               >
                 <option value="">Sin serie</option>
-                {seriesList.map(s => (
+                {[...seriesList].sort((a, b) => a.name.localeCompare(b.name)).map(s => (
                   <option key={s.id} value={s.id}>{s.name}</option>
                 ))}
               </select>
@@ -283,7 +283,7 @@ function BasicInfoSection({
                 className="w-full appearance-none bg-black/40 border border-white/10 rounded-xl px-3 md:px-4 py-2 text-sm md:text-base text-white focus:border-primary transition-all [&>option]:bg-gray-900 [&>option]:text-white"
               >
                 <option value="">Sin personaje</option>
-                {characters.map(c => (
+                {[...characters].sort((a, b) => a.name.localeCompare(b.name)).map(c => (
                   <option key={c.id} value={c.id}>
                     {c.name}{c.series ? ` (${c.series.name})` : ''}
                   </option>
@@ -314,7 +314,7 @@ function PricesSection({
   setForm: React.Dispatch<React.SetStateAction<FigureFormData>>
 }) {
   const currentYear = new Date().getFullYear()
-  const years = Array.from({ length: 15 }, (_, i) => currentYear - 5 + i)
+  const years = Array.from({ length: currentYear - 2010 + 6 }, (_, i) => 2010 + i)
   const months = [
     { value: '1', label: 'Enero' },
     { value: '2', label: 'Febrero' },
@@ -578,7 +578,7 @@ function TaxonomySection({
 
       <div>
         <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto custom-scrollbar p-1 border border-white/5 rounded-xl bg-black/20">
-          {tags.map(t => (
+          {[...tags].sort((a, b) => a.name.localeCompare(b.name)).map(t => (
             <button
               key={t.id}
               type="button"

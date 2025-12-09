@@ -103,7 +103,7 @@ export function NewCharacterModal({
                     className="w-full appearance-none bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-cyan-500 transition-all"
                   >
                     <option value="" className="bg-gray-900">Sin serie</option>
-                    {seriesList.map(s => (
+                    {[...seriesList].sort((a, b) => a.name.localeCompare(b.name)).map(s => (
                       <option key={s.id} value={s.id} className="bg-gray-900">{s.name}</option>
                     ))}
                   </select>

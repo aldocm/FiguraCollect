@@ -4,9 +4,22 @@ import { useState, useMemo } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { Brand, Figure, FigureImage, Line } from '@prisma/client'
 import Link from 'next/link'
+import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronDown, Check, X, Filter, Search, Circle, Clock } from 'lucide-react'
 import { useLanguage } from '@/contexts/LanguageContext'
+
+// Dominios que bloquean optimización (hotlink protection)
+const UNOPTIMIZED_DOMAINS = ['hasbro.com', 'shop.hasbro.com']
+
+const shouldSkipOptimization = (url: string) => {
+  try {
+    const hostname = new URL(url).hostname
+    return UNOPTIMIZED_DOMAINS.some(domain => hostname.includes(domain))
+  } catch {
+    return false
+  }
+}
 
 interface SeriesData {
     id: string
@@ -167,8 +180,11 @@ function SearchableFilterList<T extends { [key: string]: any }>({ title, items, 
     const [searchTerm, setSearchTerm] = useState('')
     
     const filteredItems = useMemo(() => {
-        if (!searchTerm) return items
-        return items.filter(item => 
+        const sorted = [...items].sort((a, b) =>
+            String(a[labelProp]).localeCompare(String(b[labelProp]))
+        )
+        if (!searchTerm) return sorted
+        return sorted.filter(item =>
             String(item[labelProp]).toLowerCase().includes(searchTerm.toLowerCase())
         )
     }, [items, searchTerm, labelProp])
@@ -252,10 +268,10 @@ export default function CatalogClient({
 
   // Filter characters by selected series
   const filteredCharacters = useMemo(() => {
-      if (selectedSeriesIds.length === 0) return characters
-      return characters.filter(c =>
-          c.series && selectedSeriesIds.includes(c.series.id)
-      )
+      const filtered = selectedSeriesIds.length === 0
+          ? characters
+          : characters.filter(c => c.series && selectedSeriesIds.includes(c.series.id))
+      return [...filtered].sort((a, b) => a.name.localeCompare(b.name))
   }, [characters, selectedSeriesIds])
 
 
@@ -546,10 +562,14 @@ export default function CatalogClient({
                   >
                     <div className="aspect-square relative overflow-hidden bg-gray-900">
                       {figure.images[0] ? (
-                        <img
+                        <Image
                           src={figure.images[0].url}
                           alt={figure.name}
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 ease-out"
+                          fill
+                          sizes="(max-width: 640px) 180px, (max-width: 1024px) 220px, 280px"
+                          quality={60}
+                          className="object-cover group-hover:scale-110 transition-transform duration-500 ease-out"
+                          unoptimized={shouldSkipOptimization(figure.images[0].url)}
                         />
                       ) : (
                          <div className="w-full h-full flex items-center justify-center text-white/20">

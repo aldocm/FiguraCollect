@@ -250,7 +250,7 @@ export default function RegisterPage() {
                     <option value="" className="bg-[#1a1a1a] text-gray-500">
                       {t.register.selectCountry}
                     </option>
-                    {countries.map((c) => (
+                    {[...countries].sort((a, b) => a.label.localeCompare(b.label)).map((c) => (
                       <option
                         key={c.key}
                         value={c.label}
