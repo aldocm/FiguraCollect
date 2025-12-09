@@ -22,6 +22,9 @@ import { useLanguage } from '@/contexts/LanguageContext'
 
 type TabType = 'figures' | 'brands' | 'lines' | 'series' | 'characters'
 
+// Predefined scales for figures
+const SCALE_OPTIONS = ['1/1', '1/2', '1/3', '1/4', '1/5', '1/6', '1/7', '1/8', '1/9', '1/10', '1/11', '1/12']
+
 interface Brand {
   id: string
   name: string
@@ -78,6 +81,10 @@ export default function ContributeClient() {
   const [lineForm, setLineForm] = useState({ name: '', brandId: '' })
   const [seriesForm, setSeriesForm] = useState({ name: '' })
   const [characterForm, setCharacterForm] = useState({ name: '', seriesId: '' })
+
+  // Scale selector state
+  const [showCustomScale, setShowCustomScale] = useState(false)
+  const [customScaleValue, setCustomScaleValue] = useState('')
 
   useEffect(() => {
     async function fetchData() {
@@ -436,13 +443,44 @@ export default function ContributeClient() {
 
                   <div>
                     <label className={labelClass}>{t.contribute.labels.scale}</label>
-                    <input
-                      type="text"
-                      value={figureForm.scale}
-                      onChange={e => setFigureForm(f => ({ ...f, scale: e.target.value }))}
-                      className={inputClass}
-                      placeholder={t.contribute.placeholders.scale}
-                    />
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <select
+                          value={showCustomScale ? 'custom' : figureForm.scale}
+                          onChange={e => {
+                            const val = e.target.value
+                            if (val === 'custom') {
+                              setShowCustomScale(true)
+                              setCustomScaleValue('')
+                              setFigureForm(f => ({ ...f, scale: '' }))
+                            } else {
+                              setShowCustomScale(false)
+                              setCustomScaleValue('')
+                              setFigureForm(f => ({ ...f, scale: val }))
+                            }
+                          }}
+                          className={`${inputClass} appearance-none pr-10`}
+                        >
+                          <option value="">Sin escala</option>
+                          {SCALE_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
+                          <option value="custom">Otra...</option>
+                        </select>
+                        <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+                      </div>
+                      {showCustomScale && (
+                        <input
+                          type="text"
+                          value={customScaleValue}
+                          onChange={e => {
+                            setCustomScaleValue(e.target.value)
+                            setFigureForm(f => ({ ...f, scale: e.target.value }))
+                          }}
+                          placeholder="Ej: 1/144"
+                          className={`${inputClass} w-24`}
+                          autoFocus
+                        />
+                      )}
+                    </div>
                   </div>
 
                   <div>
