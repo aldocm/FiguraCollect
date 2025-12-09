@@ -10,9 +10,23 @@ export async function GET(request: NextRequest) {
     const session = await getSession()
 
     // Filtrar por status según contexto
-    const where: Record<string, unknown> = {}
-    if (!includeAll || !session || !isAdmin(session.role)) {
-      where.status = 'APPROVED'
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let where: Record<string, any> = {}
+
+    if (includeAll && session && isAdmin(session.role)) {
+      // Admin viendo todo (panel de admin)
+      where = {}
+    } else if (session) {
+      // Usuario autenticado: ve APPROVED + sus propios PENDING
+      where = {
+        OR: [
+          { status: 'APPROVED' },
+          { status: 'PENDING', createdById: session.userId }
+        ]
+      }
+    } else {
+      // Usuario no autenticado: solo APPROVED
+      where = { status: 'APPROVED' }
     }
 
     const brands = await prisma.brand.findMany({
