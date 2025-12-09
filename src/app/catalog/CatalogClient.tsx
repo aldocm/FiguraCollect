@@ -558,7 +558,7 @@ export default function CatalogClient({
                       )}
                       
                       {/* Top badge - Release status (clock icon, top right) */}
-                      {!figure.isReleased && figure.releaseDate && (
+                      {!figure.isReleased && figure.releaseYear && (
                         <div className="absolute top-3 right-3">
                            <span className="bg-blue-600/90 backdrop-blur-sm text-white p-1.5 rounded shadow-lg">
                              <Clock size={14} />

@@ -17,14 +17,22 @@ export default async function AdminPage() {
     redirect('/')
   }
 
-  const [brandCount, lineCount, seriesCount, figureCount, userCount, tagCount, characterCount] = await Promise.all([
+  const [brandCount, lineCount, seriesCount, figureCount, userCount, tagCount, characterCount, pendingCount] = await Promise.all([
     prisma.brand.count(),
     prisma.line.count(),
     prisma.series.count(),
     prisma.figure.count(),
     prisma.user.count(),
     prisma.tag.count(),
-    prisma.character.count()
+    prisma.character.count(),
+    // Contar todo el contenido pendiente
+    Promise.all([
+      prisma.figure.count({ where: { status: 'PENDING' } }),
+      prisma.brand.count({ where: { status: 'PENDING' } }),
+      prisma.line.count({ where: { status: 'PENDING' } }),
+      prisma.series.count({ where: { status: 'PENDING' } }),
+      prisma.character.count({ where: { status: 'PENDING' } })
+    ]).then(counts => counts.reduce((a, b) => a + b, 0))
   ])
 
   const stats = {
@@ -34,7 +42,8 @@ export default async function AdminPage() {
     figures: figureCount,
     users: userCount,
     tags: tagCount,
-    characters: characterCount
+    characters: characterCount,
+    pending: pendingCount
   }
 
   return (

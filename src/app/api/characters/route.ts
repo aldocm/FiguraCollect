@@ -3,16 +3,28 @@ import { prisma } from '@/lib/db'
 import { getSession, isAdmin } from '@/lib/auth'
 import { slugify } from '@/lib/utils'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url)
+    const includeAll = searchParams.get('includeAll') === 'true'
+    const session = await getSession()
+
+    // Filtrar por status según contexto
+    const where: Record<string, unknown> = {}
+    if (!includeAll || !session || !isAdmin(session.role)) {
+      where.status = 'APPROVED'
+    }
+
     const characters = await prisma.character.findMany({
+      where,
       include: {
         series: {
           select: { id: true, name: true }
         },
         _count: {
           select: { figures: true }
-        }
+        },
+        createdBy: { select: { id: true, username: true } }
       },
       orderBy: { name: 'asc' }
     })
@@ -31,10 +43,11 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getSession()
 
-    if (!session || !isAdmin(session.role)) {
+    // Cualquier usuario autenticado puede crear personajes
+    if (!session) {
       return NextResponse.json(
-        { error: 'No autorizado' },
-        { status: 403 }
+        { error: 'Debes iniciar sesión para crear personajes' },
+        { status: 401 }
       )
     }
 
@@ -61,13 +74,18 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Determinar status según rol
+    const status = isAdmin(session.role) ? 'APPROVED' : 'PENDING'
+
     const character = await prisma.character.create({
       data: {
         name,
         slug,
         description: description || null,
         imageUrl: imageUrl || null,
-        seriesId: seriesId || null
+        seriesId: seriesId || null,
+        status,
+        createdById: session.userId
       },
       include: {
         series: {
@@ -76,7 +94,12 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    return NextResponse.json({ character }, { status: 201 })
+    return NextResponse.json({
+      character,
+      message: status === 'PENDING'
+        ? 'Personaje creado. Pendiente de aprobación.'
+        : 'Personaje creado exitosamente.'
+    }, { status: 201 })
   } catch (error) {
     console.error('Error creando character:', error)
     return NextResponse.json(

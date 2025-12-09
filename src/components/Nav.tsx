@@ -560,7 +560,7 @@ export function Nav() {
                           className={`w-full px-4 py-2.5 text-left text-sm transition-colors flex items-center gap-2 ${language === 'es' ? 'bg-primary/20 text-primary' : 'text-gray-300 hover:bg-white/5'}`}
                         >
                           <span>ES</span>
-                          <span className="text-gray-500">Espanol</span>
+                          <span className="text-gray-500">Español</span>
                         </button>
                         <button
                           onClick={() => { setLanguage('en'); setShowLangMenu(false) }}
@@ -644,7 +644,7 @@ export function Nav() {
                   onClick={() => setLanguage('es')}
                   className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${language === 'es' ? 'bg-primary text-white' : 'bg-white/5 text-gray-400'}`}
                 >
-                  Espanol
+                  Español
                 </button>
                 <button
                   onClick={() => setLanguage('en')}

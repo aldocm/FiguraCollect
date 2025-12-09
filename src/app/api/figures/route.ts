@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { getSession, isAdmin } from '@/lib/auth'
+import { shouldShowPendingFigures } from '@/lib/config'
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,10 +11,24 @@ export async function GET(request: NextRequest) {
     const seriesId = searchParams.get('seriesId')
     const search = searchParams.get('search')
     const isReleased = searchParams.get('isReleased')
+    const includeAll = searchParams.get('includeAll') === 'true' // Para admin
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '20')
 
+    const session = await getSession()
     const where: Record<string, unknown> = {}
+
+    // Filtrar por status según contexto
+    if (!includeAll || !session || !isAdmin(session.role)) {
+      // Para usuarios normales: solo mostrar aprobadas (o pendientes si está habilitado)
+      const showPending = await shouldShowPendingFigures()
+      if (showPending) {
+        where.status = { in: ['APPROVED', 'PENDING'] }
+      } else {
+        where.status = 'APPROVED'
+      }
+    }
+    // Si es admin con includeAll=true, no filtrar por status
 
     if (brandId) where.brandId = brandId
     if (lineId) where.lineId = lineId
@@ -23,7 +38,7 @@ export async function GET(request: NextRequest) {
       }
     }
     if (search) {
-      where.name = { contains: search }
+      where.name = { contains: search, mode: 'insensitive' }
     }
     if (isReleased !== null && isReleased !== undefined) {
       where.isReleased = isReleased === 'true'
@@ -39,6 +54,7 @@ export async function GET(request: NextRequest) {
           images: { take: 1, orderBy: { order: 'asc' } },
           tags: { include: { tag: true } },
           series: { include: { series: true } },
+          createdBy: { select: { id: true, username: true } },
           _count: {
             select: { reviews: true, userFigures: true }
           }
@@ -72,10 +88,11 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getSession()
 
-    if (!session || !isAdmin(session.role)) {
+    // Ahora cualquier usuario autenticado puede crear figuras
+    if (!session) {
       return NextResponse.json(
-        { error: 'No autorizado' },
-        { status: 403 }
+        { error: 'Debes iniciar sesión para crear figuras' },
+        { status: 401 }
       )
     }
 
@@ -94,7 +111,9 @@ export async function POST(request: NextRequest) {
       priceUSD,
       priceYEN,
       originalPriceCurrency,
-      releaseDate,
+      releaseYear,
+      releaseMonth,
+      releaseDay,
       isReleased,
       isNSFW,
       brandId,
@@ -112,6 +131,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Determinar status según el rol del usuario
+    const status = isAdmin(session.role) ? 'APPROVED' : 'PENDING'
+
     const figure = await prisma.figure.create({
       data: {
         name,
@@ -127,9 +149,16 @@ export async function POST(request: NextRequest) {
         priceUSD: priceUSD || null,
         priceYEN: priceYEN || null,
         originalPriceCurrency: originalPriceCurrency || null,
-        releaseDate: releaseDate || null,
+        releaseYear: releaseYear ? parseInt(releaseYear) : null,
+        releaseMonth: releaseMonth ? parseInt(releaseMonth) : null,
+        releaseDay: releaseDay ? parseInt(releaseDay) : null,
         isReleased: isReleased || false,
         isNSFW: isNSFW || false,
+        status,
+        createdById: session.userId,
+        // Si es admin, también marcar como aprobado por él mismo
+        approvedById: isAdmin(session.role) ? session.userId : null,
+        approvedAt: isAdmin(session.role) ? new Date() : null,
         brandId,
         lineId,
         characterId: characterId || null,
@@ -156,7 +185,12 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    return NextResponse.json({ figure }, { status: 201 })
+    return NextResponse.json({
+      figure,
+      message: status === 'PENDING'
+        ? 'Figura creada. Pendiente de aprobación por un administrador.'
+        : 'Figura creada exitosamente.'
+    }, { status: 201 })
   } catch (error) {
     console.error('Error creando figure:', error)
     return NextResponse.json(

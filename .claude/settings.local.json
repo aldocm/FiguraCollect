@@ -27,7 +27,8 @@
       "Bash(npm run build:*)",
       "Bash(powershell -Command \"Remove-Item -Recurse -Force .next\")",
       "Bash(npx eslint:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(npm i:*)"
     ],
     "deny": [],
     "ask": []

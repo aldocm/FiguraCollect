@@ -313,6 +313,23 @@ function PricesSection({
   form: FigureFormData
   setForm: React.Dispatch<React.SetStateAction<FigureFormData>>
 }) {
+  const currentYear = new Date().getFullYear()
+  const years = Array.from({ length: 15 }, (_, i) => currentYear - 5 + i)
+  const months = [
+    { value: '1', label: 'Enero' },
+    { value: '2', label: 'Febrero' },
+    { value: '3', label: 'Marzo' },
+    { value: '4', label: 'Abril' },
+    { value: '5', label: 'Mayo' },
+    { value: '6', label: 'Junio' },
+    { value: '7', label: 'Julio' },
+    { value: '8', label: 'Agosto' },
+    { value: '9', label: 'Septiembre' },
+    { value: '10', label: 'Octubre' },
+    { value: '11', label: 'Noviembre' },
+    { value: '12', label: 'Diciembre' }
+  ]
+
   return (
     <div className="space-y-3 md:space-y-4">
       <h3 className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-white/10 pb-2 flex items-center gap-2">
@@ -344,30 +361,64 @@ function PricesSection({
         ))}
       </div>
 
-      <div className="grid grid-cols-2 gap-2 md:gap-3 pt-2">
-        <div>
-          <label className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider ml-1 mb-1 block">
-            Lanzamiento (YYYY-MM)
-          </label>
+      <div className="pt-2">
+        <label className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider ml-1 mb-2 block">
+          Fecha de Lanzamiento
+        </label>
+        <div className="grid grid-cols-3 gap-2">
+          <div className="relative">
+            <select
+              value={form.releaseYear}
+              onChange={e => setForm({ ...form, releaseYear: e.target.value })}
+              className="w-full appearance-none bg-black/40 border border-white/10 rounded-xl px-2 md:px-3 py-2 text-white text-xs md:text-sm focus:border-primary transition-all [&>option]:bg-gray-900 [&>option]:text-white"
+            >
+              <option value="">Año</option>
+              {years.map(y => <option key={y} value={y}>{y}</option>)}
+            </select>
+            <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+          </div>
+          <div className="relative">
+            <select
+              value={form.releaseMonth}
+              onChange={e => setForm({ ...form, releaseMonth: e.target.value })}
+              className="w-full appearance-none bg-black/40 border border-white/10 rounded-xl px-2 md:px-3 py-2 text-white text-xs md:text-sm focus:border-primary transition-all [&>option]:bg-gray-900 [&>option]:text-white"
+            >
+              <option value="">Mes</option>
+              {months.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
+            </select>
+            <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+          </div>
           <input
-            type="text"
-            placeholder="Ej. 2024-12"
-            value={form.releaseDate}
-            onChange={e => setForm({ ...form, releaseDate: e.target.value })}
+            type="number"
+            min="1"
+            max="31"
+            placeholder="Día (opc.)"
+            value={form.releaseDay}
+            onChange={e => setForm({ ...form, releaseDay: e.target.value })}
             className="bg-black/40 border border-white/10 rounded-xl px-2 md:px-3 py-2 text-white text-xs md:text-sm w-full"
           />
         </div>
-        <div className="flex flex-col justify-end">
-          <label className="flex items-center gap-2 text-xs md:text-sm text-gray-300 cursor-pointer bg-black/20 rounded-xl px-2 md:px-3 py-2 border border-white/5 h-[38px]">
-            <input
-              type="checkbox"
-              checked={form.isReleased}
-              onChange={e => setForm({ ...form, isReleased: e.target.checked })}
-              className="accent-primary w-4 h-4"
-            />
-            Ya lanzada
-          </label>
-        </div>
+      </div>
+
+      <div className="flex items-center gap-4 pt-2">
+        <label className="flex items-center gap-2 text-xs md:text-sm text-gray-300 cursor-pointer bg-black/20 rounded-xl px-3 py-2 border border-white/5">
+          <input
+            type="checkbox"
+            checked={form.isReleased}
+            onChange={e => setForm({ ...form, isReleased: e.target.checked })}
+            className="accent-primary w-4 h-4"
+          />
+          Ya lanzada
+        </label>
+        <label className="flex items-center gap-2 text-xs md:text-sm text-gray-300 cursor-pointer bg-black/20 rounded-xl px-3 py-2 border border-white/5">
+          <input
+            type="checkbox"
+            checked={form.isNSFW}
+            onChange={e => setForm({ ...form, isNSFW: e.target.checked })}
+            className="accent-red-500 w-4 h-4"
+          />
+          NSFW
+        </label>
       </div>
     </div>
   )

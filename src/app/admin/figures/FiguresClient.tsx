@@ -69,10 +69,17 @@ export default function FiguresClient() {
     () => figures
       .filter(f => pendingViewSnapshot.includes(f.id))
       .sort((a, b) => {
-        if (!a.releaseDate && !b.releaseDate) return 0
-        if (!a.releaseDate) return 1
-        if (!b.releaseDate) return -1
-        return a.releaseDate.localeCompare(b.releaseDate)
+        // Sort by releaseYear, then releaseMonth, then releaseDay
+        if (!a.releaseYear && !b.releaseYear) return 0
+        if (!a.releaseYear) return 1
+        if (!b.releaseYear) return -1
+        if (a.releaseYear !== b.releaseYear) return a.releaseYear - b.releaseYear
+        const aMonth = a.releaseMonth || 0
+        const bMonth = b.releaseMonth || 0
+        if (aMonth !== bMonth) return aMonth - bMonth
+        const aDay = a.releaseDay || 0
+        const bDay = b.releaseDay || 0
+        return aDay - bDay
       }),
     [figures, pendingViewSnapshot]
   )

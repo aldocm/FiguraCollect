@@ -23,7 +23,9 @@ interface FigureDetail {
   priceUSD: number | null
   priceYEN: number | null
   originalPriceCurrency: string | null
-  releaseDate: string | null
+  releaseYear: number | null
+  releaseMonth: number | null
+  releaseDay: number | null
   isReleased: boolean
   isNSFW: boolean
   brand: { id: string }
@@ -94,7 +96,9 @@ export function useFigureForm(lines: Line[]): UseFigureFormReturn {
           priceUSD: f.priceUSD ? f.priceUSD.toString() : '',
           priceYEN: f.priceYEN ? f.priceYEN.toString() : '',
           originalPriceCurrency: (f.originalPriceCurrency as 'MXN' | 'USD' | 'YEN') || 'YEN',
-          releaseDate: f.releaseDate || '',
+          releaseYear: f.releaseYear ? f.releaseYear.toString() : '',
+          releaseMonth: f.releaseMonth ? f.releaseMonth.toString() : '',
+          releaseDay: f.releaseDay ? f.releaseDay.toString() : '',
           isReleased: f.isReleased,
           isNSFW: f.isNSFW,
           brandId: f.brand.id,
@@ -149,7 +153,9 @@ export function useFigureForm(lines: Line[]): UseFigureFormReturn {
           priceUSD: form.priceUSD ? parseFloat(form.priceUSD) : null,
           priceYEN: form.priceYEN ? parseFloat(form.priceYEN) : null,
           originalPriceCurrency: form.originalPriceCurrency || null,
-          releaseDate: form.releaseDate || null,
+          releaseYear: form.releaseYear || null,
+          releaseMonth: form.releaseMonth || null,
+          releaseDay: form.releaseDay || null,
           isReleased: form.isReleased,
           isNSFW: form.isNSFW,
           brandId: form.brandId,

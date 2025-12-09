@@ -2,6 +2,7 @@ import { prisma } from '@/lib/db'
 import CatalogClient from './CatalogClient'
 import type { Metadata } from 'next'
 import { calculateAverageRating } from '@/lib/utils'
+import { shouldShowPendingFigures } from '@/lib/config'
 
 export const metadata: Metadata = {
   title: 'Catálogo | FiguraCollect',
@@ -32,6 +33,12 @@ export default async function CatalogPage({ searchParams }: PageProps) {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const where: Record<string, any> = {}
+
+  // Filter by status - only show APPROVED unless config allows pending
+  const showPending = await shouldShowPendingFigures()
+  if (!showPending) {
+    where.status = 'APPROVED'
+  }
 
   if (params.brandId) where.brandId = params.brandId
   
@@ -66,14 +73,14 @@ export default async function CatalogPage({ searchParams }: PageProps) {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let orderBy: Record<string, any> = { createdAt: 'desc' }
+  let orderBy: Record<string, any> | Record<string, any>[] = { createdAt: 'desc' }
 
   switch (sort) {
     case 'date_asc':
-      orderBy = { releaseDate: 'asc' }
+      orderBy = [{ releaseYear: 'asc' }, { releaseMonth: 'asc' }, { releaseDay: 'asc' }]
       break
     case 'date_desc':
-      orderBy = { releaseDate: 'desc' }
+      orderBy = [{ releaseYear: 'desc' }, { releaseMonth: 'desc' }, { releaseDay: 'desc' }]
       break
     case 'price_asc':
       orderBy = { priceMXN: 'asc' }

@@ -32,6 +32,14 @@ model User {
   lists         List[]
   reviews       Review[]
   notifications Notification[]
+
+  // Contenido creado por el usuario
+  figuresCreated    Figure[]    @relation("FiguresCreated")
+  figuresApproved   Figure[]    @relation("FiguresApproved")
+  brandsCreated     Brand[]     @relation("BrandsCreated")
+  linesCreated      Line[]      @relation("LinesCreated")
+  seriesCreated     Series[]    @relation("SeriesCreated")
+  charactersCreated Character[] @relation("CharactersCreated")
 }
 
 model Brand {
@@ -40,8 +48,13 @@ model Brand {
   slug        String   @unique
   description String?
   country     String?
+  status      String   @default("APPROVED") // PENDING | APPROVED
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  // Creador (para contenido creado por usuarios)
+  createdById String?
+  createdBy   User?    @relation("BrandsCreated", fields: [createdById], references: [id], onDelete: SetNull)
 
   // Relaciones
   lines       Line[]
@@ -54,8 +67,13 @@ model Line {
   slug        String   @unique
   description String?
   releaseYear Int?
+  status      String   @default("APPROVED") // PENDING | APPROVED
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  // Creador (para contenido creado por usuarios)
+  createdById String?
+  createdBy   User?    @relation("LinesCreated", fields: [createdById], references: [id], onDelete: SetNull)
 
   // Relaciones
   brandId     String
@@ -68,8 +86,13 @@ model Series {
   name        String
   slug        String         @unique
   description String?
+  status      String         @default("APPROVED") // PENDING | APPROVED
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
+
+  // Creador (para contenido creado por usuarios)
+  createdById String?
+  createdBy   User?          @relation("SeriesCreated", fields: [createdById], references: [id], onDelete: SetNull)
 
   // Relaciones
   figures     FigureSeries[]
@@ -91,8 +114,13 @@ model Character {
   slug        String   @unique
   description String?
   imageUrl    String?
+  status      String   @default("APPROVED") // PENDING | APPROVED
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  // Creador (para contenido creado por usuarios)
+  createdById String?
+  createdBy   User?    @relation("CharactersCreated", fields: [createdById], references: [id], onDelete: SetNull)
 
   // Relación opcional con Series
   seriesId    String?
@@ -118,11 +146,23 @@ model Figure {
   priceUSD    Float?
   priceYEN    Float?
   originalPriceCurrency String? // MXN | USD | YEN
-  releaseDate String?  // YYYY-MM format
+  // Campos de fecha de lanzamiento (separados)
+  releaseDate  String?  // @deprecated - Migrar a releaseYear/Month/Day
+  releaseYear  Int?
+  releaseMonth Int?
+  releaseDay   Int?
   isReleased  Boolean  @default(false)
   isNSFW      Boolean  @default(false)
+  status      String   @default("APPROVED") // PENDING | APPROVED
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  // Creador y aprobador
+  createdById  String?
+  createdBy    User?    @relation("FiguresCreated", fields: [createdById], references: [id], onDelete: SetNull)
+  approvedById String?
+  approvedBy   User?    @relation("FiguresApproved", fields: [approvedById], references: [id], onDelete: SetNull)
+  approvedAt   DateTime?
 
   // Relaciones
   brandId     String

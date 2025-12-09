@@ -5,6 +5,7 @@ import { Nav } from "@/components/Nav";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import localFont from "next/font/local";
 import { usePathname } from "next/navigation";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 const geistSans = localFont({
@@ -48,6 +49,7 @@ export default function RootLayout({
           </main>
           {!isAuthPage && <Footer />}
         </LanguageProvider>
+        <Analytics />
       </body>
     </html>
   );

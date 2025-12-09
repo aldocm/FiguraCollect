@@ -4,6 +4,7 @@ import { memo } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Box, Edit2, ExternalLink, Trash2 } from 'lucide-react'
+import { formatReleaseDateFromFields } from '@/lib/utils'
 import type { Figure } from '../types'
 
 interface FigureCatalogItemProps {
@@ -54,10 +55,10 @@ export const FigureCatalogItem = memo(function FigureCatalogItem({
           <span className="text-primary">{figure.brand.name}</span>
           <span>•</span>
           <span>{figure.line.name}</span>
-          {figure.releaseDate && (
+          {figure.releaseYear && (
             <>
               <span>•</span>
-              <span>{figure.releaseDate}</span>
+              <span>{formatReleaseDateFromFields(figure.releaseYear, figure.releaseMonth, figure.releaseDay)}</span>
             </>
           )}
         </div>

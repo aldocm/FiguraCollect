@@ -7,6 +7,7 @@ import {
   Star, Calendar, Tag, ShieldCheck, Clock
 } from 'lucide-react'
 import type { MeasureUnit } from '@/lib/utils'
+import { formatReleaseDateFromFields } from '@/lib/utils'
 import { ImageGallery, DimensionsCard, ReviewSection, ImageModal } from './components'
 import { useLanguage } from '@/contexts/LanguageContext'
 
@@ -23,7 +24,9 @@ type Figure = {
   scale: string | null
   material: string | null
   maker: string | null
-  releaseDate: string | null
+  releaseYear: number | null
+  releaseMonth: number | null
+  releaseDay: number | null
   isReleased: boolean
   priceMXN: number | null
   priceUSD: number | null
@@ -181,14 +184,14 @@ export default function FigureDetailClient({
                      <p className="text-xs text-gray-400 font-medium mb-1 lg:hidden">
                         {figure.isReleased ? t.figureDetail.releasedIn : t.figureDetail.releaseDate}
                      </p>
-                     {figure.releaseDate && (
+                     {figure.releaseYear && (
                         <div className="flex items-center gap-1.5 text-lg font-bold text-white lg:hidden">
                           {figure.isReleased ? (
                             <ShieldCheck className="w-5 h-5 text-green-400" />
                           ) : (
                             <Clock className="w-5 h-5 text-orange-400" />
                           )}
-                          <span>{new Date(figure.releaseDate).toLocaleDateString()}</span>
+                          <span>{formatReleaseDateFromFields(figure.releaseYear, figure.releaseMonth, figure.releaseDay)}</span>
                         </div>
                      )}
                      {/* Desktop: estado con icono + fecha */}
@@ -203,9 +206,9 @@ export default function FigureDetailClient({
                           <span>{t.figureDetail.preorderAnnouncement}</span>
                        </div>
                      )}
-                     {figure.releaseDate && (
+                     {figure.releaseYear && (
                         <p className="hidden lg:block text-xs text-gray-400 mt-1 ml-6">
-                          {t.figureDetail.date} {new Date(figure.releaseDate).toLocaleDateString()}
+                          {t.figureDetail.date} {formatReleaseDateFromFields(figure.releaseYear, figure.releaseMonth, figure.releaseDay)}
                         </p>
                      )}
                   </div>

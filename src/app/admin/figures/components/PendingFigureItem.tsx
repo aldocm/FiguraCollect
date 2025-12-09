@@ -3,6 +3,7 @@
 import { memo } from 'react'
 import { motion } from 'framer-motion'
 import { Box, Calendar, CheckCircle, Clock, Edit2, Rocket } from 'lucide-react'
+import { formatReleaseDateFromFields } from '@/lib/utils'
 import type { Figure } from '../types'
 
 interface PendingFigureItemProps {
@@ -56,10 +57,10 @@ export const PendingFigureItem = memo(function PendingFigureItem({
           <span>•</span>
           <span>{figure.line.name}</span>
         </div>
-        {figure.releaseDate && (
+        {figure.releaseYear && (
           <div className="flex items-center gap-1 mt-1 text-xs text-amber-400/80">
             <Calendar size={12} />
-            <span>{figure.releaseDate}</span>
+            <span>{formatReleaseDateFromFields(figure.releaseYear, figure.releaseMonth, figure.releaseDay)}</span>
           </div>
         )}
       </div>

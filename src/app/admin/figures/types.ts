@@ -10,9 +10,13 @@ export interface Figure {
   brand: Brand
   line: { name: string }
   priceMXN: number | null
-  releaseDate: string | null
+  releaseYear: number | null
+  releaseMonth: number | null
+  releaseDay: number | null
   isReleased: boolean
+  status: string
   images: { url: string }[]
+  createdBy?: { id: string; username: string } | null
 }
 
 export interface FigureFormData {
@@ -29,7 +33,9 @@ export interface FigureFormData {
   priceUSD: string
   priceYEN: string
   originalPriceCurrency: 'MXN' | 'USD' | 'YEN'
-  releaseDate: string
+  releaseYear: string
+  releaseMonth: string
+  releaseDay: string
   isReleased: boolean
   isNSFW: boolean
   brandId: string
@@ -54,7 +60,9 @@ export const INITIAL_FORM_DATA: FigureFormData = {
   priceUSD: '',
   priceYEN: '',
   originalPriceCurrency: 'YEN',
-  releaseDate: '',
+  releaseYear: '',
+  releaseMonth: '',
+  releaseDay: '',
   isReleased: false,
   isNSFW: false,
   brandId: '',

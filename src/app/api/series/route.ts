@@ -3,13 +3,25 @@ import { prisma } from '@/lib/db'
 import { getSession, isAdmin } from '@/lib/auth'
 import { slugify } from '@/lib/utils'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url)
+    const includeAll = searchParams.get('includeAll') === 'true'
+    const session = await getSession()
+
+    // Filtrar por status según contexto
+    const where: Record<string, unknown> = {}
+    if (!includeAll || !session || !isAdmin(session.role)) {
+      where.status = 'APPROVED'
+    }
+
     const series = await prisma.series.findMany({
+      where,
       include: {
         _count: {
           select: { figures: true }
-        }
+        },
+        createdBy: { select: { id: true, username: true } }
       },
       orderBy: { name: 'asc' }
     })
@@ -28,10 +40,11 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getSession()
 
-    if (!session || !isAdmin(session.role)) {
+    // Cualquier usuario autenticado puede crear series
+    if (!session) {
       return NextResponse.json(
-        { error: 'No autorizado' },
-        { status: 403 }
+        { error: 'Debes iniciar sesión para crear series' },
+        { status: 401 }
       )
     }
 
@@ -58,15 +71,25 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Determinar status según rol
+    const status = isAdmin(session.role) ? 'APPROVED' : 'PENDING'
+
     const newSeries = await prisma.series.create({
       data: {
         name,
         slug,
-        description: description || null
+        description: description || null,
+        status,
+        createdById: session.userId
       }
     })
 
-    return NextResponse.json({ series: newSeries }, { status: 201 })
+    return NextResponse.json({
+      series: newSeries,
+      message: status === 'PENDING'
+        ? 'Serie creada. Pendiente de aprobación.'
+        : 'Serie creada exitosamente.'
+    }, { status: 201 })
   } catch (error) {
     console.error('Error creando series:', error)
     return NextResponse.json(

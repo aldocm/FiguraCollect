@@ -4,7 +4,8 @@ import Link from 'next/link'
 import { motion, Variants } from 'framer-motion'
 import {
   Users, Layers, Tags, Box, Library, BadgeCheck,
-  ArrowRight, ShieldAlert, User, LayoutTemplate, Settings2
+  ArrowRight, ShieldAlert, User, LayoutTemplate, Settings2,
+  Clock, Settings
 } from 'lucide-react'
 import { useLanguage } from '@/contexts/LanguageContext'
 
@@ -21,6 +22,7 @@ interface AdminDashboardClientProps {
     users: number
     tags: number
     characters: number
+    pending?: number
   }
 }
 
@@ -114,6 +116,15 @@ export default function AdminDashboardClient({ user, stats }: AdminDashboardClie
       color: 'text-emerald-400',
       bg: 'from-emerald-500/20 to-green-500/5',
       desc: t.admin.manageTags
+    },
+    {
+      href: '/admin/pending',
+      label: 'Pendientes',
+      count: stats.pending || 0,
+      icon: Clock,
+      color: 'text-amber-400',
+      bg: 'from-amber-500/20 to-orange-500/5',
+      desc: 'Aprobar contenido de usuarios'
     }
   ]
 
@@ -126,6 +137,16 @@ export default function AdminDashboardClient({ user, stats }: AdminDashboardClie
       color: 'text-indigo-400',
       bg: 'from-indigo-500/20 to-violet-500/5',
       desc: t.admin.manageUsers,
+      isSuper: true
+    },
+    {
+      href: '/admin/settings',
+      label: 'Configuración',
+      count: -1,
+      icon: Settings,
+      color: 'text-purple-400',
+      bg: 'from-purple-500/20 to-violet-500/5',
+      desc: 'Configuración del sistema',
       isSuper: true
     }
   ]

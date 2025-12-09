@@ -3,13 +3,25 @@ import { prisma } from '@/lib/db'
 import { getSession, isAdmin } from '@/lib/auth'
 import { slugify } from '@/lib/utils'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url)
+    const includeAll = searchParams.get('includeAll') === 'true'
+    const session = await getSession()
+
+    // Filtrar por status según contexto
+    const where: Record<string, unknown> = {}
+    if (!includeAll || !session || !isAdmin(session.role)) {
+      where.status = 'APPROVED'
+    }
+
     const brands = await prisma.brand.findMany({
+      where,
       include: {
         _count: {
           select: { lines: true, figures: true }
-        }
+        },
+        createdBy: { select: { id: true, username: true } }
       },
       orderBy: { name: 'asc' }
     })
@@ -28,10 +40,11 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getSession()
 
-    if (!session || !isAdmin(session.role)) {
+    // Cualquier usuario autenticado puede crear marcas
+    if (!session) {
       return NextResponse.json(
-        { error: 'No autorizado' },
-        { status: 403 }
+        { error: 'Debes iniciar sesión para crear marcas' },
+        { status: 401 }
       )
     }
 
@@ -58,16 +71,26 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Determinar status según rol
+    const status = isAdmin(session.role) ? 'APPROVED' : 'PENDING'
+
     const brand = await prisma.brand.create({
       data: {
         name,
         slug,
         description: description || null,
-        country: country || null
+        country: country || null,
+        status,
+        createdById: session.userId
       }
     })
 
-    return NextResponse.json({ brand }, { status: 201 })
+    return NextResponse.json({
+      brand,
+      message: status === 'PENDING'
+        ? 'Marca creada. Pendiente de aprobación.'
+        : 'Marca creada exitosamente.'
+    }, { status: 201 })
   } catch (error) {
     console.error('Error creando brand:', error)
     return NextResponse.json(

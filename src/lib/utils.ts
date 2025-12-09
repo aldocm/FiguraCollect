@@ -38,6 +38,29 @@ export function formatReleaseDate(releaseDate: string | null): string {
   return `${months[parseInt(month) - 1]} ${year}`
 }
 
+/**
+ * Format release date from separate year/month/day fields
+ */
+export function formatReleaseDateFromFields(
+  year: number | null,
+  month: number | null,
+  day: number | null
+): string {
+  if (!year) return 'TBA'
+
+  const months = [
+    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+  ]
+
+  let result = ''
+  if (day) result += `${day} de `
+  if (month) result += `${months[month - 1]} `
+  result += year.toString()
+
+  return result
+}
+
 export function getCurrentMonth(): string {
   const now = new Date()
   const year = now.getFullYear()

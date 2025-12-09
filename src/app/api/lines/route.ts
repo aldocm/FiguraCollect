@@ -7,14 +7,24 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const brandId = searchParams.get('brandId')
+    const includeAll = searchParams.get('includeAll') === 'true'
+    const session = await getSession()
+
+    // Filtrar por status según contexto
+    const where: Record<string, unknown> = {}
+    if (!includeAll || !session || !isAdmin(session.role)) {
+      where.status = 'APPROVED'
+    }
+    if (brandId) where.brandId = brandId
 
     const lines = await prisma.line.findMany({
-      where: brandId ? { brandId } : undefined,
+      where,
       include: {
         brand: true,
         _count: {
           select: { figures: true }
-        }
+        },
+        createdBy: { select: { id: true, username: true } }
       },
       orderBy: { name: 'asc' }
     })
@@ -33,10 +43,11 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getSession()
 
-    if (!session || !isAdmin(session.role)) {
+    // Cualquier usuario autenticado puede crear líneas
+    if (!session) {
       return NextResponse.json(
-        { error: 'No autorizado' },
-        { status: 403 }
+        { error: 'Debes iniciar sesión para crear líneas' },
+        { status: 401 }
       )
     }
 
@@ -63,18 +74,28 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Determinar status según rol
+    const status = isAdmin(session.role) ? 'APPROVED' : 'PENDING'
+
     const line = await prisma.line.create({
       data: {
         name,
         slug,
         description: description || null,
         brandId,
-        releaseYear: releaseYear || null
+        releaseYear: releaseYear || null,
+        status,
+        createdById: session.userId
       },
       include: { brand: true }
     })
 
-    return NextResponse.json({ line }, { status: 201 })
+    return NextResponse.json({
+      line,
+      message: status === 'PENDING'
+        ? 'Línea creada. Pendiente de aprobación.'
+        : 'Línea creada exitosamente.'
+    }, { status: 201 })
   } catch (error) {
     console.error('Error creando line:', error)
     return NextResponse.json(
