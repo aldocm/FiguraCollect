@@ -49,7 +49,7 @@ export default function SettingsClient() {
         const data = await res.json()
         setMessage({ type: 'error', text: data.error || 'Error al guardar' })
       }
-    } catch (error) {
+    } catch {
       setMessage({ type: 'error', text: 'Error de conexión' })
     } finally {
       setSaving(false)

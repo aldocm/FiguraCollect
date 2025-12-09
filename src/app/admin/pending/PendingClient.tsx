@@ -243,11 +243,9 @@ export default function PendingClient({ initialCounts }: Props) {
                 {activeTab === 'brands' && (data.brands || []).map(item => (
                   <GenericItem
                     key={item.id}
-                    id={item.id}
                     name={item.name}
                     subtitle={item.country || 'Sin país'}
                     createdBy={item.createdBy?.username}
-                    createdAt={item.createdAt}
                     processing={processing === item.id}
                     onApprove={() => handleApprove('brands', item.id)}
                     onDelete={() => handleDelete('brands', item.id)}
@@ -257,11 +255,9 @@ export default function PendingClient({ initialCounts }: Props) {
                 {activeTab === 'lines' && (data.lines || []).map(item => (
                   <GenericItem
                     key={item.id}
-                    id={item.id}
                     name={item.name}
                     subtitle={item.brand.name}
                     createdBy={item.createdBy?.username}
-                    createdAt={item.createdAt}
                     processing={processing === item.id}
                     onApprove={() => handleApprove('lines', item.id)}
                     onDelete={() => handleDelete('lines', item.id)}
@@ -271,11 +267,9 @@ export default function PendingClient({ initialCounts }: Props) {
                 {activeTab === 'series' && (data.series || []).map(item => (
                   <GenericItem
                     key={item.id}
-                    id={item.id}
                     name={item.name}
                     subtitle="Serie"
                     createdBy={item.createdBy?.username}
-                    createdAt={item.createdAt}
                     processing={processing === item.id}
                     onApprove={() => handleApprove('series', item.id)}
                     onDelete={() => handleDelete('series', item.id)}
@@ -285,11 +279,9 @@ export default function PendingClient({ initialCounts }: Props) {
                 {activeTab === 'characters' && (data.characters || []).map(item => (
                   <GenericItem
                     key={item.id}
-                    id={item.id}
                     name={item.name}
                     subtitle={item.series?.name || 'Sin serie'}
                     createdBy={item.createdBy?.username}
-                    createdAt={item.createdAt}
                     processing={processing === item.id}
                     onApprove={() => handleApprove('characters', item.id)}
                     onDelete={() => handleDelete('characters', item.id)}
@@ -368,21 +360,17 @@ function FigureItem({
 }
 
 function GenericItem({
-  id,
   name,
   subtitle,
   createdBy,
-  createdAt,
   processing,
   onApprove,
   onDelete,
   icon: Icon
 }: {
-  id: string
   name: string
   subtitle: string
   createdBy?: string
-  createdAt: string
   processing: boolean
   onApprove: () => void
   onDelete: () => void
