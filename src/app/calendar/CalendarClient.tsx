@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, ChevronDown, SlidersHorizontal, Clock } from 'lucide-react'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 type Figure = {
   id: string
@@ -66,6 +67,7 @@ export default function CalendarClient({ brands, lines }: CalendarClientProps) {
   const [figures, setFigures] = useState<Figure[]>([])
   const [loading, setLoading] = useState(false)
   const [filtersOpen, setFiltersOpen] = useState(false)
+  const { t } = useLanguage()
 
   const year = currentDate.getFullYear()
   const month = currentDate.getMonth()
@@ -149,10 +151,10 @@ export default function CalendarClient({ brands, lines }: CalendarClientProps) {
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 mb-8">
                 <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
                     <h1 className="text-2xl md:text-4xl font-title font-black text-white mb-1 md:mb-2">
-                        Calendario de <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-500">Lanzamientos</span>
+                        {t.calendar.title.split(' ')[0]} <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-500">{t.calendar.title.split(' ').slice(1).join(' ')}</span>
                     </h1>
                     <p className="text-gray-400 text-sm">
-                        Explora las fechas de salida confirmadas. Organiza tu colección y no pierdas de vista tus figuras más esperadas.
+                        {t.calendar.description}
                     </p>
                 </motion.div>
 
@@ -164,14 +166,14 @@ export default function CalendarClient({ brands, lines }: CalendarClientProps) {
                 >
                     {/* Brand Select */}
                     <div className="w-48">
-                        <label className="block text-xs text-gray-500 uppercase font-bold mb-2 ml-1">Filtrar por Marca</label>
+                        <label className="block text-xs text-gray-500 uppercase font-bold mb-2 ml-1">{t.calendar.filterByBrand}</label>
                         <div className="relative">
                             <select
                                 value={selectedBrand}
                                 onChange={(e) => handleBrandChange(e.target.value)}
                                 className="w-full appearance-none bg-uiBase/50 border border-white/10 rounded-xl pl-4 pr-10 py-2.5 text-sm text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all cursor-pointer hover:bg-uiBase/80"
                             >
-                                <option value="" className="bg-[#1a1a1a] text-gray-400">Todas las marcas</option>
+                                <option value="" className="bg-[#1a1a1a] text-gray-400">{t.catalog.allBrands}</option>
                                 {brands.map(b => (
                                     <option key={b.id} value={b.id} className="bg-[#1a1a1a] text-white">{b.name}</option>
                                 ))}
@@ -182,7 +184,7 @@ export default function CalendarClient({ brands, lines }: CalendarClientProps) {
 
                     {/* Line Select */}
                     <div className="w-48">
-                         <label className="block text-xs text-gray-500 uppercase font-bold mb-2 ml-1">Filtrar por Línea</label>
+                         <label className="block text-xs text-gray-500 uppercase font-bold mb-2 ml-1">{t.calendar.filterByLine}</label>
                         <div className="relative">
                             <select
                                 value={selectedLine}
@@ -191,7 +193,7 @@ export default function CalendarClient({ brands, lines }: CalendarClientProps) {
                                 className="w-full appearance-none bg-uiBase/50 border border-white/10 rounded-xl pl-4 pr-10 py-2.5 text-sm text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed hover:enabled:bg-uiBase/80"
                             >
                                 <option value="" className="bg-[#1a1a1a] text-gray-400">
-                                    Selecciona una Línea
+                                    {t.calendar.selectLine}
                                 </option>
                                 {filteredLines.map(l => (
                                     <option key={l.id} value={l.id} className="bg-[#1a1a1a] text-white">{l.name}</option>
@@ -213,7 +215,7 @@ export default function CalendarClient({ brands, lines }: CalendarClientProps) {
                       <div className="bg-primary/20 p-2 rounded-lg">
                         <SlidersHorizontal size={18} className="text-primary" />
                       </div>
-                      <span className="text-sm font-medium text-white">Filtros de búsqueda</span>
+                      <span className="text-sm font-medium text-white">{t.calendar.searchFilters}</span>
                   </div>
                   <motion.div
                     animate={{ rotate: filtersOpen ? 180 : 0 }}
@@ -315,7 +317,7 @@ export default function CalendarClient({ brands, lines }: CalendarClientProps) {
                         <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
                         <CalendarIcon className="absolute inset-0 m-auto text-primary/50" size={24} />
                     </div>
-                    <p className="text-gray-400 mt-4 font-medium animate-pulse">Consultando oráculo...</p>
+                    <p className="text-gray-400 mt-4 font-medium animate-pulse">{t.calendar.loading}</p>
                 </motion.div>
               ) : figuresMonthOnly.length === 0 && Object.keys(figuresByDay).length === 0 ? (
                 <motion.div
@@ -328,9 +330,9 @@ export default function CalendarClient({ brands, lines }: CalendarClientProps) {
                   <div className="bg-white/5 p-6 rounded-full mb-4">
                     <CalendarIcon size={48} className="text-gray-600" />
                   </div>
-                  <h3 className="text-2xl font-bold text-white mb-2">Sin lanzamientos</h3>
+                  <h3 className="text-2xl font-bold text-white mb-2">{t.calendar.noReleases}</h3>
                   <p className="text-gray-400 max-w-md mx-auto">
-                    No hemos encontrado figuras programadas para este mes con los filtros actuales. Intenta cambiar de mes o limpiar los filtros.
+                    {t.calendar.noReleasesDescription}
                   </p>
                 </motion.div>
               ) : (
@@ -350,8 +352,8 @@ export default function CalendarClient({ brands, lines }: CalendarClientProps) {
                             <Clock size={20} className="text-orange-500" />
                         </div>
                         <div>
-                            <h3 className="text-lg font-bold text-white">Lanzamientos del Mes</h3>
-                            <p className="text-xs text-gray-400">Fecha exacta por confirmar</p>
+                            <h3 className="text-lg font-bold text-white">{t.calendar.monthReleases}</h3>
+                            <p className="text-xs text-gray-400">{t.calendar.dateToConfirm}</p>
                         </div>
                         <span className="ml-auto text-xs bg-white/10 text-white px-3 py-1 rounded-full font-medium">
                           {figuresMonthOnly.length}
@@ -407,7 +409,7 @@ export default function CalendarClient({ brands, lines }: CalendarClientProps) {
                                     
                                     {isToday && (
                                         <span className="px-3 py-1 bg-primary/20 text-primary text-xs font-bold rounded-full border border-primary/20 animate-pulse">
-                                            HOY
+                                            {t.calendar.today}
                                         </span>
                                     )}
                                 </div>

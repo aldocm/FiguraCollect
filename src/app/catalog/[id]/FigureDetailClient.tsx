@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import type { MeasureUnit } from '@/lib/utils'
 import { ImageGallery, DimensionsCard, ReviewSection, ImageModal } from './components'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 // --- Reusing Types ---
 // In a real refactor, these should be in a shared types file
@@ -61,6 +62,7 @@ export default function FigureDetailClient({
     (user?.measureUnit as MeasureUnit) || defaultMeasureUnit || 'cm'
   )
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const { t } = useLanguage()
 
   return (
     <div className="max-w-[1600px] mx-auto px-3 pt-2 pb-4 md:px-4 md:pt-4 md:pb-10">
@@ -97,12 +99,12 @@ export default function FigureDetailClient({
                      ))}
                    </div>
                    <span className="text-sm text-blue-400 hover:underline cursor-pointer">
-                     {figure.reviews.length} valoraciones
+                     {figure.reviews.length} {t.figureDetail.ratings}
                    </span>
                  </>
                ) : (
                  <span className="text-sm text-gray-400">
-                   Aún no hay valoraciones
+                   {t.figureDetail.noRatings}
                  </span>
                )}
             </div>
@@ -128,13 +130,13 @@ export default function FigureDetailClient({
                 {/* Desktop: original layout with labels */}
                 <div className="hidden lg:block mb-6 space-y-1">
                    <div className="flex items-center gap-2">
-                      <span className="text-gray-400 text-xs font-medium uppercase w-[60px] flex-shrink-0 text-left">Marca:</span>
+                      <span className="text-gray-400 text-xs font-medium uppercase w-[60px] flex-shrink-0 text-left">{t.figureDetail.brand}</span>
                       <Link href={`/catalog?brandId=${figure.brand.id}`} className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold border border-primary/20 hover:bg-primary/20 transition-colors">
                          {figure.brand.name}
                       </Link>
                    </div>
                    <div className="flex items-center gap-2">
-                      <span className="text-gray-400 text-xs font-medium uppercase w-[60px] flex-shrink-0 text-left">Línea:</span>
+                      <span className="text-gray-400 text-xs font-medium uppercase w-[60px] flex-shrink-0 text-left">{t.figureDetail.line}</span>
                       <Link href={`/catalog?lineId=${figure.line.id}`} className="px-3 py-1 rounded-full bg-white/10 text-white text-xs font-bold border border-white/10 hover:bg-white/20 transition-colors">
                          {figure.line.name}
                       </Link>
@@ -145,7 +147,7 @@ export default function FigureDetailClient({
                 <div className="grid grid-cols-2 lg:grid-cols-1 gap-3 lg:gap-0 mb-4 lg:mb-0">
                   {/* Price Section */}
                   <div className="lg:mb-6">
-                    <p className="text-xs text-gray-400 font-medium mb-1">Precio</p>
+                    <p className="text-xs text-gray-400 font-medium mb-1">{t.figureDetail.price}</p>
                     {(() => {
                       const currency = figure.originalPriceCurrency || 'MXN'
                       const priceMap = {
@@ -177,7 +179,7 @@ export default function FigureDetailClient({
                   <div className="lg:mb-8">
                      {/* Mobile: etiqueta dinámica + fecha */}
                      <p className="text-xs text-gray-400 font-medium mb-1 lg:hidden">
-                        {figure.isReleased ? 'Lanzada en' : 'Fecha de lanzamiento'}
+                        {figure.isReleased ? t.figureDetail.releasedIn : t.figureDetail.releaseDate}
                      </p>
                      {figure.releaseDate && (
                         <div className="flex items-center gap-1.5 text-lg font-bold text-white lg:hidden">
@@ -193,17 +195,17 @@ export default function FigureDetailClient({
                      {figure.isReleased ? (
                        <div className="hidden lg:flex items-center gap-2 text-green-400 text-sm font-bold">
                           <ShieldCheck className="w-[18px] h-[18px]" />
-                          <span>Disponible / Lanzado</span>
+                          <span>{t.figureDetail.availableReleased}</span>
                        </div>
                      ) : (
                        <div className="hidden lg:flex items-center gap-2 text-orange-400 text-sm font-bold">
                           <Calendar className="w-[18px] h-[18px]" />
-                          <span>Preventa / Anuncio</span>
+                          <span>{t.figureDetail.preorderAnnouncement}</span>
                        </div>
                      )}
                      {figure.releaseDate && (
                         <p className="hidden lg:block text-xs text-gray-400 mt-1 ml-6">
-                          Fecha: {new Date(figure.releaseDate).toLocaleDateString()}
+                          {t.figureDetail.date} {new Date(figure.releaseDate).toLocaleDateString()}
                         </p>
                      )}
                   </div>
@@ -220,7 +222,7 @@ export default function FigureDetailClient({
                      />
                    ) : (
                      <Link href="/login" className="w-full btn btn-primary py-3 rounded-lg flex justify-center font-bold">
-                        Iniciar Sesión para Coleccionar
+                        {t.figureDetail.loginToCollect}
                      </Link>
                    )}
                 </div>
@@ -231,14 +233,14 @@ export default function FigureDetailClient({
                        <>
                            {figure.character.series && (
                              <div className="flex justify-between items-center text-sm">
-                                <span className="text-gray-400">Serie</span>
+                                <span className="text-gray-400">{t.figureDetail.seriesLabel}</span>
                                 <Link href={`/catalog?seriesId=${figure.character.series.id}`} className="text-blue-400 hover:underline font-medium text-right">
                                    {figure.character.series.name}
                                 </Link>
                              </div>
                            )}
                            <div className="flex justify-between items-center text-sm">
-                              <span className="text-gray-400">Personaje</span>
+                              <span className="text-gray-400">{t.figureDetail.characterLabel}</span>
                               <Link href={`/catalog?characterId=${figure.character.id}`} className="text-blue-400 hover:underline font-medium text-right">
                                  {figure.character.name}
                               </Link>
@@ -247,7 +249,7 @@ export default function FigureDetailClient({
                    ) : (
                        <div className="flex items-center text-sm text-gray-400">
                            <span className="mr-2">✨</span>
-                           Personaje Original
+                           {t.figureDetail.originalCharacter}
                        </div>
                    )}
                 </div>
@@ -269,23 +271,23 @@ export default function FigureDetailClient({
         {/* 5. Technical Specs - Mobile: order-5, Desktop: col 2 row 3 */}
         <div className="order-5 lg:col-span-5 xl:col-span-4">
           <div className="bg-white/5 rounded-lg border border-white/10 overflow-hidden">
-             <h3 className="bg-white/10 px-3 lg:px-4 py-1.5 lg:py-2 text-xs lg:text-sm font-bold text-white border-b border-white/10">Especificaciones Técnicas</h3>
+             <h3 className="bg-white/10 px-3 lg:px-4 py-1.5 lg:py-2 text-xs lg:text-sm font-bold text-white border-b border-white/10">{t.figureDetail.technicalSpecs}</h3>
              <div className="divide-y divide-white/5 text-xs lg:text-sm">
                 <div className="grid grid-cols-2 p-2 lg:p-3 hover:bg-white/5">
-                   <span className="text-gray-400 font-medium">Fabricante</span>
-                   <span className="text-white text-right">{figure.maker || "N/A"}</span>
+                   <span className="text-gray-400 font-medium">{t.figureDetail.manufacturer}</span>
+                   <span className="text-white text-right">{figure.maker || t.figureDetail.notAvailable}</span>
                 </div>
                 <div className="grid grid-cols-2 p-2 lg:p-3 hover:bg-white/5">
-                   <span className="text-gray-400 font-medium">Material</span>
-                   <span className="text-white text-right">{figure.material || "PVC/ABS"}</span>
+                   <span className="text-gray-400 font-medium">{t.figureDetail.material}</span>
+                   <span className="text-white text-right">{figure.material || t.figureDetail.defaultMaterial}</span>
                 </div>
                 <div className="grid grid-cols-2 p-2 lg:p-3 hover:bg-white/5">
-                   <span className="text-gray-400 font-medium">Escala</span>
-                   <span className="text-white text-right">{figure.scale || "Sin escala"}</span>
+                   <span className="text-gray-400 font-medium">{t.figureDetail.scale}</span>
+                   <span className="text-white text-right">{figure.scale || t.figureDetail.noScale}</span>
                 </div>
                 {figure.sku && (
                   <div className="grid grid-cols-2 p-2 lg:p-3 hover:bg-white/5">
-                     <span className="text-gray-400 font-medium">SKU</span>
+                     <span className="text-gray-400 font-medium">{t.figureDetail.sku}</span>
                      <span className="text-white text-right font-mono text-xs">{figure.sku}</span>
                   </div>
                 )}
@@ -297,7 +299,7 @@ export default function FigureDetailClient({
         <div className="order-6 lg:col-span-12 mt-4 lg:mt-4">
           <section>
              <h2 className="text-base lg:text-xl font-bold text-white mb-2 lg:mb-4 flex items-center gap-2">
-               <Tag className="text-primary" size={18} /> Descripción del Producto
+               <Tag className="text-primary" size={18} /> {t.figureDetail.productDescription}
              </h2>
              <div className="prose prose-invert prose-sm lg:prose-base max-w-none text-gray-300 text-sm lg:text-base">
                 {description.split('\n').map((p, i) => (

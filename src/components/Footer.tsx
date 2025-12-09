@@ -2,21 +2,23 @@
 
 import Link from 'next/link'
 import { Github, Twitter, Instagram, Youtube, Heart, Coffee } from 'lucide-react'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 export function Footer() {
-  
+  const { t } = useLanguage()
+
   const footerLinks = {
     product: [
-      { name: 'Catálogo', href: '/catalog' },
-      { name: 'Listas', href: '/lists' },
-      { name: 'Calendario', href: '/calendar' },
-      { name: 'Novedades', href: '/news' },
+      { name: t.nav.catalog, href: '/catalog' },
+      { name: t.nav.lists, href: '/lists' },
+      { name: t.nav.calendar, href: '/calendar' },
+      { name: t.footer.news, href: '/news' },
     ],
     company: [
-      { name: 'Nosotros', href: '/about' },
-      { name: 'Términos', href: '/terms' },
-      { name: 'Privacidad', href: '/privacy' },
-      { name: 'Cookies', href: '/cookies' },
+      { name: t.footer.aboutUs, href: '/about' },
+      { name: t.footer.terms, href: '/terms' },
+      { name: t.footer.privacy, href: '/privacy' },
+      { name: t.footer.cookies, href: '/cookies' },
     ],
     social: [
       { name: 'Instagram', icon: Instagram, href: '#' },
@@ -33,7 +35,7 @@ export function Footer() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
-          
+
           {/* Brand Column */}
           <div className="space-y-4">
             <Link href="/" className="flex items-center gap-2 group w-fit">
@@ -43,12 +45,12 @@ export function Footer() {
               </span>
             </Link>
             <p className="text-gray-400 text-sm leading-relaxed max-w-xs">
-              La plataforma definitiva para coleccionistas. Gestiona, descubre y comparte tu pasión por las figuras con una comunidad global.
+              {t.footer.description}
             </p>
             <div className="flex gap-4 pt-2">
               {footerLinks.social.map((item) => (
-                <a 
-                  key={item.name} 
+                <a
+                  key={item.name}
                   href={item.href}
                   className="text-gray-400 hover:text-primary transition-colors p-2 hover:bg-white/5 rounded-full"
                 >
@@ -60,7 +62,7 @@ export function Footer() {
 
           {/* Links Column 1 */}
           <div>
-            <h3 className="text-white font-bold mb-4 font-title">Explorar</h3>
+            <h3 className="text-white font-bold mb-4 font-title">{t.footer.explore}</h3>
             <ul className="space-y-2">
               {footerLinks.product.map((link) => (
                 <li key={link.name}>
@@ -74,7 +76,7 @@ export function Footer() {
 
           {/* Links Column 2 */}
           <div>
-            <h3 className="text-white font-bold mb-4 font-title">Soporte</h3>
+            <h3 className="text-white font-bold mb-4 font-title">{t.footer.support}</h3>
             <ul className="space-y-2">
               {footerLinks.company.map((link) => (
                 <li key={link.name}>
@@ -90,10 +92,10 @@ export function Footer() {
           <div>
             <h3 className="text-white font-bold mb-4 font-title flex items-center gap-2">
               <Heart size={18} className="text-primary" />
-              Apoya el proyecto
+              {t.footer.supportProject}
             </h3>
             <p className="text-gray-400 text-sm mb-4">
-              Ayuda a que FiguraCollect siga creciendo. Tu apoyo nos permite seguir mejorando la plataforma para toda la comunidad.
+              {t.footer.supportDescription}
             </p>
             <a
               href="https://ko-fi.com/aldocm"
@@ -102,7 +104,7 @@ export function Footer() {
               className="inline-flex items-center gap-2 bg-[#FF5E5B] hover:bg-[#FF5E5B]/90 text-white px-5 py-2.5 rounded-lg text-sm font-bold transition-all hover:scale-105 active:scale-95 shadow-lg shadow-[#FF5E5B]/20"
             >
               <Coffee size={18} />
-              Invítame un café
+              {t.footer.buyMeCoffee}
             </a>
           </div>
 
@@ -110,10 +112,10 @@ export function Footer() {
 
         {/* Bottom Bar */}
         <div className="border-t border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-500">
-          <p>&copy; {new Date().getFullYear()} FiguraCollect. Todos los derechos reservados.</p>
+          <p>&copy; {new Date().getFullYear()} FiguraCollect. {t.footer.allRightsReserved}</p>
           <div className="flex gap-6">
-            <Link href="/privacy" className="hover:text-gray-300 transition-colors">Privacidad</Link>
-            <Link href="/terms" className="hover:text-gray-300 transition-colors">Términos</Link>
+            <Link href="/privacy" className="hover:text-gray-300 transition-colors">{t.footer.privacy}</Link>
+            <Link href="/terms" className="hover:text-gray-300 transition-colors">{t.footer.terms}</Link>
           </div>
         </div>
       </div>

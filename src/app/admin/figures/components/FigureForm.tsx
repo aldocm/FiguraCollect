@@ -1,6 +1,6 @@
 'use client'
 
-import { memo } from 'react'
+import { memo, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import {
   Plus, X, Save, Image as ImageIcon, DollarSign, Ruler, Tag,
@@ -50,6 +50,18 @@ export const FigureForm = memo(function FigureForm({
   onShowNewCharacterModal,
   onShowNewSeriesModal
 }: FigureFormProps) {
+  // Sort all lists alphabetically
+  const sortedBrands = useMemo(() =>
+    [...brands].sort((a, b) => a.name.localeCompare(b.name)), [brands])
+  const sortedLines = useMemo(() =>
+    [...filteredLines].sort((a, b) => a.name.localeCompare(b.name)), [filteredLines])
+  const sortedSeries = useMemo(() =>
+    [...seriesList].sort((a, b) => a.name.localeCompare(b.name)), [seriesList])
+  const sortedCharacters = useMemo(() =>
+    [...characters].sort((a, b) => a.name.localeCompare(b.name)), [characters])
+  const sortedTags = useMemo(() =>
+    [...tags].sort((a, b) => a.name.localeCompare(b.name)), [tags])
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -88,10 +100,10 @@ export const FigureForm = memo(function FigureForm({
           <BasicInfoSection
             form={form}
             setForm={setForm}
-            brands={brands}
-            filteredLines={filteredLines}
-            characters={characters}
-            seriesList={seriesList}
+            brands={sortedBrands}
+            filteredLines={sortedLines}
+            characters={sortedCharacters}
+            seriesList={sortedSeries}
             onShowNewCharacterModal={onShowNewCharacterModal}
             onShowNewSeriesModal={onShowNewSeriesModal}
             onToggleSeries={onToggleSeries}
@@ -114,7 +126,7 @@ export const FigureForm = memo(function FigureForm({
           {/* Tags */}
           <TaxonomySection
             form={form}
-            tags={tags}
+            tags={sortedTags}
             onToggleTag={onToggleTag}
           />
 

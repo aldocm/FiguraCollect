@@ -6,6 +6,7 @@ import { Brand, Figure, FigureImage, Line } from '@prisma/client'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronDown, Check, X, Filter, Search, Circle, Clock } from 'lucide-react'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface SeriesData {
     id: string
@@ -220,7 +221,8 @@ export default function CatalogClient({
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
-  
+  const { t } = useLanguage()
+
   const [activeMobileFilters, setActiveMobileFilters] = useState(false)
 
   // --- Filter Logic ---
@@ -356,16 +358,16 @@ export default function CatalogClient({
       
       {/* Mobile Filter Toggle */}
       <div className="lg:hidden mb-2 flex justify-between items-center bg-uiBase rounded-xl border border-white/10">
-        <button 
+        <button
           onClick={() => setActiveMobileFilters(!activeMobileFilters)}
           className="flex items-center gap-2 text-white font-medium px-4 py-3"
         >
           <Filter size={20} className="text-primary" />
-          Filtros {hasActiveFilters && <span className="w-2 h-2 bg-accent rounded-full" />}
+          {t.catalog.filters} {hasActiveFilters && <span className="w-2 h-2 bg-accent rounded-full" />}
         </button>
         {hasActiveFilters && (
           <button onClick={clearFilters} className="text-xs text-gray-400 hover:text-white px-4 py-3">
-            Limpiar todo
+            {t.catalog.clearAll}
           </button>
         )}
       </div>
@@ -378,7 +380,7 @@ export default function CatalogClient({
       `}>
         <div className="sticky top-24 space-y-1">
           <div className="flex items-center justify-between mb-6 lg:hidden">
-             <h2 className="text-xl font-title font-bold">Filtros</h2>
+             <h2 className="text-xl font-title font-bold">{t.catalog.filters}</h2>
              <button onClick={() => setActiveMobileFilters(false)} className="p-2">
                <X size={24} />
              </button>
@@ -386,56 +388,56 @@ export default function CatalogClient({
 
           <div className="hidden lg:flex items-center justify-between mb-4">
             <h3 className="font-title font-bold text-lg text-white flex items-center gap-2">
-              <Filter size={18} className="text-primary" /> Filtros
+              <Filter size={18} className="text-primary" /> {t.catalog.filters}
             </h3>
             {hasActiveFilters && (
-              <button 
+              <button
                 onClick={clearFilters}
                 className="text-xs text-accent hover:text-white transition-colors"
               >
-                Limpiar
+                {t.catalog.clear}
               </button>
             )}
           </div>
 
           <div className="bg-uiBase/50 rounded-xl border border-white/5 p-4 backdrop-blur-sm">
-            <FilterSection title="Estado" defaultOpen={false}>
-              <FilterItem 
-                label="Todos" 
-                isSelected={!searchParams.get('isReleased')} 
-                onClick={() => handleUpdateParams('isReleased', null)} 
+            <FilterSection title={t.catalog.status} defaultOpen={false}>
+              <FilterItem
+                label={t.catalog.all}
+                isSelected={!searchParams.get('isReleased')}
+                onClick={() => handleUpdateParams('isReleased', null)}
               />
-              <FilterItem 
-                label="Lanzados" 
-                isSelected={searchParams.get('isReleased') === 'true'} 
-                onClick={() => handleUpdateParams('isReleased', 'true')} 
+              <FilterItem
+                label={t.catalog.released}
+                isSelected={searchParams.get('isReleased') === 'true'}
+                onClick={() => handleUpdateParams('isReleased', 'true')}
               />
-              <FilterItem 
-                label="Por Lanzar" 
-                isSelected={searchParams.get('isReleased') === 'false'} 
-                onClick={() => handleUpdateParams('isReleased', 'false')} 
+              <FilterItem
+                label={t.catalog.upcoming}
+                isSelected={searchParams.get('isReleased') === 'false'}
+                onClick={() => handleUpdateParams('isReleased', 'false')}
               />
             </FilterSection>
 
             {/* Brand Filter - Single Select with Search */}
-            <SearchableFilterList 
-                title="Marcas"
-                items={brands} 
-                keyProp="id" 
+            <SearchableFilterList
+                title={t.catalog.brands}
+                items={brands}
+                keyProp="id"
                 labelProp="name"
-                allLabel="Todas las marcas" 
+                allLabel={t.catalog.allBrands}
                 selectedValues={selectedBrandId ? [selectedBrandId] : []}
                 onSelect={handleBrandSelect}
                 isMulti={false}
             />
 
             {/* Line Filter - Multi Select with Search */}
-            <SearchableFilterList 
-                title="Líneas"
-                items={filteredLines} 
-                keyProp="id" 
+            <SearchableFilterList
+                title={t.catalog.lines}
+                items={filteredLines}
+                keyProp="id"
                 labelProp="name"
-                allLabel="Todas las líneas" 
+                allLabel={t.catalog.allLines}
                 selectedValues={selectedLineIds}
                 onSelect={handleLineSelect}
                 isMulti={true}
@@ -443,20 +445,20 @@ export default function CatalogClient({
 
             {/* Series Filter - Multi Select with Search */}
             <SearchableFilterList
-                title="Series"
+                title={t.catalog.series}
                 items={filteredSeries}
                 keyProp="id"
                 labelProp="name"
-                allLabel="Todas las series"
+                allLabel={t.catalog.allSeries}
                 selectedValues={selectedSeriesIds}
                 onSelect={handleSeriesSelect}
                 isMulti={true}
             />
 
             {/* Character Filter - Single Select with Search */}
-            <FilterSection title="Personajes" defaultOpen={false} onSearch={undefined}>
+            <FilterSection title={t.catalog.characters} defaultOpen={false} onSearch={undefined}>
                 <FilterItem
-                    label="Todos los personajes"
+                    label={t.catalog.allCharacters}
                     isSelected={!selectedCharacterId}
                     isMulti={false}
                     onClick={() => handleCharacterSelect(null)}
@@ -473,7 +475,7 @@ export default function CatalogClient({
                 ))}
                 {filteredCharacters.length === 0 && (
                     <p className="text-xs text-gray-500 text-center py-2">
-                        {selectedSeriesIds.length > 0 ? 'No hay personajes en las series seleccionadas' : 'No hay personajes'}
+                        {selectedSeriesIds.length > 0 ? t.catalog.noCharactersInSeries : t.catalog.noCharacters}
                     </p>
                 )}
             </FilterSection>
@@ -493,37 +495,37 @@ export default function CatalogClient({
             <div className="w-20 h-20 bg-uiBase rounded-full flex items-center justify-center mb-6">
               <Search size={32} className="text-gray-500" />
             </div>
-            <h3 className="text-2xl font-title font-bold text-white mb-2">No se encontraron resultados</h3>
+            <h3 className="text-2xl font-title font-bold text-white mb-2">{t.catalog.noResults}</h3>
             <p className="text-gray-400 max-w-md mx-auto mb-6">
-              Intenta ajustar tus filtros o búsqueda para encontrar lo que buscas.
+              {t.catalog.adjustFilters}
             </p>
-            <button 
+            <button
               onClick={clearFilters}
               className="px-6 py-3 bg-primary hover:bg-primary/80 text-white rounded-full font-medium transition-colors shadow-[0_0_20px_-5px_rgba(225,6,44,0.4)]"
             >
-              Limpiar todos los filtros
+              {t.catalog.clearAllFilters}
             </button>
           </motion.div>
         ) : (
           <>
             <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <p className="text-gray-400 text-sm">
-                Mostrando <span className="text-white font-bold">{figures.length}</span> resultados
+                {t.catalog.showing} <span className="text-white font-bold">{figures.length}</span> {t.catalog.results}
               </p>
-              
+
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-400 hidden sm:block">Ordenar por:</span>
+                <span className="text-sm text-gray-400 hidden sm:block">{t.catalog.sortBy}</span>
                 <div className="relative">
                   <select
                     value={searchParams.get('sort') || 'newest'}
                     onChange={(e) => handleUpdateParams('sort', e.target.value)}
                     className="appearance-none bg-uiBase border border-white/10 rounded-lg py-2 pl-4 pr-10 text-sm text-white focus:outline-none focus:border-primary/50 cursor-pointer hover:border-white/20 transition-colors"
                   >
-                    <option value="newest">Recientes</option>
-                    <option value="date_asc">Fecha: Antiguo - Nuevo</option>
-                    <option value="date_desc">Fecha: Nuevo - Antiguo</option>
-                    <option value="price_asc">Precio: Bajo - Alto</option>
-                    <option value="price_desc">Precio: Alto - Bajo</option>
+                    <option value="newest">{t.catalog.recent}</option>
+                    <option value="date_asc">{t.catalog.dateOldNew}</option>
+                    <option value="date_desc">{t.catalog.dateNewOld}</option>
+                    <option value="price_asc">{t.catalog.priceLowHigh}</option>
+                    <option value="price_desc">{t.catalog.priceHighLow}</option>
                   </select>
                   <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                 </div>
@@ -551,16 +553,15 @@ export default function CatalogClient({
                         />
                       ) : (
                          <div className="w-full h-full flex items-center justify-center text-white/20">
-                           No Image
+                           {t.catalog.noImage}
                          </div>
                       )}
                       
-                      {/* Top badge - Release status */}
+                      {/* Top badge - Release status (clock icon, top right) */}
                       {!figure.isReleased && figure.releaseDate && (
-                        <div className="absolute top-3 left-3">
-                           <span className="bg-blue-600/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider shadow-lg flex items-center gap-1">
-                             <Clock size={12} className="md:hidden" />
-                             <span className="hidden md:inline">Por Lanzar</span>
+                        <div className="absolute top-3 right-3">
+                           <span className="bg-blue-600/90 backdrop-blur-sm text-white p-1.5 rounded shadow-lg">
+                             <Clock size={14} />
                            </span>
                         </div>
                       )}

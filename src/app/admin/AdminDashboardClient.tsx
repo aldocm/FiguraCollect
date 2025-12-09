@@ -6,6 +6,7 @@ import {
   Users, Layers, Tags, Box, Library, BadgeCheck,
   ArrowRight, ShieldAlert, User, LayoutTemplate, Settings2
 } from 'lucide-react'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface AdminDashboardClientProps {
   user: {
@@ -46,83 +47,85 @@ const itemVariants: Variants = {
 }
 
 export default function AdminDashboardClient({ user, stats }: AdminDashboardClientProps) {
+  const { t } = useLanguage()
+
   const adminCards = [
-    { 
-      href: '/admin/home', 
-      label: 'Home Layout', 
-      count: -1, 
-      icon: LayoutTemplate, 
+    {
+      href: '/admin/home',
+      label: t.admin.homeLayout,
+      count: -1,
+      icon: LayoutTemplate,
       color: 'text-pink-400',
       bg: 'from-pink-500/20 to-rose-500/5',
-      desc: 'Personalizar página de inicio',
+      desc: t.admin.customizeHome,
       isSuper: true
     },
-    { 
-      href: '/admin/brands', 
-      label: 'Marcas', 
-      count: stats.brands, 
-      icon: BadgeCheck, 
+    {
+      href: '/admin/brands',
+      label: t.admin.brands,
+      count: stats.brands,
+      icon: BadgeCheck,
       color: 'text-yellow-400',
       bg: 'from-yellow-500/20 to-orange-500/5',
-      desc: 'Gestionar fabricantes y marcas'
+      desc: t.admin.manageBrands
     },
-    { 
-      href: '/admin/lines', 
-      label: 'Líneas', 
-      count: stats.lines, 
-      icon: Layers, 
+    {
+      href: '/admin/lines',
+      label: t.admin.lines,
+      count: stats.lines,
+      icon: Layers,
       color: 'text-blue-400',
       bg: 'from-blue-500/20 to-cyan-500/5',
-      desc: 'Colecciones y líneas de productos'
+      desc: t.admin.manageLines
     },
-    { 
-      href: '/admin/series', 
-      label: 'Series', 
-      count: stats.series, 
-      icon: Library, 
+    {
+      href: '/admin/series',
+      label: t.admin.series,
+      count: stats.series,
+      icon: Library,
       color: 'text-purple-400',
       bg: 'from-purple-500/20 to-pink-500/5',
-      desc: 'Franquicias y series de origen'
+      desc: t.admin.manageSeries
     },
     {
       href: '/admin/characters',
-      label: 'Personajes',
+      label: t.admin.characters,
       count: stats.characters,
       icon: User,
       color: 'text-cyan-400',
       bg: 'from-cyan-500/20 to-teal-500/5',
-      desc: 'Characters de figuras'
+      desc: t.admin.manageCharacters
     },
     {
       href: '/admin/figures',
-      label: 'Figuras',
+      label: t.admin.figures,
       count: stats.figures,
       icon: Box,
       color: 'text-primary',
       bg: 'from-primary/20 to-red-900/5',
-      desc: 'Catálogo completo de figuras',
+      desc: t.admin.manageFigures,
       featured: true
     },
     {
       href: '/admin/tags',
-      label: 'Tags',
+      label: t.admin.tags,
       count: stats.tags,
       icon: Tags,
       color: 'text-emerald-400',
       bg: 'from-emerald-500/20 to-green-500/5',
-      desc: 'Etiquetas y categorías'
+      desc: t.admin.manageTags
     }
   ]
 
   const superAdminCards = [
-    { 
-      href: '/admin/users', 
-      label: 'Usuarios', 
-      count: stats.users, 
-      icon: Users, 
+    {
+      href: '/admin/users',
+      label: t.admin.users,
+      count: stats.users,
+      icon: Users,
       color: 'text-indigo-400',
       bg: 'from-indigo-500/20 to-violet-500/5',
-      desc: 'Gestión de usuarios y roles',
+      desc: t.admin.manageUsers,
       isSuper: true
     }
   ]
@@ -145,11 +148,11 @@ export default function AdminDashboardClient({ user, stats }: AdminDashboardClie
                className="flex items-center gap-3 mb-2"
              >
                 <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-bold uppercase tracking-wider text-gray-400">
-                  Panel de Control
+                  {t.admin.controlPanel}
                 </span>
                 {user.role === 'SUPERADMIN' && (
                   <span className="px-3 py-1 rounded-full bg-purple-500/20 border border-purple-500/30 text-xs font-bold uppercase tracking-wider text-purple-300 flex items-center gap-1">
-                    <ShieldAlert size={12} /> Super Admin
+                    <ShieldAlert size={12} /> {t.admin.superAdmin}
                   </span>
                 )}
              </motion.div>
@@ -160,7 +163,7 @@ export default function AdminDashboardClient({ user, stats }: AdminDashboardClie
                transition={{ delay: 0.1 }}
                className="text-2xl md:text-4xl font-title font-black text-white mb-1 md:mb-2"
              >
-                Hola, <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">{user.name?.split(' ')[0]}</span>
+                {t.admin.hello} <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">{user.name?.split(' ')[0]}</span>
              </motion.h1>
              <motion.p
                initial={{ opacity: 0 }}
@@ -168,7 +171,7 @@ export default function AdminDashboardClient({ user, stats }: AdminDashboardClie
                transition={{ delay: 0.2 }}
                className="text-gray-400 text-sm max-w-2xl"
              >
-                Bienvenido de nuevo. Aquí tienes un resumen de la actividad y accesos directos para gestionar la plataforma.
+                {t.admin.welcomeBack}
              </motion.p>
           </div>
 

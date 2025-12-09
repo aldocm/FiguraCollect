@@ -9,6 +9,7 @@ import {
   CheckCircle2, Trash2, AlertCircle, ChevronLeft, ChevronRight
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 // --- Types ---
 // Adapting to the structure returned by Prisma in page.tsx
@@ -268,6 +269,7 @@ const Pagination = ({ pagination }: { pagination: PaginationInfo }) => {
 
 export default function InventoryClient({ items, pagination }: InventoryClientProps) {
   const router = useRouter()
+  const { t } = useLanguage()
   const [filterStatus, setFilterStatus] = useState<string | 'ALL'>('ALL')
   const [searchQuery, setSearchQuery] = useState('')
 
@@ -302,38 +304,38 @@ export default function InventoryClient({ items, pagination }: InventoryClientPr
           {/* Header Section */}
           <header className="mb-6 md:mb-8">
              <h1 className="text-2xl md:text-4xl font-title font-black text-white mb-1 md:mb-2">
-                Mi <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-500">Colección</span>
+                {t.inventory.myCollection.split(' ')[0]} <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-500">{t.inventory.myCollection.split(' ').slice(1).join(' ')}</span>
              </h1>
              <p className="text-gray-400 text-sm">
-                Gestiona y visualiza tu universo de figuras.
+                {t.inventory.manageCollection}
              </p>
           </header>
 
           {/* Stats Grid */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4 mb-6 md:mb-10">
-              <StatCard 
-                label="Valor Total Estimado" 
-                value={`$${totalValue.toLocaleString()} MXN`} 
-                icon={DollarSign} 
-                colorClass="text-green-500" 
+              <StatCard
+                label={t.inventory.totalValue}
+                value={`$${totalValue.toLocaleString()} ${t.inventory.currency}`}
+                icon={DollarSign}
+                colorClass="text-green-500"
               />
-              <StatCard 
-                label="Figuras en Mano" 
-                value={ownedCount} 
-                icon={Package} 
-                colorClass="text-purple-500" 
+              <StatCard
+                label={t.inventory.figuresOwned}
+                value={ownedCount}
+                icon={Package}
+                colorClass="text-purple-500"
               />
-              <StatCard 
-                label="Pre-ordenes" 
-                value={preorderCount} 
-                icon={CalendarClock} 
-                colorClass="text-blue-500" 
+              <StatCard
+                label={t.inventory.preorders}
+                value={preorderCount}
+                icon={CalendarClock}
+                colorClass="text-blue-500"
               />
-              <StatCard 
-                label="En Wishlist" 
-                value={wishlistCount} 
-                icon={Heart} 
-                colorClass="text-pink-500" 
+              <StatCard
+                label={t.inventory.inWishlist}
+                value={wishlistCount}
+                icon={Heart}
+                colorClass="text-pink-500"
               />
           </div>
 
@@ -347,12 +349,12 @@ export default function InventoryClient({ items, pagination }: InventoryClientPr
                      key={tab}
                      onClick={() => setFilterStatus(tab)}
                      className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
-                        filterStatus === tab 
-                        ? 'bg-white/10 text-white shadow-lg' 
+                        filterStatus === tab
+                        ? 'bg-white/10 text-white shadow-lg'
                         : 'text-gray-500 hover:text-gray-300 hover:bg-white/5'
                      }`}
                    >
-                      {tab === 'ALL' ? 'Todas' : tab === 'OWNED' ? 'Colección' : tab === 'PREORDER' ? 'Pre-orden' : 'Wishlist'}
+                      {tab === 'ALL' ? t.inventory.allFilter : tab === 'OWNED' ? t.inventory.collectionFilter : tab === 'PREORDER' ? t.inventory.preorderStatus : t.inventory.wishlist}
                    </button>
                 ))}
              </div>
@@ -360,9 +362,9 @@ export default function InventoryClient({ items, pagination }: InventoryClientPr
              {/* Search */}
              <div className="relative w-full md:w-auto md:min-w-[300px]">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
-                <input 
-                  type="text" 
-                  placeholder="Buscar por nombre, marca..." 
+                <input
+                  type="text"
+                  placeholder={t.inventory.searchPlaceholder}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full bg-black/20 border border-white/5 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-primary/50 transition-colors"
@@ -382,17 +384,17 @@ export default function InventoryClient({ items, pagination }: InventoryClientPr
                    ))}
                 </motion.div>
              ) : (
-                <motion.div 
+                <motion.div
                    initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                    className="text-center py-20"
                 >
                    <div className="inline-flex p-6 rounded-full bg-white/5 mb-4 text-gray-600">
                       <Package size={48} strokeWidth={1} />
                    </div>
-                   <h3 className="text-xl font-bold text-white mb-2">No se encontraron figuras</h3>
-                   <p className="text-gray-500">Intenta cambiar los filtros o agrega nuevas figuras desde el catálogo.</p>
+                   <h3 className="text-xl font-bold text-white mb-2">{t.inventory.noFiguresFound}</h3>
+                   <p className="text-gray-500">{t.inventory.tryChangingFilters}</p>
                    <Link href="/catalog" className="inline-block mt-6 px-6 py-3 rounded-xl bg-primary text-white font-bold hover:bg-primary/90 transition-colors">
-                      Ir al Catálogo
+                      {t.inventory.goToCatalog}
                    </Link>
                 </motion.div>
              )}

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Heart, Box, CalendarClock, Check } from 'lucide-react'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface Props {
   figureId: string
@@ -15,6 +16,7 @@ export function AddToInventoryButton({ figureId, currentStatus, userFigureId, is
   const [loading, setLoading] = useState(false)
   const [status, setStatus] = useState(currentStatus)
   const router = useRouter()
+  const { t } = useLanguage()
 
   const handleAdd = async (newStatus: string) => {
     // Si ya está en ese estado, lo quitamos (toggle)
@@ -84,7 +86,7 @@ export function AddToInventoryButton({ figureId, currentStatus, userFigureId, is
   // Definición de botones
   const wishlistBtn = {
     key: 'WISHLIST',
-    label: 'Wishlist',
+    label: t.inventory.wishlist,
     icon: Heart,
     activeClass: 'bg-pink-500/20 text-pink-400 border-pink-500/50 hover:bg-pink-500/30',
     inactiveClass: 'bg-white/5 text-gray-400 border-white/10 hover:bg-white/10 hover:text-white'
@@ -93,14 +95,14 @@ export function AddToInventoryButton({ figureId, currentStatus, userFigureId, is
   const actionBtn = isReleased
     ? {
         key: 'OWNED',
-        label: 'Lo tengo',
+        label: t.inventory.owned,
         icon: Box,
         activeClass: 'bg-green-500/20 text-green-400 border-green-500/50 hover:bg-green-500/30',
         inactiveClass: 'bg-white/5 text-gray-400 border-white/10 hover:bg-white/10 hover:text-white'
       }
     : {
         key: 'PREORDER',
-        label: 'Pre-ordenar',
+        label: t.inventory.preorder,
         icon: CalendarClock,
         activeClass: 'bg-blue-500/20 text-blue-400 border-blue-500/50 hover:bg-blue-500/30',
         inactiveClass: 'bg-white/5 text-gray-400 border-white/10 hover:bg-white/10 hover:text-white'

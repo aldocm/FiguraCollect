@@ -49,21 +49,21 @@ const FigureCard = ({ figure, animationVariants }: FigureCardProps) => {
             </div>
           )}
 
-          {/* Top badges - Release status & Rating */}
+          {/* Top badges - Rating (left) & Release status (right) */}
           <div className="absolute top-3 left-3 right-3 flex justify-between items-start">
-            {!figure.isReleased && figure.releaseDate && (
-              <span className="bg-blue-600/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider shadow-lg flex items-center gap-1">
-                <Clock size={12} className="md:hidden" />
-                <span className="hidden md:inline">Por Lanzar</span>
-              </span>
-            )}
-
             {/* Rating Badge */}
             {figure.averageRating !== undefined && figure.averageRating > 0 && (
-               <span className="backdrop-blur-sm text-white text-[10px] font-bold px-1.5 py-1 rounded border border-white/10 flex items-center gap-1 shadow-lg ml-auto bg-yellow-500/80 border-yellow-400/30">
+               <span className="backdrop-blur-sm text-white text-[10px] font-bold px-1.5 py-1 rounded border border-white/10 flex items-center gap-1 shadow-lg bg-yellow-500/80 border-yellow-400/30">
                  <Star size={10} className="fill-white" />
                  {figure.averageRating.toFixed(1)}
                </span>
+            )}
+
+            {/* Upcoming Release Badge - Clock icon only, top right */}
+            {!figure.isReleased && figure.releaseDate && (
+              <span className="bg-blue-600/90 backdrop-blur-sm text-white p-1.5 rounded shadow-lg ml-auto">
+                <Clock size={14} />
+              </span>
             )}
           </div>
 

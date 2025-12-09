@@ -4,8 +4,9 @@ import Link from 'next/link'
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, X, LogOut, ShoppingBag, Shield, Bell, Check, Package, Search, ChevronDown, ArrowRight } from 'lucide-react'
+import { Menu, X, LogOut, ShoppingBag, Shield, Bell, Check, Package, Search, ChevronDown, ArrowRight, Globe } from 'lucide-react'
 import { SearchResult, getSearchTypeIcon, getSearchTypeLabel, getSearchResultPath } from '@/lib/search'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface User {
   id: string
@@ -42,22 +43,25 @@ export function Nav() {
   const [, setSearchLoading] = useState(false)
   const [showSearchResults, setShowSearchResults] = useState(false)
   const [selectedSearchIndex, setSelectedSearchIndex] = useState(0)
+  const [showLangMenu, setShowLangMenu] = useState(false)
   const notificationRef = useRef<HTMLDivElement>(null)
   const userMenuRef = useRef<HTMLDivElement>(null)
   const searchRef = useRef<HTMLDivElement>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)
+  const langMenuRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
   const pathname = usePathname()
+  const { language, setLanguage, t } = useLanguage()
 
   // --- Memoized values ---
   const isAdmin = useMemo(() => user?.role === 'ADMIN' || user?.role === 'SUPERADMIN', [user?.role])
 
   const navLinks = useMemo(() => [
-    { name: 'Catálogo', href: '/catalog' },
-    { name: 'Calendario', href: '/calendar' },
-    { name: 'Listas', href: '/lists' },
-    { name: 'Timeline', href: '/timeline' },
-  ], [])
+    { name: t.nav.catalog, href: '/catalog' },
+    { name: t.nav.calendar, href: '/calendar' },
+    { name: t.nav.lists, href: '/lists' },
+    { name: t.nav.timeline, href: '/timeline' },
+  ], [t])
 
   const navVariants = useMemo(() => ({
     hidden: { y: -100, opacity: 0 },
@@ -163,6 +167,9 @@ export function Nav() {
       }
       if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
         setShowSearchResults(false)
+      }
+      if (langMenuRef.current && !langMenuRef.current.contains(e.target as Node)) {
+        setShowLangMenu(false)
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
@@ -294,7 +301,7 @@ export function Nav() {
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       onFocus={() => searchQuery.length >= 2 && setShowSearchResults(true)}
-                      placeholder="Buscar..."
+                      placeholder={t.nav.search}
                       className="bg-transparent border-none outline-none text-sm text-white placeholder-gray-500 w-full"
                     />
                     <div className="hidden group-focus-within:flex gap-1">
@@ -361,7 +368,7 @@ export function Nav() {
                       <button
                         onClick={() => setShowNotifications(!showNotifications)}
                         className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-full transition-colors relative"
-                        title="Notificaciones"
+                        title={t.nav.notifications}
                       >
                         <Bell size={20} />
                         {unreadCount > 0 && (
@@ -383,14 +390,14 @@ export function Nav() {
                           >
                             {/* Header */}
                             <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
-                              <h3 className="font-bold text-white text-sm">Notificaciones</h3>
+                              <h3 className="font-bold text-white text-sm">{t.nav.notifications}</h3>
                               {unreadCount > 0 && (
                                 <button
                                   onClick={() => markAsRead()}
                                   className="text-xs text-primary hover:text-primary/80 font-medium flex items-center gap-1"
                                 >
                                   <Check size={12} />
-                                  Marcar todas
+                                  {t.nav.markAll}
                                 </button>
                               )}
                             </div>
@@ -400,7 +407,7 @@ export function Nav() {
                               {notifications.length === 0 ? (
                                 <div className="py-8 text-center">
                                   <Bell size={32} className="mx-auto text-gray-600 mb-2" />
-                                  <p className="text-gray-500 text-sm">Sin notificaciones</p>
+                                  <p className="text-gray-500 text-sm">{t.nav.noNotifications}</p>
                                 </div>
                               ) : (
                                 notifications.map(notification => (
@@ -487,22 +494,22 @@ export function Nav() {
                                 className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 text-sm text-gray-300 hover:text-white transition-colors"
                               >
                                 <ShoppingBag size={16} />
-                                Mi Inventario
+                                {t.nav.myInventory}
                               </Link>
-                              
+
                               {isAdmin && (
-                                <Link 
-                                  href="/admin" 
+                                <Link
+                                  href="/admin"
                                   onClick={() => setShowUserMenu(false)}
                                   className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 text-sm text-gray-300 hover:text-white transition-colors"
                                 >
                                   <Shield size={16} />
-                                  Admin Panel
+                                  {t.nav.adminPanel}
                                 </Link>
                               )}
 
                               <div className="h-px bg-white/5 my-2" />
-                              
+
                               <button
                                 onClick={() => {
                                   setShowUserMenu(false)
@@ -511,7 +518,7 @@ export function Nav() {
                                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-red-500/10 text-sm text-red-400 hover:text-red-300 transition-colors"
                               >
                                 <LogOut size={16} />
-                                Cerrar Sesión
+                                {t.nav.logout}
                               </button>
                             </div>
                           </motion.div>
@@ -525,10 +532,47 @@ export function Nav() {
                       href="/login"
                       className="text-sm font-bold bg-primary text-white px-4 py-2 rounded-full hover:bg-primary/90 hover:shadow-[0_0_15px_-3px_rgba(225,6,44,0.4)] transition-all transform hover:-translate-y-0.5"
                     >
-                      Iniciar Sesión
+                      {t.nav.login}
                     </Link>
                   </div>
                 )}
+
+                {/* Language Selector */}
+                <div className="relative" ref={langMenuRef}>
+                  <button
+                    onClick={() => setShowLangMenu(!showLangMenu)}
+                    className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-full transition-colors flex items-center gap-1"
+                  >
+                    <Globe size={18} />
+                    <span className="text-xs font-bold uppercase">{language}</span>
+                  </button>
+                  <AnimatePresence>
+                    {showLangMenu && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute right-0 mt-2 w-32 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50"
+                      >
+                        <button
+                          onClick={() => { setLanguage('es'); setShowLangMenu(false) }}
+                          className={`w-full px-4 py-2.5 text-left text-sm transition-colors flex items-center gap-2 ${language === 'es' ? 'bg-primary/20 text-primary' : 'text-gray-300 hover:bg-white/5'}`}
+                        >
+                          <span>ES</span>
+                          <span className="text-gray-500">Espanol</span>
+                        </button>
+                        <button
+                          onClick={() => { setLanguage('en'); setShowLangMenu(false) }}
+                          className={`w-full px-4 py-2.5 text-left text-sm transition-colors flex items-center gap-2 ${language === 'en' ? 'bg-primary/20 text-primary' : 'text-gray-300 hover:bg-white/5'}`}
+                        >
+                          <span>EN</span>
+                          <span className="text-gray-500">English</span>
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </>
             )}
           </div>
@@ -572,27 +616,43 @@ export function Nav() {
               {user ? (
                 <div className="space-y-4">
                   <Link href="/inventory" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 text-white/80">
-                    <ShoppingBag size={20} /> Mi Inventario
+                    <ShoppingBag size={20} /> {t.nav.myInventory}
                   </Link>
                   {isAdmin && (
                     <Link href="/admin" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 text-white/80">
-                      <Shield size={20} /> Admin
+                      <Shield size={20} /> {t.nav.adminPanel}
                     </Link>
                   )}
                   <button onClick={handleLogout} className="flex items-center gap-3 text-red-400 w-full pt-2">
-                    <LogOut size={20} /> Cerrar Sesión ({user.username})
+                    <LogOut size={20} /> {t.nav.logout} ({user.username})
                   </button>
                 </div>
               ) : (
                 <div className="flex flex-col gap-3">
                   <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="text-center py-2 rounded-lg bg-white/5 text-white font-medium">
-                    Iniciar sesión
+                    {t.nav.login}
                   </Link>
                   <Link href="/register" onClick={() => setMobileMenuOpen(false)} className="text-center py-2 rounded-lg bg-primary text-white font-bold">
-                    Registrarse
+                    {t.nav.register}
                   </Link>
                 </div>
               )}
+
+              {/* Mobile Language Selector */}
+              <div className="flex gap-2 pt-4 border-t border-white/10">
+                <button
+                  onClick={() => setLanguage('es')}
+                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${language === 'es' ? 'bg-primary text-white' : 'bg-white/5 text-gray-400'}`}
+                >
+                  Espanol
+                </button>
+                <button
+                  onClick={() => setLanguage('en')}
+                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${language === 'en' ? 'bg-primary text-white' : 'bg-white/5 text-gray-400'}`}
+                >
+                  English
+                </button>
+              </div>
             </div>
           </motion.div>
         )}

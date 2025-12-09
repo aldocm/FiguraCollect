@@ -2,6 +2,7 @@
 
 import { Footer } from "@/components/Footer";
 import { Nav } from "@/components/Nav";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 import localFont from "next/font/local";
 import { usePathname } from "next/navigation";
 import "./globals.css";
@@ -34,17 +35,19 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background min-h-screen flex flex-col`}
       >
-        {!isAuthPage && <Nav />}
-        <main
-          className={
-            isAuthPage
-              ? 'flex-grow w-full' // Removed padding for auth pages to allow full-screen layouts
-              : 'max-w-7xl mx-auto px-4 pt-24 pb-5 flex-grow w-full'
-          }
-        >
-          {children}
-        </main>
-        {!isAuthPage && <Footer />}
+        <LanguageProvider>
+          {!isAuthPage && <Nav />}
+          <main
+            className={
+              isAuthPage
+                ? 'flex-grow w-full' // Removed padding for auth pages to allow full-screen layouts
+                : 'max-w-7xl mx-auto px-4 pt-24 pb-5 flex-grow w-full'
+            }
+          >
+            {children}
+          </main>
+          {!isAuthPage && <Footer />}
+        </LanguageProvider>
       </body>
     </html>
   );

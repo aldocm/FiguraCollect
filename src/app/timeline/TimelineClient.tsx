@@ -10,6 +10,7 @@ import {
   ChevronDown,
   SlidersHorizontal,
 } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 type Figure = {
   id: string;
@@ -44,6 +45,7 @@ export default function TimelineClient({
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const { t } = useLanguage();
 
   // --- Filter Logic ---
 
@@ -135,14 +137,13 @@ export default function TimelineClient({
             animate={{ opacity: 1, y: 0 }}
           >
             <h1 className="text-xl md:text-6xl font-title font-black text-white mb-1 md:mb-4">
-              Time
+              {t.timeline.title.split('L')[0]}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-500">
                 Line
               </span>
             </h1>
             <p className="text-gray-400 md:max-w-2xl md:mx-auto text-sm md:text-base">
-              Visualiza la evolución de tus colecciones favoritas a través de
-              los años. Selecciona una línea o serie para comenzar.
+              {t.timeline.description}
             </p>
           </motion.div>
 
@@ -155,7 +156,7 @@ export default function TimelineClient({
             className="md:hidden flex items-center justify-center gap-2 bg-white/5 px-4 py-2.5 rounded-xl backdrop-blur-md border border-white/10 w-full"
           >
             <SlidersHorizontal size={16} className="text-primary" />
-            <span className="text-sm font-medium text-white">Filtros</span>
+            <span className="text-sm font-medium text-white">{t.timeline.filters}</span>
             <motion.div
               animate={{ rotate: filtersOpen ? 180 : 0 }}
               transition={{ duration: 0.2 }}
@@ -382,7 +383,7 @@ export default function TimelineClient({
             <div className="text-center py-20 opacity-50">
               {hasSearched ? (
                 <p className="text-xl">
-                  No se encontraron figuras con estos filtros.
+                  {t.timeline.noResults}
                 </p>
               ) : (
                 <div className="flex flex-col items-center gap-4">
@@ -390,7 +391,7 @@ export default function TimelineClient({
                     <Filter size={32} className="text-primary" />
                   </div>
                   <p className="text-xl">
-                    Selecciona filtros para generar la línea del tiempo.
+                    {t.timeline.selectFilters}
                   </p>
                 </div>
               )}
@@ -471,7 +472,7 @@ export default function TimelineClient({
                                               month: "long",
                                               day: "numeric",
                                             })
-                                          : "Fecha pendiente"}
+                                          : t.timeline.pendingDate}
                                       </span>
                                     </div>
                                     <h3 className="text-white font-bold truncate group-hover:text-primary transition-colors">

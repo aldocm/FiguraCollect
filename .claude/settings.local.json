@@ -26,7 +26,8 @@
       "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"Si\" npx prisma migrate reset:*)",
       "Bash(npm run build:*)",
       "Bash(powershell -Command \"Remove-Item -Recurse -Force .next\")",
-      "Bash(npx eslint:*)"
+      "Bash(npx eslint:*)",
+      "Bash(mkdir:*)"
     ],
     "deny": [],
     "ask": []

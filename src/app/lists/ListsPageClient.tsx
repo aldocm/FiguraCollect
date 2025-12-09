@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Plus, List as ListIcon, User as UserIcon, Award, Users, ImageOff } from 'lucide-react'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 // Types derived from the prisma query structure
 type ListImage = {
@@ -125,7 +126,8 @@ export default function ListsPageClient({
   userLists,
   myLists
 }: ListsPageClientProps) {
-  
+  const { t } = useLanguage()
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -145,27 +147,27 @@ export default function ListsPageClient({
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-12">
         <div>
           <h1 className="text-2xl md:text-4xl font-title font-black text-white mb-1 md:mb-2">
-            Listas de <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-500">Colección</span>
+            {t.lists.title.split(' ')[0]} <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-500">{t.lists.title.split(' ').slice(1).join(' ')}</span>
           </h1>
           <p className="text-gray-400 text-sm max-w-lg">
-            Descubre colecciones curadas por la comunidad y listas oficiales. Organiza tus figuras a tu manera.
+            {t.lists.description}
           </p>
         </div>
-        
+
         {user ? (
           <Link
             href="/lists/new"
             className="group flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-full font-medium transition-all shadow-[0_0_20px_-5px_rgba(225,6,44,0.4)] hover:shadow-[0_0_30px_-5px_rgba(225,6,44,0.6)]"
           >
             <Plus size={20} className="group-hover:rotate-90 transition-transform duration-300" />
-            Crear Nueva Lista
+            {t.lists.createNew}
           </Link>
         ) : (
           <Link
             href="/login"
             className="text-sm text-gray-400 hover:text-white border border-white/10 hover:border-white/30 px-4 py-2 rounded-full transition-colors"
           >
-            Inicia sesión para crear listas
+            {t.lists.loginToCreate}
           </Link>
         )}
       </div>
@@ -180,7 +182,7 @@ export default function ListsPageClient({
         {/* Featured Lists */}
         {featuredLists.length > 0 && (
           <motion.section variants={sectionVariants}>
-            <SectionHeader title="Destacadas" icon={Award} />
+            <SectionHeader title={t.lists.featured} icon={Award} />
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {featuredLists.map(list => (
                 <ListCard key={list.id} list={list} />
@@ -192,7 +194,7 @@ export default function ListsPageClient({
         {/* My Lists */}
         {myLists.length > 0 && (
           <motion.section variants={sectionVariants}>
-            <SectionHeader title="Mis Listas" icon={UserIcon} />
+            <SectionHeader title={t.lists.myLists} icon={UserIcon} />
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {myLists.map(list => (
                 <ListCard key={list.id} list={list} isOwner />
@@ -204,7 +206,7 @@ export default function ListsPageClient({
         {/* Official Lists */}
         {officialLists.length > 0 && (
           <motion.section variants={sectionVariants}>
-            <SectionHeader title="Listas Oficiales" icon={ListIcon} />
+            <SectionHeader title={t.lists.official} icon={ListIcon} />
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {officialLists.map(list => (
                 <ListCard key={list.id} list={list} />
@@ -216,7 +218,7 @@ export default function ListsPageClient({
         {/* Community Lists */}
         {userLists.length > 0 && (
           <motion.section variants={sectionVariants}>
-            <SectionHeader title="De la Comunidad" icon={Users} />
+            <SectionHeader title={t.lists.community} icon={Users} />
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {userLists.map(list => (
                 <ListCard key={list.id} list={list} />
@@ -229,8 +231,8 @@ export default function ListsPageClient({
         {featuredLists.length === 0 && officialLists.length === 0 && userLists.length === 0 && myLists.length === 0 && (
           <div className="text-center py-20 border border-dashed border-white/10 rounded-2xl bg-uiBase/30">
             <ListIcon className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-            <h3 className="text-xl font-bold text-white mb-2">Aún no hay listas</h3>
-            <p className="text-gray-500">Sé el primero en crear una colección.</p>
+            <h3 className="text-xl font-bold text-white mb-2">{t.lists.noLists}</h3>
+            <p className="text-gray-500">{t.lists.beFirst}</p>
           </div>
         )}
 

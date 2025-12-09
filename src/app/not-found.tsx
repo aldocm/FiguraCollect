@@ -3,8 +3,11 @@
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Ghost, ArrowLeft } from 'lucide-react'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 export default function NotFoundPage() {
+  const { t } = useLanguage()
+
   return (
     <div className="flex-1 bg-background flex flex-col items-center justify-center p-4 text-center relative overflow-hidden">
       {/* Background Elements */}
@@ -29,13 +32,13 @@ export default function NotFoundPage() {
         </motion.div>
 
         <h1 className="text-5xl md:text-7xl font-title font-black text-white mb-4 leading-tight">
-          404 <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-500">No Encontrado</span>
+          {t.notFound.title.split(' ')[0]} <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-500">{t.notFound.title.split(' ').slice(1).join(' ')}</span>
         </h1>
         <p className="text-gray-400 text-lg md:text-xl mb-8">
-          ¡Ups! Parece que la figura o página que buscabas se ha desvanecido en la colección.
-          No te preocupes, no hay figuras perdidas para siempre.
+          {t.notFound.message}
+          {' '}{t.notFound.submessage}
         </p>
-        
+
         <Link href="/catalog" passHref>
           <motion.button
             whileHover={{ scale: 1.05 }}
@@ -43,7 +46,7 @@ export default function NotFoundPage() {
             className="inline-flex items-center gap-3 px-8 py-4 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-all shadow-lg shadow-primary/30"
           >
             <ArrowLeft size={20} />
-            Volver al Catálogo
+            {t.notFound.backToCatalog}
           </motion.button>
         </Link>
       </motion.div>
