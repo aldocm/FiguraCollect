@@ -66,9 +66,18 @@ export default function ContributeClient() {
           fetch('/api/series')
         ])
 
-        if (brandsRes.ok) setBrands(await brandsRes.json())
-        if (linesRes.ok) setLines(await linesRes.json())
-        if (seriesRes.ok) setSeriesList(await seriesRes.json())
+        if (brandsRes.ok) {
+          const data = await brandsRes.json()
+          setBrands(data.brands || [])
+        }
+        if (linesRes.ok) {
+          const data = await linesRes.json()
+          setLines(data.lines || [])
+        }
+        if (seriesRes.ok) {
+          const data = await seriesRes.json()
+          setSeriesList(data.series || [])
+        }
       } catch (e) {
         console.error('Error fetching data', e)
       } finally {
@@ -139,13 +148,22 @@ export default function ContributeClient() {
         // Refresh data if needed
         if (activeTab === 'brands') {
           const brandsRes = await fetch('/api/brands')
-          if (brandsRes.ok) setBrands(await brandsRes.json())
+          if (brandsRes.ok) {
+            const data = await brandsRes.json()
+            setBrands(data.brands || [])
+          }
         } else if (activeTab === 'lines') {
           const linesRes = await fetch('/api/lines')
-          if (linesRes.ok) setLines(await linesRes.json())
+          if (linesRes.ok) {
+            const data = await linesRes.json()
+            setLines(data.lines || [])
+          }
         } else if (activeTab === 'series') {
           const seriesRes = await fetch('/api/series')
-          if (seriesRes.ok) setSeriesList(await seriesRes.json())
+          if (seriesRes.ok) {
+            const data = await seriesRes.json()
+            setSeriesList(data.series || [])
+          }
         }
       } else {
         const data = await res.json()
