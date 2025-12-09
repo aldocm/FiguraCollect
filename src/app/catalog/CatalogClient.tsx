@@ -10,7 +10,7 @@ import { ChevronDown, Check, X, Filter, Search, Circle, Clock } from 'lucide-rea
 import { useLanguage } from '@/contexts/LanguageContext'
 
 // Dominios que bloquean optimización (hotlink protection)
-const UNOPTIMIZED_DOMAINS = ['hasbro.com', 'shop.hasbro.com']
+const UNOPTIMIZED_DOMAINS = ['hasbro.com', 'shop.hasbro.com', 'kotobukiya.co.jp']
 
 const shouldSkipOptimization = (url: string) => {
   try {
