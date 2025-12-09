@@ -331,6 +331,7 @@
       "specs": "Specifications (optional)",
       "price": "Price (optional)",
       "releaseDate": "Release Date (optional)",
+      "images": "Images (optional)",
       "options": "Options"
     },
     "labels": {
@@ -356,7 +357,11 @@
       "noSeries": "No series (original character)",
       "characterName": "Character name",
       "alreadyReleased": "Already released",
-      "nsfw": "NSFW"
+      "nsfw": "NSFW",
+      "imageUrls": "Image URLs (one per line)",
+      "addImage": "Add image",
+      "removeImage": "Remove image",
+      "imagePreview": "Preview"
     },
     "placeholders": {
       "figureName": "Ex: Miku Hatsune 1/7 Scale",
@@ -369,7 +374,8 @@
       "country": "Ex: Japan",
       "lineName": "Ex: Nendoroid",
       "seriesName": "Ex: Demon Slayer",
-      "characterName": "Ex: Tanjiro Kamado"
+      "characterName": "Ex: Tanjiro Kamado",
+      "imageUrl": "https://example.com/image.jpg"
     },
     "months": {
       "january": "January",
