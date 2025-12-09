@@ -12,13 +12,13 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Invalid date params' }, { status: 400 })
   }
 
-  // releaseDate is stored as "YYYY-MM" or "YYYY-MM-DD" string format
-  // JavaScript months are 0-indexed, so we add 1
-  const monthStr = String(month + 1).padStart(2, '0')
-  const releaseDatePattern = `${year}-${monthStr}`
+  // JavaScript months are 0-indexed, so we add 1 to get the actual month
+  const actualMonth = month + 1
 
-  const where: Record<string, unknown> = {
-    releaseDate: { startsWith: releaseDatePattern }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const where: Record<string, any> = {
+    releaseYear: year,
+    releaseMonth: actualMonth
   }
 
   if (brandId) where.brandId = brandId
@@ -32,12 +32,21 @@ export async function GET(request: Request) {
         line: true,
         images: { take: 1, orderBy: { order: 'asc' } }
       },
-      orderBy: {
-        releaseDate: 'asc'
-      }
+      orderBy: [
+        { releaseDay: { sort: 'asc', nulls: 'last' } },
+        { name: 'asc' }
+      ]
     })
 
-    return NextResponse.json({ figures })
+    // Transform to include releaseDate string for frontend compatibility
+    const transformedFigures = figures.map(fig => ({
+      ...fig,
+      releaseDate: fig.releaseDay
+        ? `${fig.releaseYear}-${String(fig.releaseMonth).padStart(2, '0')}-${String(fig.releaseDay).padStart(2, '0')}`
+        : `${fig.releaseYear}-${String(fig.releaseMonth).padStart(2, '0')}`
+    }))
+
+    return NextResponse.json({ figures: transformedFigures })
   } catch (error) {
     console.error('Error fetching calendar figures:', error)
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })

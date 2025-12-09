@@ -11,9 +11,10 @@ export async function GET(request: Request) {
     return NextResponse.json({ figures: [] })
   }
 
-  const where: { releaseDate: { not: null }, lineId?: string, series?: { some: { seriesId: string } }, brandId?: string } = {
-    // Only show figures that have a release date for the timeline to make sense
-    releaseDate: { not: null }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const where: Record<string, any> = {
+    // Only show figures that have a release year for the timeline to make sense
+    releaseYear: { not: null }
   }
 
   if (lineId) where.lineId = lineId
@@ -29,12 +30,24 @@ export async function GET(request: Request) {
         series: { include: { series: true } },
         images: { take: 1, orderBy: { order: 'asc' } }
       },
-      orderBy: {
-        releaseDate: 'asc'
-      }
+      orderBy: [
+        { releaseYear: 'asc' },
+        { releaseMonth: { sort: 'asc', nulls: 'last' } },
+        { releaseDay: { sort: 'asc', nulls: 'last' } }
+      ]
     })
 
-    return NextResponse.json({ figures })
+    // Transform to include releaseDate string for frontend compatibility
+    const transformedFigures = figures.map(fig => ({
+      ...fig,
+      releaseDate: fig.releaseMonth
+        ? (fig.releaseDay
+            ? `${fig.releaseYear}-${String(fig.releaseMonth).padStart(2, '0')}-${String(fig.releaseDay).padStart(2, '0')}`
+            : `${fig.releaseYear}-${String(fig.releaseMonth).padStart(2, '0')}`)
+        : `${fig.releaseYear}`
+    }))
+
+    return NextResponse.json({ figures: transformedFigures })
   } catch (error) {
     console.error('Error fetching timeline figures:', error)
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
