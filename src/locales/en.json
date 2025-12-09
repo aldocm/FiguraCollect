@@ -133,6 +133,9 @@
     "loginHere": "Log in"
   },
   "catalog": {
+    "title": "Figure",
+    "titleHighlight": "Catalog",
+    "description": "Explore our complete database of figures.",
     "filters": "Filters",
     "clear": "Clear",
     "clearAll": "Clear all",
@@ -341,6 +344,8 @@
       "line": "Line",
       "material": "Material (optional)",
       "scale": "Scale",
+      "noScale": "No scale",
+      "otherScale": "Other...",
       "dimensions": "Dimensions (cm)",
       "height": "Height",
       "width": "Width",
@@ -361,7 +366,8 @@
       "imageUrls": "Image URLs (one per line)",
       "addImage": "Add image",
       "removeImage": "Remove image",
-      "imagePreview": "Preview"
+      "imagePreview": "Preview",
+      "imageLoadError": "Could not load the image. Please verify the URL."
     },
     "placeholders": {
       "figureName": "Ex: Miku Hatsune 1/7 Scale",
@@ -370,6 +376,7 @@
       "selectBrand": "Select brand...",
       "material": "Ex: PVC, ABS",
       "scale": "Ex: 1/7, 1/12",
+      "customScale": "Ex: 1/144",
       "brandName": "Ex: Good Smile Company",
       "country": "Ex: Japan",
       "lineName": "Ex: Nendoroid",

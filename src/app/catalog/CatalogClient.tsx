@@ -370,8 +370,19 @@ export default function CatalogClient({
   }
 
   return (
-    <div className="flex flex-col lg:flex-row gap-8 relative flex-1">
-      
+    <>
+      {/* Page Header */}
+      <div className="mb-8">
+        <h1 className="text-2xl md:text-4xl font-title font-black text-white mb-1 md:mb-2">
+          {t.catalog.title} <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-500">{t.catalog.titleHighlight}</span>
+        </h1>
+        <p className="text-gray-400 text-sm">
+          {t.catalog.description}
+        </p>
+      </div>
+
+      <div className="flex flex-col lg:flex-row gap-8 relative flex-1">
+
       {/* Mobile Filter Toggle */}
       <div className="lg:hidden mb-2 flex justify-between items-center bg-uiBase rounded-xl border border-white/10">
         <button
@@ -650,5 +661,6 @@ export default function CatalogClient({
         )}
       </div>
     </div>
+    </>
   )
 }

@@ -523,9 +523,9 @@ export default function ContributeClient() {
                           }}
                           className={`${inputClass} appearance-none pr-10`}
                         >
-                          <option value="">Sin escala</option>
+                          <option value="">{t.contribute.labels.noScale}</option>
                           {SCALE_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
-                          <option value="custom">Otra...</option>
+                          <option value="custom">{t.contribute.labels.otherScale}</option>
                         </select>
                         <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
                       </div>
@@ -537,7 +537,7 @@ export default function ContributeClient() {
                             setCustomScaleValue(e.target.value)
                             setFigureForm(f => ({ ...f, scale: e.target.value }))
                           }}
-                          placeholder="Ej: 1/144"
+                          placeholder={t.contribute.placeholders.customScale}
                           className={`${inputClass} w-24`}
                           autoFocus
                         />
@@ -715,7 +715,7 @@ export default function ContributeClient() {
                                 <div className="absolute inset-0 flex flex-col items-center justify-center text-amber-400 gap-2">
                                   <AlertTriangle size={24} />
                                   <span className="text-xs text-center px-4">
-                                    No se pudo cargar la imagen. Verifica la URL.
+                                    {t.contribute.labels.imageLoadError}
                                   </span>
                                 </div>
                               ) : (
