@@ -1,7 +1,7 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ImageOff } from 'lucide-react'
 
 interface ImageGalleryProps {
   images: { id: string; url: string }[]
@@ -28,6 +28,20 @@ export function ImageGallery({
 
   const handleNextImage = () => {
     onIndexChange(selectedIndex === images.length - 1 ? 0 : selectedIndex + 1)
+  }
+
+  // Handle case when there are no images
+  if (!images || images.length === 0) {
+    return (
+      <div className="space-y-2 md:space-y-4">
+        <div className="relative aspect-square md:aspect-square lg:aspect-[4/3] rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl border border-white/10 bg-uiBase/30 flex items-center justify-center">
+          <div className="text-center text-gray-500">
+            <ImageOff className="w-16 h-16 mx-auto mb-2 opacity-50" />
+            <p className="text-sm">Sin imágenes disponibles</p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
