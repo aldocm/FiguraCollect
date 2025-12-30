@@ -108,7 +108,16 @@ export default function LoginPage() {
                   <p className="text-gray-400">{t.login.enterCredentials}</p>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-5">
+              <form
+                onSubmit={handleSubmit}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !loading) {
+                    e.preventDefault()
+                    handleSubmit(e)
+                  }
+                }}
+                className="space-y-5"
+              >
 
                   {error && (
                     <motion.div

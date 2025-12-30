@@ -64,17 +64,16 @@ const StatCard = ({ label, value, icon: Icon, colorClass }: { label: string, val
 
 const StatusBadge = ({ status }: { status: string }) => {
   const config = {
-    OWNED: { color: 'bg-green-500', text: 'text-green-400', label: 'En Colección', icon: CheckCircle2 },
-    PREORDER: { color: 'bg-blue-500', text: 'text-blue-400', label: 'Pre-orden', icon: CalendarClock },
-    WISHLIST: { color: 'bg-pink-500', text: 'text-pink-400', label: 'Deseado', icon: Heart },
-  }[status] || { color: 'bg-gray-500', text: 'text-gray-400', label: status, icon: AlertCircle }
+    OWNED: { bgClass: 'bg-green-500/20', iconClass: 'text-green-400', icon: CheckCircle2 },
+    PREORDER: { bgClass: 'bg-blue-500/20', iconClass: 'text-blue-400', icon: CalendarClock },
+    WISHLIST: { bgClass: 'bg-pink-500/20', iconClass: 'text-pink-400', icon: Heart },
+  }[status] || { bgClass: 'bg-gray-500/20', iconClass: 'text-gray-400', icon: AlertCircle }
 
   const Icon = config.icon
 
   return (
-    <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide border ${config.text} border-current bg-opacity-10 bg-black`}>
-      <Icon size={12} />
-      {config.label}
+    <span className={`flex items-center justify-center w-8 h-8 rounded-full ${config.bgClass} backdrop-blur-sm border border-white/10`}>
+      <Icon size={16} className={config.iconClass} />
     </span>
   )
 }
@@ -131,11 +130,11 @@ const InventoryCard = ({ item, onUpdate }: { item: InventoryItem, onUpdate: () =
                 <div className="w-full h-full flex items-center justify-center text-gray-600">Sin Imagen</div>
             )}
             
-            <div className="absolute top-3 left-3">
+            <div className="absolute top-3 right-3 z-10">
                 <StatusBadge status={item.status} />
             </div>
-            
-            <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+
+            <div className="absolute top-3 left-3 opacity-0 group-hover:opacity-100 transition-opacity">
                  {/* Quick Actions Overlay */}
                  <div className="flex gap-2">
                     {item.status === 'WISHLIST' && (

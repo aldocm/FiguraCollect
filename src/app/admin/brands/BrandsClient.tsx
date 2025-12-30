@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Search, Plus, Trash2, Layers, Box, Edit2, Save, X } from 'lucide-react'
+import { ArrowLeft, Search, Plus, Trash2, Layers, Box, Edit2, Save, X, Loader2, Globe, ChevronDown, Calendar } from 'lucide-react'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface Brand {
   id: string
@@ -11,21 +12,77 @@ interface Brand {
   slug: string
   description: string | null
   country: string | null
+  foundedYear: number | null
   _count: { lines: number; figures: number }
 }
 
 export default function BrandsClient() {
+  const { t } = useLanguage()
   const [brands, setBrands] = useState<Brand[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
-  
+
   // Form States
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [country, setCountry] = useState('')
+  const [foundedYear, setFoundedYear] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [loadingEdit, setLoadingEdit] = useState(false)
+
+  // Countries list with translations
+  const countries = [
+    { key: "germany", label: t.register.countries.germany },
+    { key: "argentina", label: t.register.countries.argentina },
+    { key: "australia", label: t.register.countries.australia },
+    { key: "austria", label: t.register.countries.austria },
+    { key: "belgium", label: t.register.countries.belgium },
+    { key: "bolivia", label: t.register.countries.bolivia },
+    { key: "brazil", label: t.register.countries.brazil },
+    { key: "canada", label: t.register.countries.canada },
+    { key: "chile", label: t.register.countries.chile },
+    { key: "china", label: t.register.countries.china },
+    { key: "colombia", label: t.register.countries.colombia },
+    { key: "southKorea", label: t.register.countries.southKorea },
+    { key: "costaRica", label: t.register.countries.costaRica },
+    { key: "ecuador", label: t.register.countries.ecuador },
+    { key: "uae", label: t.register.countries.uae },
+    { key: "spain", label: t.register.countries.spain },
+    { key: "usa", label: t.register.countries.usa },
+    { key: "philippines", label: t.register.countries.philippines },
+    { key: "france", label: t.register.countries.france },
+    { key: "guatemala", label: t.register.countries.guatemala },
+    { key: "hongKong", label: t.register.countries.hongKong },
+    { key: "india", label: t.register.countries.india },
+    { key: "indonesia", label: t.register.countries.indonesia },
+    { key: "ireland", label: t.register.countries.ireland },
+    { key: "italy", label: t.register.countries.italy },
+    { key: "japan", label: t.register.countries.japan },
+    { key: "malaysia", label: t.register.countries.malaysia },
+    { key: "mexico", label: t.register.countries.mexico },
+    { key: "newZealand", label: t.register.countries.newZealand },
+    { key: "netherlands", label: t.register.countries.netherlands },
+    { key: "panama", label: t.register.countries.panama },
+    { key: "paraguay", label: t.register.countries.paraguay },
+    { key: "peru", label: t.register.countries.peru },
+    { key: "poland", label: t.register.countries.poland },
+    { key: "portugal", label: t.register.countries.portugal },
+    { key: "uk", label: t.register.countries.uk },
+    { key: "dominicanRepublic", label: t.register.countries.dominicanRepublic },
+    { key: "russia", label: t.register.countries.russia },
+    { key: "singapore", label: t.register.countries.singapore },
+    { key: "sweden", label: t.register.countries.sweden },
+    { key: "switzerland", label: t.register.countries.switzerland },
+    { key: "taiwan", label: t.register.countries.taiwan },
+    { key: "thailand", label: t.register.countries.thailand },
+    { key: "turkey", label: t.register.countries.turkey },
+    { key: "uruguay", label: t.register.countries.uruguay },
+    { key: "venezuela", label: t.register.countries.venezuela },
+    { key: "vietnam", label: t.register.countries.vietnam },
+    { key: "other", label: t.register.countries.other },
+  ]
 
   const fetchBrands = async () => {
     const res = await fetch('/api/brands')
@@ -38,12 +95,17 @@ export default function BrandsClient() {
     fetchBrands()
   }, [])
 
-  const handleEdit = (brand: Brand) => {
+  const handleEdit = async (brand: Brand) => {
+    setLoadingEdit(true)
     setEditingId(brand.id)
+    // Small delay for visual feedback
+    await new Promise(resolve => setTimeout(resolve, 300))
     setName(brand.name)
     setDescription(brand.description || '')
     setCountry(brand.country || '')
+    setFoundedYear(brand.foundedYear ? brand.foundedYear.toString() : '')
     setError('')
+    setLoadingEdit(false)
   }
 
   const handleCancelEdit = () => {
@@ -51,6 +113,7 @@ export default function BrandsClient() {
     setName('')
     setDescription('')
     setCountry('')
+    setFoundedYear('')
     setError('')
   }
 
@@ -66,7 +129,12 @@ export default function BrandsClient() {
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, description, country })
+        body: JSON.stringify({
+          name,
+          description,
+          country,
+          foundedYear: foundedYear ? parseInt(foundedYear) : null
+        })
       })
 
       const data = await res.json()
@@ -137,7 +205,46 @@ export default function BrandsClient() {
                 transition={{ delay: 0.1 }}
                 className="lg:col-span-4 h-fit sticky top-8"
             >
-                <div className="bg-uiBase/40 backdrop-blur-md border border-white/10 rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-xl">
+                <div className="relative bg-uiBase/40 backdrop-blur-md border border-white/10 rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-xl overflow-hidden">
+                    {/* Loading Overlay */}
+                    <AnimatePresence>
+                      {loadingEdit && (
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          className="absolute inset-0 bg-background/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center rounded-2xl md:rounded-3xl"
+                        >
+                          <motion.div
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.8, opacity: 0 }}
+                            transition={{ delay: 0.1 }}
+                            className="flex flex-col items-center gap-4"
+                          >
+                            <div className="relative">
+                              <motion.div
+                                animate={{ rotate: 360 }}
+                                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                                className="p-4 bg-primary/20 rounded-2xl"
+                              >
+                                <Loader2 className="w-8 h-8 text-primary" />
+                              </motion.div>
+                              <motion.div
+                                animate={{ scale: [1, 1.2, 1] }}
+                                transition={{ duration: 1.5, repeat: Infinity }}
+                                className="absolute -inset-2 bg-primary/10 rounded-3xl -z-10"
+                              />
+                            </div>
+                            <div className="text-center">
+                              <p className="text-white font-medium">Cargando...</p>
+                              <p className="text-gray-400 text-sm">Obteniendo datos</p>
+                            </div>
+                          </motion.div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
                     <div className="flex items-center justify-between mb-4 md:mb-6">
                         <div className="flex items-center gap-2 md:gap-3">
                             <div className="p-1.5 md:p-2 bg-primary/20 rounded-lg text-primary">
@@ -145,7 +252,7 @@ export default function BrandsClient() {
                             </div>
                             <h2 className="text-base md:text-lg font-bold text-white">{editingId ? 'Editar Marca' : 'Nueva Marca'}</h2>
                         </div>
-                        {editingId && (
+                        {editingId && !loadingEdit && (
                             <button
                                 onClick={handleCancelEdit}
                                 className="p-1.5 md:p-2 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
@@ -173,14 +280,48 @@ export default function BrandsClient() {
                             />
                         </div>
 
-                        <div className="space-y-1">
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="space-y-1">
                             <label className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider ml-1">País</label>
-                            <input
+                            <div className="relative group">
+                              <Globe className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-primary transition-colors" size={16} />
+                              <select
                                 value={country}
                                 onChange={(e) => setCountry(e.target.value)}
-                                className="w-full bg-black/40 border border-white/10 rounded-xl px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
-                                placeholder="Ej. Japón"
-                            />
+                                className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 md:py-3 pl-9 pr-8 text-sm text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all appearance-none cursor-pointer"
+                              >
+                                <option value="" className="bg-[#1a1a1a] text-gray-500">
+                                  {t.register.selectCountry}
+                                </option>
+                                {[...countries].sort((a, b) => a.label.localeCompare(b.label)).map((c) => (
+                                  <option
+                                    key={c.key}
+                                    value={c.label}
+                                    className="bg-[#1a1a1a]"
+                                  >
+                                    {c.label}
+                                  </option>
+                                ))}
+                              </select>
+                              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" size={16} />
+                            </div>
+                          </div>
+
+                          <div className="space-y-1">
+                            <label className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider ml-1">Año Fundación</label>
+                            <div className="relative group">
+                              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-primary transition-colors" size={16} />
+                              <input
+                                type="number"
+                                value={foundedYear}
+                                onChange={(e) => setFoundedYear(e.target.value)}
+                                min="1800"
+                                max={new Date().getFullYear()}
+                                className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 md:py-3 pl-9 pr-3 text-sm text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                                placeholder="Ej. 1950"
+                              />
+                            </div>
+                          </div>
                         </div>
 
                         <div className="space-y-1">
@@ -274,9 +415,14 @@ export default function BrandsClient() {
                                     
                                     <h3 className="text-xl font-bold text-white mb-1">{brand.name}</h3>
                                     <div className="flex flex-col gap-1 mb-4">
-                                        {brand.country && (
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                          {brand.country && (
                                             <span className="text-xs font-bold text-primary uppercase tracking-wider">{brand.country}</span>
-                                        )}
+                                          )}
+                                          {brand.foundedYear && (
+                                            <span className="text-xs text-gray-500">• Est. {brand.foundedYear}</span>
+                                          )}
+                                        </div>
                                         {brand.description && (
                                             <p className="text-sm text-gray-400 line-clamp-2">{brand.description}</p>
                                         )}

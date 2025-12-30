@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Search, Plus, Tags, Box, X, Save } from 'lucide-react'
+import { ArrowLeft, Search, Plus, Tags, Box, X, Save, Loader2 } from 'lucide-react'
 
 interface Tag {
   id: string
@@ -21,6 +21,7 @@ export default function TagsClient() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [loadingEdit, setLoadingEdit] = useState(false)
 
   const fetchTags = async () => {
     const res = await fetch('/api/tags')
@@ -33,10 +34,14 @@ export default function TagsClient() {
     fetchTags()
   }, [])
 
-  const handleEdit = (t: Tag) => {
+  const handleEdit = async (t: Tag) => {
+    setLoadingEdit(true)
     setEditingId(t.id)
+    // Small delay for visual feedback
+    await new Promise(resolve => setTimeout(resolve, 300))
     setName(t.name)
     setError('')
+    setLoadingEdit(false)
   }
 
   const handleCancelEdit = () => {
@@ -125,7 +130,46 @@ export default function TagsClient() {
                 transition={{ delay: 0.1 }}
                 className="lg:col-span-4 h-fit sticky top-8"
             >
-                <div className="bg-uiBase/40 backdrop-blur-md border border-white/10 rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-xl">
+                <div className="relative bg-uiBase/40 backdrop-blur-md border border-white/10 rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-xl overflow-hidden">
+                    {/* Loading Overlay */}
+                    <AnimatePresence>
+                      {loadingEdit && (
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          className="absolute inset-0 bg-background/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center rounded-2xl md:rounded-3xl"
+                        >
+                          <motion.div
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.8, opacity: 0 }}
+                            transition={{ delay: 0.1 }}
+                            className="flex flex-col items-center gap-4"
+                          >
+                            <div className="relative">
+                              <motion.div
+                                animate={{ rotate: 360 }}
+                                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                                className="p-4 bg-emerald-500/20 rounded-2xl"
+                              >
+                                <Loader2 className="w-8 h-8 text-emerald-400" />
+                              </motion.div>
+                              <motion.div
+                                animate={{ scale: [1, 1.2, 1] }}
+                                transition={{ duration: 1.5, repeat: Infinity }}
+                                className="absolute -inset-2 bg-emerald-500/10 rounded-3xl -z-10"
+                              />
+                            </div>
+                            <div className="text-center">
+                              <p className="text-white font-medium">Cargando...</p>
+                              <p className="text-gray-400 text-sm">Obteniendo datos</p>
+                            </div>
+                          </motion.div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
                     <div className="flex items-center justify-between mb-4 md:mb-6">
                         <div className="flex items-center gap-2 md:gap-3">
                             <div className="p-1.5 md:p-2 bg-emerald-500/20 rounded-lg text-emerald-400">
@@ -133,7 +177,7 @@ export default function TagsClient() {
                             </div>
                             <h2 className="text-base md:text-lg font-bold text-white">{editingId ? 'Editar Tag' : 'Nuevo Tag'}</h2>
                         </div>
-                        {editingId && (
+                        {editingId && !loadingEdit && (
                             <button
                                 onClick={handleCancelEdit}
                                 className="p-1.5 md:p-2 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-colors"

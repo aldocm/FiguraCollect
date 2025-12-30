@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { name, description, brandId, releaseYear } = body
+    const { name, description, imageUrl, brandId, releaseYear } = body
 
     if (!name || !brandId) {
       return NextResponse.json(
@@ -97,6 +97,7 @@ export async function POST(request: NextRequest) {
         name,
         slug,
         description: description || null,
+        imageUrl: imageUrl || null,
         brandId,
         releaseYear: releaseYear || null,
         status,

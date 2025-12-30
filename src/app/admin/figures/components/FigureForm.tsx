@@ -1,10 +1,10 @@
 'use client'
 
 import { memo, useMemo, useState } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   Plus, X, Save, Image as ImageIcon, DollarSign, Ruler, Tag,
-  ChevronDown, ArrowLeftRight, User
+  ChevronDown, ArrowLeftRight, User, Loader2
 } from 'lucide-react'
 import type { MeasureUnit } from '@/lib/utils'
 import type { FigureFormData, Brand, Line, Series, TagType, Character } from '../types'
@@ -13,6 +13,7 @@ interface FigureFormProps {
   form: FigureFormData
   setForm: React.Dispatch<React.SetStateAction<FigureFormData>>
   editingId: string | null
+  loadingEdit: boolean
   dimensionUnit: MeasureUnit
   onToggleDimensionUnit: () => void
   saving: boolean
@@ -34,6 +35,7 @@ export const FigureForm = memo(function FigureForm({
   form,
   setForm,
   editingId,
+  loadingEdit,
   dimensionUnit,
   onToggleDimensionUnit,
   saving,
@@ -67,9 +69,47 @@ export const FigureForm = memo(function FigureForm({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.1 }}
-      className="xl:col-span-5 h-fit sticky top-8"
     >
-      <div className="bg-uiBase/40 backdrop-blur-md border border-white/10 rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-xl">
+      <div className="relative bg-uiBase/40 backdrop-blur-md border border-white/10 rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-xl overflow-hidden">
+        {/* Loading Overlay */}
+        <AnimatePresence>
+          {loadingEdit && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-background/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center rounded-2xl md:rounded-3xl"
+            >
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.8, opacity: 0 }}
+                transition={{ delay: 0.1 }}
+                className="flex flex-col items-center gap-4"
+              >
+                <div className="relative">
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    className="p-4 bg-primary/20 rounded-2xl"
+                  >
+                    <Loader2 className="w-8 h-8 text-primary" />
+                  </motion.div>
+                  <motion.div
+                    animate={{ scale: [1, 1.2, 1] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                    className="absolute -inset-2 bg-primary/10 rounded-3xl -z-10"
+                  />
+                </div>
+                <div className="text-center">
+                  <p className="text-white font-medium">Cargando figura...</p>
+                  <p className="text-gray-400 text-sm">Obteniendo datos</p>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <div className="flex items-center justify-between mb-4 md:mb-6">
           <div className="flex items-center gap-2 md:gap-3">
             <div className="p-1.5 md:p-2 bg-primary/20 rounded-lg text-primary">
@@ -79,7 +119,7 @@ export const FigureForm = memo(function FigureForm({
               {editingId ? 'Editar Figura' : 'Nueva Figura'}
             </h2>
           </div>
-          {editingId && (
+          {editingId && !loadingEdit && (
             <button
               onClick={onCancelEdit}
               className="p-1.5 md:p-2 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
@@ -591,22 +631,78 @@ function ImagesSection({
   form: FigureFormData
   setForm: React.Dispatch<React.SetStateAction<FigureFormData>>
 }) {
+  const handleImageChange = (index: number, value: string) => {
+    const newImages = [...form.images]
+    newImages[index] = value
+    setForm({ ...form, images: newImages })
+  }
+
+  const handleAddImage = () => {
+    setForm({ ...form, images: [...form.images, ''] })
+  }
+
+  const handleRemoveImage = (index: number) => {
+    if (form.images.length <= 1) {
+      // Keep at least one empty field
+      setForm({ ...form, images: [''] })
+      return
+    }
+    const newImages = form.images.filter((_, i) => i !== index)
+    setForm({ ...form, images: newImages })
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      // Only add new field if current field has content
+      if (form.images[index].trim()) {
+        handleAddImage()
+        // Focus the new input after React re-renders
+        setTimeout(() => {
+          const inputs = document.querySelectorAll<HTMLInputElement>('[data-image-input]')
+          inputs[inputs.length - 1]?.focus()
+        }, 0)
+      }
+    }
+  }
+
   return (
     <div className="space-y-4">
-      <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-white/10 pb-2 flex items-center gap-2">
-        <ImageIcon size={14} /> Imágenes
-      </h3>
-      <div>
-        <label className="text-xs font-bold text-gray-400 uppercase tracking-wider ml-1 mb-1 block">
-          URLs (Una por línea)
-        </label>
-        <textarea
-          value={form.images}
-          onChange={(e) => setForm({ ...form, images: e.target.value })}
-          rows={3}
-          className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white text-sm resize-none"
-          placeholder="https://..."
-        />
+      <div className="flex items-center justify-between border-b border-white/10 pb-2">
+        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2">
+          <ImageIcon size={14} /> Imágenes
+        </h3>
+        <button
+          type="button"
+          onClick={handleAddImage}
+          className="flex items-center gap-1 px-2 py-1 text-[10px] font-bold uppercase bg-primary/20 hover:bg-primary/30 border border-primary/30 rounded-lg text-primary transition-colors"
+        >
+          <Plus size={12} />
+          Agregar
+        </button>
+      </div>
+      <div className="space-y-2">
+        {form.images.map((url, index) => (
+          <div key={index} className="flex gap-2 items-center">
+            <input
+              type="url"
+              value={url}
+              onChange={(e) => handleImageChange(index, e.target.value)}
+              onKeyDown={(e) => handleKeyDown(e, index)}
+              data-image-input
+              className="flex-1 bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:border-primary transition-all"
+              placeholder={`URL de imagen ${index + 1}`}
+            />
+            <button
+              type="button"
+              onClick={() => handleRemoveImage(index)}
+              className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 hover:text-red-300 transition-colors"
+              title="Eliminar imagen"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        ))}
       </div>
     </div>
   )

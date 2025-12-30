@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Search, CheckCircle, Clock } from 'lucide-react'
+import { ArrowLeft, Search, CheckCircle, Clock, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
 
 import { useFiguresData, useFigureForm } from './hooks'
 import {
@@ -17,6 +17,9 @@ import {
 import type { ViewMode, Character, Series } from './types'
 
 export default function FiguresClient() {
+  // Ref for form scroll
+  const formRef = useRef<HTMLDivElement>(null)
+
   // Data hook
   const {
     figures,
@@ -26,9 +29,15 @@ export default function FiguresClient() {
     tags,
     characters,
     loading,
+    loadingFigures,
+    pagination,
+    searchTerm,
+    isSearching,
     setFigures,
     setCharacters,
     setSeriesList,
+    setPage,
+    setSearchTerm,
     refetch
   } = useFiguresData()
 
@@ -37,6 +46,7 @@ export default function FiguresClient() {
     form,
     setForm,
     editingId,
+    loadingEdit,
     dimensionUnit,
     setDimensionUnit,
     saving,
@@ -50,21 +60,12 @@ export default function FiguresClient() {
   } = useFigureForm(lines)
 
   // Local state
-  const [searchTerm, setSearchTerm] = useState('')
   const [showNewCharacterModal, setShowNewCharacterModal] = useState(false)
   const [showNewSeriesModal, setShowNewSeriesModal] = useState(false)
   const [viewMode, setViewMode] = useState<ViewMode>('catalog')
   const [pendingViewSnapshot, setPendingViewSnapshot] = useState<string[]>([])
 
   // Memoized values
-  const filteredFigures = useMemo(
-    () => figures.filter(f =>
-      f.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      f.brand.name.toLowerCase().includes(searchTerm.toLowerCase())
-    ),
-    [figures, searchTerm]
-  )
-
   const pendingViewFigures = useMemo(
     () => figures
       .filter(f => pendingViewSnapshot.includes(f.id))
@@ -141,6 +142,15 @@ export default function FiguresClient() {
     setDimensionUnit(u => u === 'cm' ? 'in' : 'cm')
   }, [setDimensionUnit])
 
+  // Handle edit with scroll to form
+  const handleEditWithScroll = useCallback(async (id: string) => {
+    await handleEdit(id)
+    // Scroll to form after loading
+    setTimeout(() => {
+      formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 100)
+  }, [handleEdit])
+
   return (
     <div className="flex-1 bg-background pb-20 relative overflow-hidden">
       {/* Background Elements */}
@@ -172,10 +182,12 @@ export default function FiguresClient() {
 
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 md:gap-8">
           {/* Left Column: Form */}
+          <div ref={formRef} className="xl:col-span-5 h-fit sticky top-8">
           <FigureForm
             form={form}
             setForm={setForm}
             editingId={editingId}
+            loadingEdit={loadingEdit}
             dimensionUnit={dimensionUnit}
             onToggleDimensionUnit={handleToggleDimensionUnit}
             saving={saving}
@@ -192,6 +204,7 @@ export default function FiguresClient() {
             onShowNewCharacterModal={() => setShowNewCharacterModal(true)}
             onShowNewSeriesModal={() => setShowNewSeriesModal(true)}
           />
+          </div>
 
           {/* Right Column: List */}
           <motion.div
@@ -204,7 +217,7 @@ export default function FiguresClient() {
             <ViewModeTabs
               viewMode={viewMode}
               onViewModeChange={handleViewModeChange}
-              totalCount={figures.length}
+              totalCount={pagination.total}
               pendingCount={truePendingCount}
             />
 
@@ -226,24 +239,109 @@ export default function FiguresClient() {
                 {/* Results */}
                 {loading ? (
                   <div className="text-center py-12 text-gray-500">Cargando...</div>
-                ) : filteredFigures.length === 0 ? (
+                ) : figures.length === 0 ? (
                   <div className="text-center py-12 bg-uiBase/20 rounded-3xl border border-white/5 border-dashed">
                     <p className="text-gray-500">No se encontraron figuras.</p>
                   </div>
                 ) : (
-                  <div className="space-y-3">
-                    <AnimatePresence mode="popLayout">
-                      {filteredFigures.map(figure => (
-                        <FigureCatalogItem
-                          key={figure.id}
-                          figure={figure}
-                          isEditing={editingId === figure.id}
-                          onEdit={handleEdit}
-                          onDelete={handleDelete}
-                        />
-                      ))}
-                    </AnimatePresence>
-                  </div>
+                  <>
+                    {/* Loading overlay for page changes or searching */}
+                    {(loadingFigures || isSearching) && (
+                      <div className="flex items-center justify-center py-8">
+                        <motion.div
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        >
+                          <Loader2 className="w-8 h-8 text-primary" />
+                        </motion.div>
+                        {isSearching && (
+                          <span className="ml-3 text-gray-400 text-sm">Buscando...</span>
+                        )}
+                      </div>
+                    )}
+
+                    {!loadingFigures && !isSearching && (
+                      <div className="space-y-3">
+                        <AnimatePresence mode="popLayout">
+                          {figures.map(figure => (
+                            <FigureCatalogItem
+                              key={figure.id}
+                              figure={figure}
+                              isEditing={editingId === figure.id}
+                              onEdit={handleEditWithScroll}
+                              onDelete={handleDelete}
+                            />
+                          ))}
+                        </AnimatePresence>
+                      </div>
+                    )}
+
+                    {/* Pagination Controls */}
+                    {pagination.pages > 1 && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="flex items-center justify-center gap-2 mt-8 pt-6 border-t border-white/10"
+                      >
+                        {/* Previous Button */}
+                        <button
+                          onClick={() => setPage(pagination.page - 1)}
+                          disabled={pagination.page === 1 || loadingFigures}
+                          className="p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                        >
+                          <ChevronLeft size={20} />
+                        </button>
+
+                        {/* Page Numbers */}
+                        <div className="flex items-center gap-1">
+                          {Array.from({ length: pagination.pages }, (_, i) => i + 1)
+                            .filter(page => {
+                              // Show first, last, current, and pages around current
+                              const current = pagination.page
+                              return page === 1 ||
+                                     page === pagination.pages ||
+                                     Math.abs(page - current) <= 1
+                            })
+                            .map((page, index, arr) => {
+                              // Add ellipsis if there's a gap
+                              const showEllipsisBefore = index > 0 && page - arr[index - 1] > 1
+                              return (
+                                <div key={page} className="flex items-center">
+                                  {showEllipsisBefore && (
+                                    <span className="px-2 text-gray-500">...</span>
+                                  )}
+                                  <button
+                                    onClick={() => setPage(page)}
+                                    disabled={loadingFigures}
+                                    className={`min-w-[40px] h-10 rounded-xl font-bold transition-all ${
+                                      page === pagination.page
+                                        ? 'bg-primary text-white shadow-lg shadow-primary/30'
+                                        : 'bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white border border-white/10'
+                                    } disabled:cursor-not-allowed`}
+                                  >
+                                    {page}
+                                  </button>
+                                </div>
+                              )
+                            })}
+                        </div>
+
+                        {/* Next Button */}
+                        <button
+                          onClick={() => setPage(pagination.page + 1)}
+                          disabled={pagination.page === pagination.pages || loadingFigures}
+                          className="p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                        >
+                          <ChevronRight size={20} />
+                        </button>
+
+                        {/* Page Info */}
+                        <span className="ml-4 text-sm text-gray-500">
+                          {pagination.total} figuras
+                        </span>
+                      </motion.div>
+                    )}
+                  </>
                 )}
               </>
             )}
@@ -281,7 +379,7 @@ export default function FiguresClient() {
                           key={figure.id}
                           figure={figure}
                           onToggleReleased={handleToggleReleased}
-                          onEdit={handleEdit}
+                          onEdit={handleEditWithScroll}
                         />
                       ))}
                     </AnimatePresence>

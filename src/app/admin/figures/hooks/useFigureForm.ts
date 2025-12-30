@@ -40,6 +40,7 @@ interface UseFigureFormReturn {
   form: FigureFormData
   setForm: React.Dispatch<React.SetStateAction<FigureFormData>>
   editingId: string | null
+  loadingEdit: boolean
   dimensionUnit: MeasureUnit
   setDimensionUnit: React.Dispatch<React.SetStateAction<MeasureUnit>>
   saving: boolean
@@ -57,6 +58,7 @@ interface UseFigureFormReturn {
 export function useFigureForm(lines: Line[]): UseFigureFormReturn {
   const [form, setForm] = useState<FigureFormData>(INITIAL_FORM_DATA)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [loadingEdit, setLoadingEdit] = useState(false)
   const [dimensionUnit, setDimensionUnit] = useState<MeasureUnit>('cm')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -74,13 +76,14 @@ export function useFigureForm(lines: Line[]): UseFigureFormReturn {
   }, [dimensionUnit])
 
   const handleEdit = useCallback(async (id: string) => {
+    setLoadingEdit(true)
+    setEditingId(id)
     try {
       const res = await fetch(`/api/figures/${id}`)
       if (res.ok) {
         const data = await res.json()
         const f: FigureDetail = data.figure
 
-        setEditingId(id)
         setDimensionUnit('cm')
         setForm({
           name: f.name,
@@ -104,7 +107,7 @@ export function useFigureForm(lines: Line[]): UseFigureFormReturn {
           brandId: f.brand.id,
           lineId: f.line.id,
           characterId: f.character?.id || '',
-          images: f.images.map((img) => img.url).join('\n'),
+          images: f.images.length > 0 ? f.images.map((img) => img.url) : [''],
           tagIds: f.tags.map((t) => t.tag.id),
           seriesIds: f.series.map((s) => s.series.id)
         })
@@ -112,6 +115,9 @@ export function useFigureForm(lines: Line[]): UseFigureFormReturn {
       }
     } catch (e) {
       console.error("Failed to fetch figure details", e)
+      setEditingId(null)
+    } finally {
+      setLoadingEdit(false)
     }
   }, [])
 
@@ -129,7 +135,6 @@ export function useFigureForm(lines: Line[]): UseFigureFormReturn {
 
     try {
       const images = form.images
-        .split('\n')
         .map(url => url.trim())
         .filter(url => url.length > 0)
 
@@ -205,6 +210,7 @@ export function useFigureForm(lines: Line[]): UseFigureFormReturn {
     form,
     setForm,
     editingId,
+    loadingEdit,
     dimensionUnit,
     setDimensionUnit,
     saving,

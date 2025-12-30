@@ -29,7 +29,9 @@
       "Bash(npx eslint:*)",
       "Bash(mkdir:*)",
       "Bash(npm i:*)",
-      "Bash(npx next build)"
+      "Bash(npx next build)",
+      "Bash(del update-password.js)",
+      "WebFetch(domain:tamashiiweb.com)"
     ],
     "deny": [],
     "ask": []

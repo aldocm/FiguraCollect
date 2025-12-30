@@ -12,11 +12,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ results: [] })
     }
 
-    // Search all types in parallel
+    // Search all types in parallel (case-insensitive)
     const [figures, brands, lines, series] = await Promise.all([
       // Figures
       prisma.figure.findMany({
-        where: { name: { contains: query } },
+        where: { name: { contains: query, mode: 'insensitive' } },
         select: {
           id: true,
           name: true,
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
       }),
       // Brands
       prisma.brand.findMany({
-        where: { name: { contains: query } },
+        where: { name: { contains: query, mode: 'insensitive' } },
         select: {
           id: true,
           name: true,
@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
       }),
       // Lines
       prisma.line.findMany({
-        where: { name: { contains: query } },
+        where: { name: { contains: query, mode: 'insensitive' } },
         select: {
           id: true,
           name: true,
@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
       }),
       // Series
       prisma.series.findMany({
-        where: { name: { contains: query } },
+        where: { name: { contains: query, mode: 'insensitive' } },
         select: {
           id: true,
           name: true,

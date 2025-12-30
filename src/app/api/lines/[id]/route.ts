@@ -55,7 +55,7 @@ export async function PUT(
 
     const { id } = await params
     const body = await request.json()
-    const { name, description, brandId, releaseYear } = body
+    const { name, description, imageUrl, brandId, releaseYear } = body
 
     const existing = await prisma.line.findUnique({
       where: { id }
@@ -88,6 +88,7 @@ export async function PUT(
         name: name || existing.name,
         slug,
         description: description !== undefined ? description : existing.description,
+        imageUrl: imageUrl !== undefined ? imageUrl : existing.imageUrl,
         brandId: brandId || existing.brandId,
         releaseYear: releaseYear !== undefined ? releaseYear : existing.releaseYear
       },

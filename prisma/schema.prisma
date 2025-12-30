@@ -48,6 +48,7 @@ model Brand {
   slug        String   @unique
   description String?
   country     String?
+  foundedYear Int?
   status      String   @default("APPROVED") // PENDING | APPROVED
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -66,6 +67,7 @@ model Line {
   name        String
   slug        String   @unique
   description String?
+  imageUrl    String?
   releaseYear Int?
   status      String   @default("APPROVED") // PENDING | APPROVED
   createdAt   DateTime @default(now())
@@ -86,6 +88,7 @@ model Series {
   name        String
   slug        String         @unique
   description String?
+  imageUrl    String?
   status      String         @default("APPROVED") // PENDING | APPROVED
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt

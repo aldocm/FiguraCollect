@@ -1,7 +1,7 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ImageOff } from 'lucide-react'
 
 interface ImageGalleryProps {
   images: { id: string; url: string }[]
@@ -23,11 +23,27 @@ export function ImageGallery({
   const selectedImage = images[selectedIndex]
 
   const handlePrevImage = () => {
+    if (images.length === 0) return
     onIndexChange(selectedIndex === 0 ? images.length - 1 : selectedIndex - 1)
   }
 
   const handleNextImage = () => {
+    if (images.length === 0) return
     onIndexChange(selectedIndex === images.length - 1 ? 0 : selectedIndex + 1)
+  }
+
+  // No images placeholder
+  if (!images || images.length === 0) {
+    return (
+      <div className="space-y-2 md:space-y-4">
+        <div className="relative aspect-square md:aspect-square lg:aspect-[4/3] rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl border border-white/10 bg-uiBase/30 flex items-center justify-center">
+          <div className="text-center text-gray-500">
+            <ImageOff className="w-16 h-16 mx-auto mb-2 opacity-50" />
+            <p className="text-sm">No images available</p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -40,8 +56,8 @@ export function ImageGallery({
       >
         <AnimatePresence mode="wait">
           <motion.img
-            key={selectedImage.url}
-            src={selectedImage.url}
+            key={selectedImage?.url || 'placeholder'}
+            src={selectedImage?.url || ''}
             alt={figureName}
             initial={{ opacity: 0, scale: 1.02 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -52,20 +68,22 @@ export function ImageGallery({
         </AnimatePresence>
 
         {/* Hover Navigation Arrows */}
-        <div className="absolute inset-0 flex items-center justify-between p-2 md:p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-          <button
-            onClick={(e) => { e.stopPropagation(); handlePrevImage(); }}
-            className="p-2 md:p-3 rounded-full bg-black/50 text-white backdrop-blur-md hover:bg-primary hover:text-white transition-all pointer-events-auto transform hover:-translate-x-1"
-          >
-            <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
-          </button>
-          <button
-            onClick={(e) => { e.stopPropagation(); handleNextImage(); }}
-            className="p-2 md:p-3 rounded-full bg-black/50 text-white backdrop-blur-md hover:bg-primary hover:text-white transition-all pointer-events-auto transform hover:translate-x-1"
-          >
-            <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
-          </button>
-        </div>
+        {images.length > 1 && (
+          <div className="absolute inset-0 flex items-center justify-between p-2 md:p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+            <button
+              onClick={(e) => { e.stopPropagation(); handlePrevImage(); }}
+              className="p-2 md:p-3 rounded-full bg-black/50 text-white backdrop-blur-md hover:bg-primary hover:text-white transition-all pointer-events-auto transform hover:-translate-x-1"
+            >
+              <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); handleNextImage(); }}
+              className="p-2 md:p-3 rounded-full bg-black/50 text-white backdrop-blur-md hover:bg-primary hover:text-white transition-all pointer-events-auto transform hover:translate-x-1"
+            >
+              <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
+            </button>
+          </div>
+        )}
 
         <div className="absolute bottom-2 right-2 md:bottom-4 md:right-4 bg-black/60 backdrop-blur-md text-white text-[10px] md:text-xs px-2 md:px-3 py-1 md:py-1.5 rounded-full pointer-events-none font-medium border border-white/10">
           {selectedIndex + 1} / {images.length}

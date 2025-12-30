@@ -41,7 +41,7 @@ export interface FigureFormData {
   brandId: string
   lineId: string
   characterId: string
-  images: string
+  images: string[]
   tagIds: string[]
   seriesIds: string[]
 }
@@ -68,7 +68,7 @@ export const INITIAL_FORM_DATA: FigureFormData = {
   brandId: '',
   lineId: '',
   characterId: '',
-  images: '',
+  images: [''],
   tagIds: [],
   seriesIds: []
 }

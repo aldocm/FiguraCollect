@@ -3,13 +3,14 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Search, Plus, Trash2, Library, Box, X, Save, Edit2 } from 'lucide-react'
+import { ArrowLeft, Search, Plus, Trash2, Library, Box, X, Save, Edit2, Loader2, Image as ImageIcon } from 'lucide-react'
 
 interface Series {
   id: string
   name: string
   slug: string
   description: string | null
+  imageUrl: string | null
   _count: { figures: number }
 }
 
@@ -21,9 +22,11 @@ export default function SeriesClient() {
   // Form States
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
+  const [imageUrl, setImageUrl] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [loadingEdit, setLoadingEdit] = useState(false)
 
   const fetchSeries = async () => {
     const res = await fetch('/api/series')
@@ -36,17 +39,23 @@ export default function SeriesClient() {
     fetchSeries()
   }, [])
 
-  const handleEdit = (s: Series) => {
+  const handleEdit = async (s: Series) => {
+    setLoadingEdit(true)
     setEditingId(s.id)
+    // Small delay for visual feedback
+    await new Promise(resolve => setTimeout(resolve, 300))
     setName(s.name)
     setDescription(s.description || '')
+    setImageUrl(s.imageUrl || '')
     setError('')
+    setLoadingEdit(false)
   }
 
   const handleCancelEdit = () => {
     setEditingId(null)
     setName('')
     setDescription('')
+    setImageUrl('')
     setError('')
   }
 
@@ -62,7 +71,7 @@ export default function SeriesClient() {
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, description })
+        body: JSON.stringify({ name, description, imageUrl: imageUrl || null })
       })
 
       const data = await res.json()
@@ -130,7 +139,46 @@ export default function SeriesClient() {
                 transition={{ delay: 0.1 }}
                 className="lg:col-span-4 h-fit sticky top-8"
             >
-                <div className="bg-uiBase/40 backdrop-blur-md border border-white/10 rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-xl">
+                <div className="relative bg-uiBase/40 backdrop-blur-md border border-white/10 rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-xl overflow-hidden">
+                    {/* Loading Overlay */}
+                    <AnimatePresence>
+                      {loadingEdit && (
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          className="absolute inset-0 bg-background/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center rounded-2xl md:rounded-3xl"
+                        >
+                          <motion.div
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.8, opacity: 0 }}
+                            transition={{ delay: 0.1 }}
+                            className="flex flex-col items-center gap-4"
+                          >
+                            <div className="relative">
+                              <motion.div
+                                animate={{ rotate: 360 }}
+                                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                                className="p-4 bg-purple-500/20 rounded-2xl"
+                              >
+                                <Loader2 className="w-8 h-8 text-purple-400" />
+                              </motion.div>
+                              <motion.div
+                                animate={{ scale: [1, 1.2, 1] }}
+                                transition={{ duration: 1.5, repeat: Infinity }}
+                                className="absolute -inset-2 bg-purple-500/10 rounded-3xl -z-10"
+                              />
+                            </div>
+                            <div className="text-center">
+                              <p className="text-white font-medium">Cargando...</p>
+                              <p className="text-gray-400 text-sm">Obteniendo datos</p>
+                            </div>
+                          </motion.div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
                     <div className="flex items-center justify-between mb-4 md:mb-6">
                         <div className="flex items-center gap-2 md:gap-3">
                             <div className="p-1.5 md:p-2 bg-purple-500/20 rounded-lg text-purple-400">
@@ -138,7 +186,7 @@ export default function SeriesClient() {
                             </div>
                             <h2 className="text-base md:text-lg font-bold text-white">{editingId ? 'Editar Serie' : 'Nueva Serie'}</h2>
                         </div>
-                        {editingId && (
+                        {editingId && !loadingEdit && (
                             <button
                                 onClick={handleCancelEdit}
                                 className="p-1.5 md:p-2 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
@@ -175,6 +223,20 @@ export default function SeriesClient() {
                                 className="w-full bg-black/40 border border-white/10 rounded-xl px-3 md:px-4 py-2.5 md:py-3 text-sm md:text-base text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all resize-none"
                                 placeholder="Opcional..."
                             />
+                        </div>
+
+                        <div className="space-y-1">
+                            <label className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider ml-1">Imagen URL</label>
+                            <div className="relative group">
+                              <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-purple-400 transition-colors" size={16} />
+                              <input
+                                type="url"
+                                value={imageUrl}
+                                onChange={(e) => setImageUrl(e.target.value)}
+                                className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 md:py-3 pl-9 pr-3 text-sm text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
+                                placeholder="https://..."
+                              />
+                            </div>
                         </div>
 
                         <button
