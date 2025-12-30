@@ -133,6 +133,9 @@
     "loginHere": "Log in"
   },
   "catalog": {
+    "title": "Figure",
+    "titleHighlight": "Catalog",
+    "description": "Explore our complete database of figures.",
     "filters": "Filters",
     "clear": "Clear",
     "clearAll": "Clear all",
@@ -331,6 +334,7 @@
       "specs": "Specifications (optional)",
       "price": "Price (optional)",
       "releaseDate": "Release Date (optional)",
+      "images": "Images (optional)",
       "options": "Options"
     },
     "labels": {
@@ -340,6 +344,8 @@
       "line": "Line",
       "material": "Material (optional)",
       "scale": "Scale",
+      "noScale": "No scale",
+      "otherScale": "Other...",
       "dimensions": "Dimensions (cm)",
       "height": "Height",
       "width": "Width",
@@ -356,7 +362,12 @@
       "noSeries": "No series (original character)",
       "characterName": "Character name",
       "alreadyReleased": "Already released",
-      "nsfw": "NSFW"
+      "nsfw": "NSFW",
+      "imageUrls": "Image URLs (one per line)",
+      "addImage": "Add image",
+      "removeImage": "Remove image",
+      "imagePreview": "Preview",
+      "imageLoadError": "Could not load the image. Please verify the URL."
     },
     "placeholders": {
       "figureName": "Ex: Miku Hatsune 1/7 Scale",
@@ -365,11 +376,13 @@
       "selectBrand": "Select brand...",
       "material": "Ex: PVC, ABS",
       "scale": "Ex: 1/7, 1/12",
+      "customScale": "Ex: 1/144",
       "brandName": "Ex: Good Smile Company",
       "country": "Ex: Japan",
       "lineName": "Ex: Nendoroid",
       "seriesName": "Ex: Demon Slayer",
-      "characterName": "Ex: Tanjiro Kamado"
+      "characterName": "Ex: Tanjiro Kamado",
+      "imageUrl": "https://example.com/image.jpg"
     },
     "months": {
       "january": "January",

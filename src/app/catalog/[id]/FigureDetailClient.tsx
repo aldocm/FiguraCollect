@@ -324,14 +324,16 @@ export default function FigureDetailClient({
 
       </div>
 
-      <ImageModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        imageUrl={images[selectedImageIndex]?.url || ''}
-        imageName={figure.name}
-        onPrev={() => setSelectedImageIndex(prev => prev === 0 ? images.length - 1 : prev - 1)}
-        onNext={() => setSelectedImageIndex(prev => prev === images.length - 1 ? 0 : prev + 1)}
-      />
+      {images.length > 0 && (
+        <ImageModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          imageUrl={images[selectedImageIndex]?.url || ''}
+          imageName={figure.name}
+          onPrev={() => setSelectedImageIndex(prev => prev === 0 ? images.length - 1 : prev - 1)}
+          onNext={() => setSelectedImageIndex(prev => prev === images.length - 1 ? 0 : prev + 1)}
+        />
+      )}
     </div>
   )
 }

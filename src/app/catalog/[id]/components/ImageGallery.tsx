@@ -32,14 +32,14 @@ export function ImageGallery({
     onIndexChange(selectedIndex === images.length - 1 ? 0 : selectedIndex + 1)
   }
 
-  // No images placeholder
+  // Handle case when there are no images
   if (!images || images.length === 0) {
     return (
       <div className="space-y-2 md:space-y-4">
         <div className="relative aspect-square md:aspect-square lg:aspect-[4/3] rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl border border-white/10 bg-uiBase/30 flex items-center justify-center">
           <div className="text-center text-gray-500">
             <ImageOff className="w-16 h-16 mx-auto mb-2 opacity-50" />
-            <p className="text-sm">No images available</p>
+            <p className="text-sm">Sin imágenes disponibles</p>
           </div>
         </div>
       </div>

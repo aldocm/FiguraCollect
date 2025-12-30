@@ -16,7 +16,10 @@ import {
   Clock,
   ChevronDown,
   DollarSign,
-  Ruler
+  Ruler,
+  ImageIcon,
+  X,
+  AlertTriangle
 } from 'lucide-react'
 import { useLanguage } from '@/contexts/LanguageContext'
 
@@ -74,8 +77,13 @@ export default function ContributeClient() {
     priceUSD: '',
     priceYEN: '',
     isNSFW: false,
-    isReleased: false
+    isReleased: false,
+    images: [''] // Array de URLs de imágenes
   })
+
+  // Estado para rastrear imágenes con error de carga
+  const [imageErrors, setImageErrors] = useState<Record<number, boolean>>({})
+  const [imageLoading, setImageLoading] = useState<Record<number, boolean>>({})
 
   const [brandForm, setBrandForm] = useState({ name: '', country: '' })
   const [lineForm, setLineForm] = useState({ name: '', brandId: '' })
@@ -137,12 +145,63 @@ export default function ContributeClient() {
       priceUSD: '',
       priceYEN: '',
       isNSFW: false,
-      isReleased: false
+      isReleased: false,
+      images: ['']
     })
+    setImageErrors({})
+    setImageLoading({})
     setBrandForm({ name: '', country: '' })
     setLineForm({ name: '', brandId: '' })
     setSeriesForm({ name: '' })
     setCharacterForm({ name: '', seriesId: '' })
+  }
+
+  // Funciones para manejar imágenes
+  const handleImageChange = (index: number, value: string) => {
+    const newImages = [...figureForm.images]
+    newImages[index] = value
+    setFigureForm(f => ({ ...f, images: newImages }))
+    // Reset error state cuando el usuario cambia la URL
+    setImageErrors(prev => ({ ...prev, [index]: false }))
+    setImageLoading(prev => ({ ...prev, [index]: true }))
+  }
+
+  const addImageField = () => {
+    setFigureForm(f => ({ ...f, images: [...f.images, ''] }))
+  }
+
+  const removeImageField = (index: number) => {
+    if (figureForm.images.length > 1) {
+      const newImages = figureForm.images.filter((_, i) => i !== index)
+      setFigureForm(f => ({ ...f, images: newImages }))
+      // Limpiar estados de error/loading
+      const newErrors = { ...imageErrors }
+      const newLoading = { ...imageLoading }
+      delete newErrors[index]
+      delete newLoading[index]
+      setImageErrors(newErrors)
+      setImageLoading(newLoading)
+    }
+  }
+
+  const handleImageError = (index: number) => {
+    setImageErrors(prev => ({ ...prev, [index]: true }))
+    setImageLoading(prev => ({ ...prev, [index]: false }))
+  }
+
+  const handleImageLoad = (index: number) => {
+    setImageErrors(prev => ({ ...prev, [index]: false }))
+    setImageLoading(prev => ({ ...prev, [index]: false }))
+  }
+
+  const isValidImageUrl = (url: string) => {
+    if (!url.trim()) return false
+    try {
+      new URL(url)
+      return true
+    } catch {
+      return false
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -157,6 +216,8 @@ export default function ContributeClient() {
       switch (activeTab) {
         case 'figures':
           endpoint = '/api/figures'
+          // Filtrar URLs vacías y solo enviar las válidas
+          const validImages = figureForm.images.filter(url => url.trim() !== '')
           body = {
             name: figureForm.name,
             description: figureForm.description || null,
@@ -175,7 +236,8 @@ export default function ContributeClient() {
             priceUSD: figureForm.priceUSD ? parseFloat(figureForm.priceUSD) : null,
             priceYEN: figureForm.priceYEN ? parseInt(figureForm.priceYEN) : null,
             isNSFW: figureForm.isNSFW,
-            isReleased: figureForm.isReleased
+            isReleased: figureForm.isReleased,
+            images: validImages.length > 0 ? validImages : undefined
           }
           break
         case 'brands':
@@ -461,9 +523,9 @@ export default function ContributeClient() {
                           }}
                           className={`${inputClass} appearance-none pr-10`}
                         >
-                          <option value="">Sin escala</option>
+                          <option value="">{t.contribute.labels.noScale}</option>
                           {SCALE_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
-                          <option value="custom">Otra...</option>
+                          <option value="custom">{t.contribute.labels.otherScale}</option>
                         </select>
                         <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
                       </div>
@@ -475,7 +537,7 @@ export default function ContributeClient() {
                             setCustomScaleValue(e.target.value)
                             setFigureForm(f => ({ ...f, scale: e.target.value }))
                           }}
-                          placeholder="Ej: 1/144"
+                          placeholder={t.contribute.placeholders.customScale}
                           className={`${inputClass} w-24`}
                           autoFocus
                         />
@@ -606,6 +668,84 @@ export default function ContributeClient() {
                         className={inputClass}
                       />
                     </div>
+                  </div>
+                </div>
+
+                {/* Images Section */}
+                <div className="space-y-4">
+                  <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-white/10 pb-2 flex items-center gap-2">
+                    <ImageIcon size={14} /> {t.contribute.sections.images}
+                  </h3>
+
+                  <div className="space-y-3">
+                    {figureForm.images.map((imageUrl, index) => (
+                      <div key={index} className="space-y-2">
+                        <div className="flex gap-2">
+                          <input
+                            type="url"
+                            value={imageUrl}
+                            onChange={e => handleImageChange(index, e.target.value)}
+                            className={`${inputClass} flex-1`}
+                            placeholder={t.contribute.placeholders.imageUrl}
+                          />
+                          {figureForm.images.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => removeImageField(index)}
+                              className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-colors"
+                              title={t.contribute.labels.removeImage}
+                            >
+                              <X size={16} />
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Preview de la imagen */}
+                        {isValidImageUrl(imageUrl) && (
+                          <div className="relative">
+                            <div className={`relative w-full h-32 rounded-xl overflow-hidden bg-black/40 border ${
+                              imageErrors[index] ? 'border-amber-500/30' : 'border-white/10'
+                            }`}>
+                              {imageLoading[index] && !imageErrors[index] && (
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                  <div className="w-5 h-5 border-2 border-white/20 border-t-primary rounded-full animate-spin" />
+                                </div>
+                              )}
+                              {imageErrors[index] ? (
+                                <div className="absolute inset-0 flex flex-col items-center justify-center text-amber-400 gap-2">
+                                  <AlertTriangle size={24} />
+                                  <span className="text-xs text-center px-4">
+                                    {t.contribute.labels.imageLoadError}
+                                  </span>
+                                </div>
+                              ) : (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                  src={imageUrl}
+                                  alt={`Preview ${index + 1}`}
+                                  className="w-full h-full object-contain"
+                                  onError={() => handleImageError(index)}
+                                  onLoad={() => handleImageLoad(index)}
+                                />
+                              )}
+                            </div>
+                            <span className="absolute top-2 left-2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full">
+                              {t.contribute.labels.imagePreview} #{index + 1}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+
+                    {/* Botón para agregar más imágenes */}
+                    <button
+                      type="button"
+                      onClick={addImageField}
+                      className="w-full py-3 rounded-xl border border-dashed border-white/20 text-gray-400 hover:border-primary hover:text-primary transition-colors flex items-center justify-center gap-2 text-sm"
+                    >
+                      <Plus size={16} />
+                      {t.contribute.labels.addImage}
+                    </button>
                   </div>
                 </div>
 

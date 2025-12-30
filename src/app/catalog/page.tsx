@@ -5,8 +5,8 @@ import { calculateAverageRating } from '@/lib/utils'
 import { shouldShowPendingFigures } from '@/lib/config'
 
 export const metadata: Metadata = {
-  title: 'Catálogo | FiguraCollect',
-  description: 'Explora nuestra base de datos completa de figuras.'
+  title: 'Catalog | FiguraCollect',
+  description: 'Explore our complete database of figures.'
 }
 
 // ISR: revalidate every 60 seconds for fresh data with caching
@@ -170,14 +170,6 @@ export default async function CatalogPage({ searchParams }: PageProps) {
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-2xl md:text-4xl font-title font-black text-white mb-1 md:mb-2">
-          Catálogo de <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-500">Figuras</span>
-        </h1>
-        <p className="text-gray-400 text-sm">
-          Explora nuestra base de datos completa de figuras.
-        </p>
-      </div>
       <CatalogClient
         figures={figures}
         brands={brands}

@@ -30,8 +30,7 @@
       "Bash(mkdir:*)",
       "Bash(npm i:*)",
       "Bash(npx next build)",
-      "Bash(del update-password.js)",
-      "WebFetch(domain:tamashiiweb.com)"
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []
